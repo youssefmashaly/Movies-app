@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   signInWithEmailAndPassword, 
@@ -20,6 +20,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+// Close on Escape for keyboard users
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +77,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {/* Modal box */}
           <motion.div
             id="auth-container"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-modal-title"
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
@@ -78,7 +91,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               id="auth-close-btn"
               onClick={onClose}
-              className="absolute top-4 right-4 rounded-full p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+              aria-label="Close sign-in dialog"
+              className="absolute top-4 right-4 rounded-full p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -87,7 +101,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 text-white shadow-lg shadow-red-900/20 mb-3">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 id="auth-modal-title" className="text-2xl font-bold tracking-tight">
                 {isSignUp ? "Create Account" : "Welcome Back"}
               </h2>
               <p className="text-sm text-neutral-400 mt-1">
@@ -98,6 +112,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {error && (
               <motion.div
                 id="auth-error-msg"
+                role="alert"
+                aria-live="assertive"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-xs font-medium text-red-400"
@@ -173,7 +189,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 id="auth-submit-btn"
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-white shadow-lg hover:from-red-500 hover:to-amber-505 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-white shadow-lg hover:from-red-500 hover:to-amber-505 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-400"
               >
                 {loading ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -195,7 +211,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   setIsSignUp(!isSignUp);
                   setError("");
                 }}
-                className="font-semibold text-red-400 hover:text-red-300 transition-colors"
+                className="font-semibold text-red-400 hover:text-red-300 transition-colors focus-visible:ring-2 focus-visible:ring-red-500 rounded"
               >
                 {isSignUp ? "Sign In Instead" : "Create an Account"}
               </button>

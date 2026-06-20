@@ -128,7 +128,7 @@ export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
                 id="matchmake-submit-btn"
                 type="submit"
                 disabled={loading || !mood.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-red-650 to-red-600 bg-red-650 hover:bg-red-600 py-3 font-semibold text-white shadow-lg shadow-red-950/20 hover:text-red-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full rounded-xl bg-gradient-to-r from-red-650 to-red-600 bg-red-650 hover:bg-red-600 py-3 font-semibold text-white shadow-lg shadow-red-950/20 hover:text-red-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
               >
                 {loading ? (
                   <>
@@ -158,7 +158,7 @@ export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
                   onClick={() => {
                     setMood(sample.text);
                   }}
-                  className="w-full text-left rounded-xl border border-neutral-800/60 bg-neutral-900/20 p-3 hover:border-red-500/30 hover:bg-neutral-900/50 transition-all text-xs cursor-pointer group"
+                  className="w-full text-left rounded-xl border border-neutral-800/60 bg-neutral-900/20 p-3 hover:border-red-500/30 hover:bg-neutral-900/50 transition-all text-xs cursor-pointer group focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   <div className="font-semibold text-neutral-300 flex items-center justify-between group-hover:text-red-400">
                     {sample.label}

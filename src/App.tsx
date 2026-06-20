@@ -3,23 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
 
 // Components
 import Navbar from "./components/Navbar";
 import MovieCard from "./components/MovieCard";
+import MovieRail from "./components/MovieRail";
 import MovieDetail from "./components/MovieDetail";
 import AIMatchmaker from "./components/AIMatchmaker";
 import AuthModal from "./components/AuthModal";
 
 // Icons
-import { Star, Film, Bookmark, Sparkles, SlidersHorizontal, Eye, HelpCircle, ArrowRight } from "lucide-react";
+import {
+  Star, Film, Bookmark, SlidersHorizontal, Eye, HelpCircle, ArrowRight,
+  TrendingUp, Flame, CalendarClock, Compass, PlayCircle
+} from "lucide-react";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>("explore"); // explore, watchlist, oracle
@@ -152,6 +156,66 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
+// Fast lookup set for "is this movie saved" checks used by card quick-actions
+  const watchlistIds = useMemo(() => new Set(watchlistMovies.map((m) => m.id)), [watchlistMovies]);
+
+  // Quick-add/remove from any MovieCard (Trending/Popular/Latest/Recommended rails + grid)
+  // without leaving the current view. Mirrors the toggle logic in MovieDetail.
+  const handleQuickToggleWatchlist = async (movie: Movie) => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    const docId = `${user.uid}_${movie.id}`;
+    const docRef = doc(db, "watchlist", docId);
+    try {
+      if (watchlistIds.has(movie.id)) {
+        await deleteDoc(docRef);
+      } else {
+        await setDoc(docRef, {
+          id: movie.id,
+          title: movie.title,
+          posterPath: movie.posterPath,
+          releaseDate: movie.releaseDate,
+          voteAverage: movie.voteAverage,
+          userId: user.uid,
+          addedAt: serverTimestamp() || Date.now()
+        });
+      }
+    } catch (err) {
+      console.error("Quick watchlist toggle failed:", err);
+    }
+  };
+
+  // "Popular" rail: same catalog as Trending, re-cut by raw score so the row
+  // tells a different story (acclaim vs. momentum) without a new backend route.
+  const popularMovies = useMemo(() => {
+    return [...trendingMovies].sort((a, b) => b.voteAverage - a.voteAverage || b.voteCount - a.voteCount);
+  }, [trendingMovies]);
+
+  // "Recommended" rail: personalized to the signed-in user's watchlist genres
+  // when we have signal, otherwise a diverse, high-rated fallback cut.
+  const recommendedMovies = useMemo(() => {
+    const sourcePool = trendingMovies.length ? trendingMovies : latestMovies;
+    if (sourcePool.length === 0) return [];
+
+    const watchlistGenres = new Set(
+      watchlistMovies.flatMap((m) => m.genres || []).map((g) => g.toLowerCase())
+    );
+
+    if (watchlistGenres.size > 0) {
+      const matches = sourcePool.filter(
+        (m) => !watchlistIds.has(m.id) && m.genres?.some((g) => watchlistGenres.has(g.toLowerCase()))
+      );
+      if (matches.length >= 4) return matches;
+    }
+
+    return [...sourcePool]
+      .filter((m) => m.voteAverage >= 7)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(4, 16);
+  }, [trendingMovies, latestMovies, watchlistMovies, watchlistIds]);
+
   // Filter movies by Selected Genre from explore view
   const filteredMovies = movies.filter((m) => {
     if (selectedGenre === "All") return true;
@@ -160,9 +224,27 @@ export default function App() {
 
   // Featured billboard movie for top of home page
   const featuredMovie = trendingMovies[0];
+ 
+ // Shared "open movie" flow: instant transition to the detail view using
+  // whatever data we already have, then enrich in the background.
+  const handleSelectMovie = async (movie: Movie) => {
+    try {
+      setSelectedMovie(movie); // Instant transition
+      const res = await fetch(`/api/movies/detail/${movie.id}`);
+      if (res.ok) {
+        const fullDetail = await res.json();
+        setSelectedMovie(fullDetail); // Enrich with real cast or AI generated facts
+      }
+    } catch (err) {
+      console.error("Failed fetching movie details:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased select-none pb-12">
+      {/* Skip link: first focusable element for keyboard/screen-reader users */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
+
       {/* Background radial highlight */}
       <div className="pointer-events-none fixed top-0 left-0 right-0 h-[600px] bg-[radial-gradient(circle_at_top,_rgba(220,38,38,0.08)_0%,_transparent_60%)] z-0" />
 
@@ -176,14 +258,18 @@ export default function App() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenAuth={() => setAuthOpen(true)}
+        searchLoading={searchLoading}
       />
 
       {/* Auth Modal Overlay Popup */}
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       {/* Responsive layout wrapper */}
-      <div className="relative pt-24 z-10">
+      <main id="main-content" className="relative pt-24 z-10">
         <AnimatePresence mode="wait">
+
+
+
           {/* 1. SEPARATE MOVIE DETAILS PAGE */}
           {selectedMovie ? (
             <MovieDetail
@@ -204,54 +290,168 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
+              {/* Cinematic hero skeleton while the first fetch is in flight */}
+              {!searchQuery && moviesLoading && !featuredMovie && (
+                <div className="max-w-7xl mx-auto px-6 mt-4">
+                  <div className="skeleton-shimmer relative rounded-3xl border border-neutral-800 h-[380px] sm:h-[430px] md:h-[480px]" />
+                </div>
+              )}
+
               {/* Giant Billboard Featured Header (Widescreen cinematic layout) */}
               {!searchQuery && featuredMovie && (
                 <div
                   id="featured-board"
                   className="max-w-7xl mx-auto px-6 mt-4"
                 >
-                  <div className="relative rounded-3xl overflow-hidden border border-neutral-800 bg-neutral-950 h-[380px] sm:h-[430px] md:h-[480px] flex items-end">
-                    <img
+                  <div className="relative rounded-3xl overflow-hidden border border-neutral-800 bg-neutral-950 h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
+                    <motion.img
+                      key={featuredMovie.id}
                       src={featuredMovie.backdropPath}
-                      alt={featuredMovie.title}
+                      alt=""
+                      role="presentation"
                       referrerPolicy="no-referrer"
+                      initial={{ scale: 1.08, opacity: 0.6 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 1.4, ease: "easeOut" }}
                       className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/70 via-transparent to-transparent" />
 
-                    <div className="relative z-10 p-8 md:p-12 text-left max-w-2xl">
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/20 px-3.5 py-1.5 text-xs font-bold text-amber-400 mb-4 uppercase tracking-wider">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        Critically Acclaimed Blockbuster
-                      </div>
-                      <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                    <motion.div
+                      initial="hidden"
+                      animate="show"
+                      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } }}
+                      className="relative z-10 p-8 md:p-12 text-left max-w-2xl"
+                    >
+                      <motion.div
+                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/20 px-3.5 py-1.5 text-xs font-bold text-amber-400 mb-4 uppercase tracking-wider"
+                      >
+                        <span className="relative flex h-2 w-2" aria-hidden="true">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                        </span>
+                        Featured Tonight
+                      </motion.div>
+
+                      <motion.h1
+                        variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
+                        className="text-3xl md:text-6xl font-black tracking-tight text-white leading-[1.05]"
+                      >
                         {featuredMovie.title}
-                      </h2>
-                      <p className="text-neutral-400 text-xs sm:text-sm mt-3 line-clamp-3 leading-relaxed">
-                        {featuredMovie.overview}
-                      </p>
+                      </motion.h1>
 
-                      <div className="mt-6 flex flex-wrap gap-3">
+                      <motion.div
+                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                        className="flex items-center gap-3 mt-4 text-xs text-neutral-300"
+                      >
+                        <span className="flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/10">
+                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          {featuredMovie.voteAverage.toFixed(1)}
+                        </span>
+                        <span>{featuredMovie.releaseDate?.split("-")[0]}</span>
+                        {featuredMovie.genres?.slice(0, 3).map((g) => (
+                          <span key={g} className="hidden sm:inline text-neutral-500">&middot; {g}</span>
+                        ))}
+                      </motion.div>
+
+                      <motion.p
+                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                        className="text-neutral-400 text-xs sm:text-sm mt-3 line-clamp-3 leading-relaxed"
+                      >
+                        {featuredMovie.overview}
+                      </motion.p>
+
+                      <motion.div
+                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                        className="mt-6 flex flex-wrap gap-3"
+                      >
                         <button
                           id="billboard-action-detail"
-                          onClick={() => setSelectedMovie(featuredMovie)}
-                          className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-all cursor-pointer"
+                          onClick={() => handleSelectMovie(featuredMovie)}
+                          className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                         >
-                          <Eye className="h-4.5 w-4.5" />
-                          View Details
+                          {featuredMovie.trailerUrl ? <PlayCircle className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                          {featuredMovie.trailerUrl ? "Watch Trailer" : "View Details"}
+                        </button>
+                        <button
+                          id="billboard-action-watchlist"
+                          onClick={() => handleQuickToggleWatchlist(featuredMovie)}
+                          aria-pressed={watchlistIds.has(featuredMovie.id)}
+                          className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                        >
+                          <Bookmark className={`h-4.5 w-4.5 ${watchlistIds.has(featuredMovie.id) ? "fill-red-400 text-red-400" : ""}`} />
+                          {watchlistIds.has(featuredMovie.id) ? "In Watchlist" : "Add to Watchlist"}
                         </button>
                         <button
                           id="billboard-action-search"
                           onClick={() => {
                             document.getElementById("navbar-search")?.focus();
                           }}
-                          className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all cursor-pointer"
+                          className="hidden sm:flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Search archives
+                          <ArrowRight className="h-4 w-4" />
                         </button>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                   </div>
+                </div>
+              )}
+
+              {/* Curated discovery rows: Netflix-style horizontal browsing, separate
+                  from the filterable grid below. Hidden during search so results stay focused. */}
+              {!searchQuery && (
+                <div className="space-y-10">
+                  <MovieRail
+                    id="rail-trending"
+                    title="Trending Now"
+                    subtitle="What everyone's watching this week"
+                    icon={TrendingUp}
+                    accent="red"
+                    movies={trendingMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
+                  <MovieRail
+                    id="rail-popular"
+                    title="Popular"
+                    subtitle="Highest-rated by the community"
+                    icon={Flame}
+                    accent="amber"
+                    movies={popularMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
+                  <MovieRail
+                    id="rail-latest"
+                    title="Latest Releases"
+                    subtitle="Newest titles, freshest first"
+                    icon={CalendarClock}
+                    accent="teal"
+                    movies={latestMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
+                  <MovieRail
+                    id="rail-recommended"
+                    title="Recommended For You"
+                    subtitle={user ? "Based on your watchlist" : "Sign in to personalize this row"}
+                    icon={Compass}
+                    accent="indigo"
+                    movies={recommendedMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
                 </div>
               )}
 
@@ -261,23 +461,23 @@ export default function App() {
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2 uppercase text-neutral-400">
                       <Film className="h-5 w-5 text-neutral-500" />
-                      {searchQuery ? `Search Results for "${searchQuery}"` : "Browse film archives"}
+                      {searchQuery ? `Search Results for "${searchQuery}"` : "Full Film Archive"}
                     </h2>
                     <p className="text-xs text-neutral-500 mt-1">
-                      {searchQuery ? "Showing dynamic matching titles & genres" : "Browse curated blockbusters or search custom movies"}
+                      {searchQuery ? "Showing dynamic matching titles & genres" : "Browse and filter the entire catalog, beyond the curated rows above"}
                     </p>
                   </div>
 
                   {/* Sorting filters */}
                   {!searchQuery && (
                     <div className="flex items-center gap-2 self-start md:self-auto">
-                      <SlidersHorizontal className="h-4 w-4 text-neutral-500" />
-                      <span className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mr-2">Sort:</span>
+                      <SlidersHorizontal className="h-4 w-4 text-neutral-500" aria-hidden="true" />
+                      <label htmlFor="main-movie-sorting" className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mr-2">Sort:</label>
                       <select
                         id="main-movie-sorting"
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus:border-red-500/50"
+                        className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                       >
                         <option value="popularity">Trending Score</option>
                         <option value="releaseDate">Release Date</option>
@@ -288,14 +488,15 @@ export default function App() {
 
                 {/* Genre Tabs Filter (Horizontal scrolling pill row) */}
                 {!searchQuery && (
-                  <div className="flex items-center gap-2 overflow-x-auto py-6 pr-4 no-scrollbar scroll-smooth">
+                  <div role="group" aria-label="Filter by genre" className="flex items-center gap-2 overflow-x-auto py-6 pr-4 no-scrollbar scroll-smooth">
                     {ALL_GENRES.map((g) => {
                       const isSelected = selectedGenre === g;
                       return (
                         <button
                           key={`genre-pill-${g}`}
                           onClick={() => setSelectedGenre(g)}
-                          className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border ${
+                          aria-pressed={isSelected}
+                          className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
                             isSelected
                               ? "bg-red-650 border-red-650 text-white shadow-lg shadow-red-950/20 font-extrabold"
                               : "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
@@ -310,38 +511,50 @@ export default function App() {
 
                 {/* Skeletons or Empty checks or Main Grid */}
                 {moviesLoading || searchLoading ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
                     {Array.from({ length: 10 }).map((_, i) => (
                       <MovieCard key={`skeleton-${i}`} isLoading={true} />
                     ))}
                   </div>
                 ) : filteredMovies.length === 0 ? (
-                  <div className="rounded-3xl border border-neutral-900 py-16 text-center mt-8">
+                  <div className="rounded-3xl border border-neutral-900 py-16 text-center mt-8 px-6">
                     <HelpCircle className="h-10 w-10 text-neutral-600 mx-auto mb-3" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">No matching films found</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                      {searchQuery ? `No results for "${searchQuery}"` : "No matching films found"}
+                    </h3>
                     <p className="text-xs text-neutral-500 mt-2 max-w-sm mx-auto leading-relaxed">
-                      Try searching another title or select "All" from the genre labels to display full blockbusters.
+                      {searchQuery
+                        ? "Try a different title, actor, or genre keyword."
+                        : "Try another genre, or select \"All\" to see every blockbuster."}
                     </p>
+                    <div className="mt-5 flex items-center justify-center gap-3">
+                      {searchQuery ? (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                        >
+                          Clear search
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setSelectedGenre("All")}
+                          className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                        >
+                          Reset filters
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-8">
-                    {filteredMovies.map((movie) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
+                    {filteredMovies.map((movie, idx) => (
                       <MovieCard
                         key={movie.id}
                         movie={movie}
-                        onClick={async () => {
-                          // Complete with deep details (about, cast) by fetching/querying details from API!
-                          try {
-                            setSelectedMovie(movie); // Instant transition
-                            const res = await fetch(`/api/movies/detail/${movie.id}`);
-                            if (res.ok) {
-                              const fullDetail = await res.json();
-                              setSelectedMovie(fullDetail); // Enrich with real cast or AI generated facts
-                            }
-                          } catch (err) {
-                            console.error("Failed fetching movie details:", err);
-                          }
-                        }}
+                        index={idx}
+                        isSaved={watchlistIds.has(movie.id)}
+                        onToggleSave={() => handleQuickToggleWatchlist(movie)}
+                        onClick={() => handleSelectMovie(movie)}
                       />
                     ))}
                   </div>
@@ -368,7 +581,7 @@ export default function App() {
               </div>
 
               {watchlistLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <MovieCard key={`watch-skeleton-${i}`} isLoading={true} />
                   ))}
@@ -378,34 +591,26 @@ export default function App() {
                   <Bookmark className="h-10 w-10 text-neutral-700 mx-auto" />
                   <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400">Your Watchlist is empty</h3>
                   <p className="text-xs text-neutral-500 leading-relaxed max-w-xs mx-auto">
-                    Browse standard blockbusters inside "Explore" or query the AI matchmaker, then click "Add to Watchlist" to save!
+                    Hover any poster and tap the bookmark icon, or open a film's page and click "Add to Watchlist" to save it here.
                   </p>
                   <button
                     id="watchlist-to-explore"
                     onClick={() => setActiveTab("explore")}
-                    className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer"
+                    className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Browse Explore
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-8">
-                  {watchlistMovies.map((movie) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
+                  {watchlistMovies.map((movie, idx) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}
-                      onClick={async () => {
-                        try {
-                          setSelectedMovie(movie); // Instant transition
-                          const res = await fetch(`/api/movies/detail/${movie.id}`);
-                          if (res.ok) {
-                            const fullDetail = await res.json();
-                            setSelectedMovie(fullDetail);
-                          }
-                        } catch (err) {
-                          console.error("Failed fetching movie details:", err);
-                        }
-                      }}
+                      index={idx}
+                      isSaved={true}
+                      onToggleSave={() => handleQuickToggleWatchlist(movie)}
+                      onClick={() => handleSelectMovie(movie)}
                     />
                   ))}
                 </div>
@@ -419,24 +624,11 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <AIMatchmaker
-                onSelectMovie={async (recMovie) => {
-                  try {
-                    setSelectedMovie(recMovie); // Instant transition
-                    const res = await fetch(`/api/movies/detail/${recMovie.id}`);
-                    if (res.ok) {
-                      const fullDetail = await res.json();
-                      setSelectedMovie(fullDetail);
-                    }
-                  } catch (err) {
-                    console.error("Failed fetching movie details:", err);
-                  }
-                }}
-              />
+              <AIMatchmaker onSelectMovie={handleSelectMovie} />
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   );
 }

@@ -200,7 +200,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth }: MovieDetailPr
           <button
             id="movie-detail-back-btn"
             onClick={onBack}
-            className="flex items-center gap-2 rounded-full bg-neutral-900/80 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md border border-neutral-800 shadow-lg hover:bg-neutral-800 hover:text-red-400 transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-full bg-neutral-900/80 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md border border-neutral-800 shadow-lg hover:bg-neutral-800 hover:text-red-400 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to movies
@@ -210,7 +210,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth }: MovieDetailPr
             id="movie-watchlist-toggle"
             onClick={handleToggleWatchlist}
             disabled={watchlistLoading}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all shadow-lg backdrop-blur-md border cursor-pointer ${
+            aria-pressed={isInWatchlist}
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all shadow-lg backdrop-blur-md border cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
               isInWatchlist
                 ? "bg-red-500/20 border-red-500/50 text-red-300"
                 : "bg-neutral-900/80 border-neutral-800 text-white hover:bg-neutral-800"
@@ -430,7 +431,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth }: MovieDetailPr
                     id="submit-review-btn"
                     type="submit"
                     disabled={submitLoading}
-                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
                   >
                     {submitLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -450,7 +451,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth }: MovieDetailPr
                   <button
                     id="auth-trigger-detail-btn"
                     onClick={onOpenAuth}
-                    className="rounded-lg bg-neutral-800 px-4 py-2 text-xs font-semibold text-red-400 border border-neutral-700/50 hover:bg-neutral-700 transition-all cursor-pointer"
+                    className="rounded-lg bg-neutral-800 px-4 py-2 text-xs font-semibold text-red-400 border border-neutral-700/50 hover:bg-neutral-700 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Sign in here
                   </button>
