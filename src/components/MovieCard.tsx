@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Movie } from "../types";
 import { Calendar, Bookmark, BookmarkCheck } from "lucide-react";
@@ -51,6 +51,8 @@ function RatingRing({ score }: { score: number }) {
 }
 
 export default function MovieCard({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave }: MovieCardProps) {
+  const [posterError, setPosterError] = useState(false);
+
   if (isLoading || !movie) {
     return (
       <div className="skeleton-shimmer relative aspect-[2/3] w-full rounded-2xl border border-neutral-800/50">
@@ -94,14 +96,26 @@ export default function MovieCard({ movie, isLoading = false, onClick, index = 0
       className="group relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl border border-neutral-800/80 bg-neutral-900 shadow-xl transition-shadow hover:shadow-2xl hover:shadow-red-950/20 focus-visible:shadow-2xl focus-visible:shadow-red-950/30"
     >
       {/* Background Poster Image */}
-      <img
-        id={`movie-poster-${movie.id}`}
-        src={movie.posterPath}
-        alt={movie.title}
-        referrerPolicy="no-referrer"
-        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 group-focus-visible:scale-110"
-        loading="lazy"
-      />
+      {!posterError && movie.posterPath ? (
+        <img
+          id={`movie-poster-${movie.id}`}
+          src={movie.posterPath}
+          alt={movie.title}
+          referrerPolicy="no-referrer"
+          onError={() => setPosterError(true)}
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 group-focus-visible:scale-110"
+          loading="lazy"
+        />
+      ) : (
+        <div className="h-full w-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-neutral-900 to-neutral-950 text-neutral-700 p-4">
+          <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight line-clamp-2">{movie.title}</span>
+        </div>
+      )}
 
       {/* Grid overlay shading always subtly present */}
       <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />

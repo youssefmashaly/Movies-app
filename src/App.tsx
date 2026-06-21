@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
 
@@ -22,8 +22,23 @@ import AuthModal from "./components/AuthModal";
 // Icons
 import {
   Star, Film, Bookmark, SlidersHorizontal, Eye, HelpCircle, ArrowRight,
-  TrendingUp, Flame, CalendarClock, Compass, PlayCircle, Gem, X as XIcon
+  TrendingUp, Flame, CalendarClock, Compass, PlayCircle, Gem, X as XIcon,
+  History, Heart
 } from "lucide-react";
+
+// localStorage keys for guest-friendly, backend-free personalization
+const FAVORITE_GENRES_KEY = "movieapp:favoriteGenres";
+const RECENTLY_VIEWED_KEY = "movieapp:recentlyViewed";
+const ONBOARDING_DISMISSED_KEY = "movieapp:onboardingDismissed";
+
+function readLocalJSON<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>("explore"); // explore, watchlist, oracle
@@ -54,6 +69,13 @@ export default function App() {
   // Watchlist state
   const [watchlistMovies, setWatchlistMovies] = useState<Movie[]>([]);
   const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
+
+  // Personalization state (device-local via localStorage; mirrored to Firestore
+  // for signed-in users so preferences follow the account, not just the browser)
+  const [favoriteGenres, setFavoriteGenres] = useState<string[]>(() => readLocalJSON(FAVORITE_GENRES_KEY, []));
+  const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>(() => readLocalJSON(RECENTLY_VIEWED_KEY, []));
+  const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => readLocalJSON(ONBOARDING_DISMISSED_KEY, false));
+  const [prefsExpanded, setPrefsExpanded] = useState<boolean>(false);
 
   // 1. Sync Authentication
   useEffect(() => {
@@ -163,7 +185,41 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
-// Fast lookup set for "is this movie saved" checks used by card quick-actions
+  // 6. Persist personalization state locally so guests keep it across visits
+  useEffect(() => {
+    localStorage.setItem(FAVORITE_GENRES_KEY, JSON.stringify(favoriteGenres));
+  }, [favoriteGenres]);
+
+  useEffect(() => {
+    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
+  }, [recentlyViewed]);
+
+  useEffect(() => {
+    localStorage.setItem(ONBOARDING_DISMISSED_KEY, JSON.stringify(onboardingDismissed));
+  }, [onboardingDismissed]);
+
+  // 7. On sign-in, prefer preferences already saved to the account; if none
+  // exist yet, push whatever was picked locally as a guest so it isn't lost.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const prefRef = doc(db, "preferences", user.uid);
+        const snap = await getDoc(prefRef);
+        if (snap.exists() && Array.isArray(snap.data().favoriteGenres)) {
+          setFavoriteGenres(snap.data().favoriteGenres);
+        } else if (favoriteGenres.length > 0) {
+          await setDoc(prefRef, { favoriteGenres, userId: user.uid }, { merge: true });
+        }
+      } catch (err) {
+        console.error("Failed to sync genre preferences:", err);
+      }
+    })();
+    // Intentionally only re-runs when the signed-in user changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Fast lookup set for "is this movie saved" checks used by card quick-actions
   const watchlistIds = useMemo(() => new Set(watchlistMovies.map((m) => m.id)), [watchlistMovies]);
 
   // Quick-add/remove from any MovieCard (Trending/Popular/Latest/Recommended rails + grid)
@@ -195,34 +251,79 @@ export default function App() {
     }
   };
 
+  // Toggle a favorite genre on/off. Works for guests (localStorage only, via
+  // the persistence effect above) and signed-in users (also mirrored to Firestore).
+  const toggleFavoriteGenre = async (genre: string) => {
+    const updated = favoriteGenres.includes(genre)
+      ? favoriteGenres.filter((g) => g !== genre)
+      : [...favoriteGenres, genre];
+    setFavoriteGenres(updated);
+    if (user) {
+      try {
+        await setDoc(doc(db, "preferences", user.uid), { favoriteGenres: updated, userId: user.uid }, { merge: true });
+      } catch (err) {
+        console.error("Failed to save genre preference:", err);
+      }
+    }
+  };
+
+  // Track a movie as recently viewed (most-recent-first, deduped, capped) —
+  // device-local only, no extra Firestore writes per view.
+  const trackRecentlyViewed = (movie: Movie) => {
+    setRecentlyViewed((prev) => {
+      const withoutCurrent = prev.filter((m) => m.id !== movie.id);
+      return [movie, ...withoutCurrent].slice(0, 10);
+    });
+  };
+
   // "Popular" rail: same catalog as Trending, re-cut by raw score so the row
   // tells a different story (acclaim vs. momentum) without a new backend route.
   const popularMovies = useMemo(() => {
     return [...trendingMovies].sort((a, b) => b.voteAverage - a.voteAverage || b.voteCount - a.voteCount);
   }, [trendingMovies]);
 
-  // "Recommended" rail: personalized to the signed-in user's watchlist genres
-  // when we have signal, otherwise a diverse, high-rated fallback cut.
+  // Weighted genre affinity across every personalization signal we have:
+  // explicit favorites count most, watchlist next, recently-viewed least.
+  const genreAffinity = useMemo(() => {
+    const map = new Map<string, number>();
+    favoriteGenres.forEach((g) => map.set(g, (map.get(g) || 0) + 3));
+    watchlistMovies.forEach((m) => m.genres?.forEach((g) => map.set(g, (map.get(g) || 0) + 2)));
+    recentlyViewed.forEach((m) => m.genres?.forEach((g) => map.set(g, (map.get(g) || 0) + 1)));
+    return map;
+  }, [favoriteGenres, watchlistMovies, recentlyViewed]);
+
+  const topAffinityGenres = useMemo(() => {
+    return Array.from(genreAffinity.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([genre]) => genre);
+  }, [genreAffinity]);
+
+  // "Recommended" rail: personalized to favorite genres + watchlist + recently
+  // viewed when we have signal, otherwise a diverse, high-rated fallback cut.
   const recommendedMovies = useMemo(() => {
     const sourcePool = trendingMovies.length ? trendingMovies : latestMovies;
     if (sourcePool.length === 0) return [];
 
-    const watchlistGenres = new Set(
-      watchlistMovies.flatMap((m) => m.genres || []).map((g) => g.toLowerCase())
-    );
-
-    if (watchlistGenres.size > 0) {
+    if (topAffinityGenres.length > 0) {
+      const lowerTop = topAffinityGenres.map((g) => g.toLowerCase());
       const matches = sourcePool.filter(
-        (m) => !watchlistIds.has(m.id) && m.genres?.some((g) => watchlistGenres.has(g.toLowerCase()))
+        (m) => !watchlistIds.has(m.id) && m.genres?.some((g) => lowerTop.includes(g.toLowerCase()))
       );
-      if (matches.length >= 4) return matches;
+      if (matches.length >= 4) return [...matches].sort((a, b) => b.voteAverage - a.voteAverage);
     }
 
+    // Fallback: a diverse, high-rated cut offset from the Trending rail so it
+    // doesn't just look like a duplicate of row one.
     return [...sourcePool]
       .filter((m) => m.voteAverage >= 7)
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(4, 16);
-  }, [trendingMovies, latestMovies, watchlistMovies, watchlistIds]);
+  }, [trendingMovies, latestMovies, topAffinityGenres, watchlistIds]);
+
+  // Surfaces *why* the Recommended row looks the way it does, so it reads as
+  // intentional curation rather than a random slice.
+  const recommendationReason = topAffinityGenres[0] || null;
 
   // Combined, de-duplicated pool used for genre sections / year options / hidden gems
   // (purely client-side reuse of data we already fetched — no extra API calls)
@@ -319,6 +420,24 @@ export default function App() {
     return sorted;
   }, [watchlistMovies, watchlistGenreFilter, watchlistSortBy]);
 
+  // Lightweight stats surfaced above the watchlist grid — pure aggregation
+  // over data already in memory, no extra fetch.
+  const watchlistStats = useMemo(() => {
+    if (watchlistMovies.length === 0) return null;
+    const avgRating = watchlistMovies.reduce((sum, m) => sum + m.voteAverage, 0) / watchlistMovies.length;
+    const genreCounts = new Map<string, number>();
+    watchlistMovies.forEach((m) => m.genres?.forEach((g) => genreCounts.set(g, (genreCounts.get(g) || 0) + 1)));
+    let topGenre: string | null = null;
+    let topCount = 0;
+    genreCounts.forEach((count, genre) => {
+      if (count > topCount) {
+        topCount = count;
+        topGenre = genre;
+      }
+    });
+    return { count: watchlistMovies.length, avgRating, topGenre };
+  }, [watchlistMovies]);
+
   // Featured billboard movie for top of home page
   const featuredMovie = trendingMovies[0];
  
@@ -327,6 +446,7 @@ export default function App() {
   const handleSelectMovie = async (movie: Movie) => {
     try {
       setSelectedMovie(movie); // Instant transition
+      trackRecentlyViewed(movie);
       const res = await fetch(`/api/movies/detail/${movie.id}`);
       if (res.ok) {
         const fullDetail = await res.json();
@@ -377,6 +497,10 @@ export default function App() {
                 // Refetch specific list details if required
               }}
               onOpenAuth={() => setAuthOpen(true)}
+              relatedPool={combinedMoviePool}
+              onSelectMovie={handleSelectMovie}
+              watchlistIds={watchlistIds}
+              onToggleSave={handleQuickToggleWatchlist}
             />
           ) : activeTab === "explore" ? (
             /* 2. EXPLORE VIEW (HOME PAGE) */
@@ -387,6 +511,85 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
+              {/* Personalize panel: first-run onboarding for new users, collapsible editor afterwards */}
+              {!searchQuery && (!onboardingDismissed || favoriteGenres.length > 0) && (
+                <div className="max-w-[1600px] mx-auto px-6">
+                  <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+                    {!prefsExpanded && favoriteGenres.length > 0 ? (
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-xs text-neutral-400">
+                          <Heart className="inline h-3.5 w-3.5 text-red-400 mr-1.5 -mt-0.5" aria-hidden="true" />
+                          Your picks: <span className="text-white font-semibold">{favoriteGenres.join(", ")}</span>
+                        </p>
+                        <button
+                          onClick={() => setPrefsExpanded(true)}
+                          className="text-xs font-bold text-red-400 hover:text-red-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
+                        >
+                          Edit preferences
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                            <Heart className="h-4 w-4 text-red-400" aria-hidden="true" />
+                            {favoriteGenres.length === 0 ? "Pick a few favorite genres" : "Edit your favorite genres"}
+                          </h2>
+                          {favoriteGenres.length > 0 && (
+                            <button
+                              onClick={() => setPrefsExpanded(false)}
+                              className="text-xs font-bold text-neutral-400 hover:text-white cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
+                            >
+                              Done
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-neutral-500 mb-4">
+                          This personalizes Recommended and the genre rows below. Change it anytime.
+                        </p>
+                        <div role="group" aria-label="Favorite genres" className="flex flex-wrap gap-2">
+                          {ALL_GENRES.filter((g) => g !== "All").map((g) => {
+                            const isSelected = favoriteGenres.includes(g);
+                            return (
+                              <button
+                                key={`fav-genre-${g}`}
+                                onClick={() => toggleFavoriteGenre(g)}
+                                aria-pressed={isSelected}
+                                className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
+                                  isSelected
+                                    ? "bg-red-650 border-red-650 text-white shadow-md"
+                                    : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                }`}
+                              >
+                                {g}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-4 flex items-center gap-3">
+                          {favoriteGenres.length > 0 && (
+                            <button
+                              onClick={() => setPrefsExpanded(false)}
+                              className="rounded-lg bg-red-650 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                            >
+                              Save
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setOnboardingDismissed(true);
+                              setPrefsExpanded(false);
+                            }}
+                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
+                          >
+                            Skip for now
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
               {/* Cinematic hero skeleton while the first fetch is in flight */}
               {!searchQuery && moviesLoading && !featuredMovie && (
                 <div className="max-w-[1600px] mx-auto px-6 mt-4">
@@ -501,6 +704,31 @@ export default function App() {
                   from the filterable grid below. Hidden during search so results stay focused. */}
               {!searchQuery && (
                 <div className="space-y-10">
+                  {recentlyViewed.length > 0 && (
+                    <MovieRail
+                      id="rail-continue-watching"
+                      title="Continue Browsing"
+                      subtitle="Pick up where you left off"
+                      icon={History}
+                      accent="red"
+                      movies={recentlyViewed}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  <MovieRail
+                    id="rail-recommended"
+                    title="Recommended For You"
+                    subtitle={recommendationReason ? `Because you like ${recommendationReason}` : user ? "Save a few favorites to personalize this row" : "Sign in to personalize this row"}
+                    icon={Compass}
+                    accent="indigo"
+                    movies={recommendedMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
                   <MovieRail
                     id="rail-trending"
                     title="Trending Now"
@@ -532,18 +760,6 @@ export default function App() {
                     icon={CalendarClock}
                     accent="teal"
                     movies={latestMovies}
-                    isLoading={moviesLoading}
-                    onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
-                    onToggleSave={handleQuickToggleWatchlist}
-                  />
-                  <MovieRail
-                    id="rail-recommended"
-                    title="Recommended For You"
-                    subtitle={user ? "Based on your watchlist" : "Sign in to personalize this row"}
-                    icon={Compass}
-                    accent="indigo"
-                    movies={recommendedMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
                     isSaved={(id) => watchlistIds.has(id)}
@@ -785,6 +1001,29 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* Watchlist statistics: pure aggregation over data already in memory */}
+              {watchlistStats && (
+                <div className="flex flex-wrap gap-3 mb-8 -mt-4">
+                  <div className="flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-2.5">
+                    <Bookmark className="h-4 w-4 text-red-400" aria-hidden="true" />
+                    <span className="text-sm font-bold text-white">{watchlistStats.count}</span>
+                    <span className="text-xs text-neutral-500">{watchlistStats.count === 1 ? "movie saved" : "movies saved"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-2.5">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                    <span className="text-sm font-bold text-white">{watchlistStats.avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-neutral-500">avg rating</span>
+                  </div>
+                  {watchlistStats.topGenre && (
+                    <div className="flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-2.5">
+                      <Heart className="h-4 w-4 text-red-400" aria-hidden="true" />
+                      <span className="text-xs text-neutral-500">Favorite genre:</span>
+                      <span className="text-sm font-bold text-white">{watchlistStats.topGenre}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {watchlistLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
