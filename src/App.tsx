@@ -10,6 +10,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
+import { syncProfileFromFirebaseUser } from "./services/supabase/profiles";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -81,6 +82,13 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      // Ensure a Supabase profile row exists for this user. Fire-and-forget:
+      // failures are logged only and never affect the Firebase auth state above.
+      if (u) {
+        syncProfileFromFirebaseUser({ uid: u.uid, email: u.email, displayName: u.displayName }).then((result) => {
+          if (result.error) console.error("Supabase profile sync failed:", result.error);
+        });
+      }
     });
     return () => unsubscribe();
   }, []);
