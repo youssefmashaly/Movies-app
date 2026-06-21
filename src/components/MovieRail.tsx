@@ -9,7 +9,7 @@ interface MovieRailProps {
   title: string;
   subtitle?: string;
   icon: LucideIcon;
-  accent?: "red" | "amber" | "teal" | "indigo";
+  accent?: "red" | "amber" | "teal" | "indigo" | "emerald";
   movies: Movie[];
   isLoading?: boolean;
   onMovieClick: (movie: Movie) => void;
@@ -22,6 +22,7 @@ const ACCENTS: Record<string, { text: string; bg: string; border: string }> = {
   amber: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
   teal: { text: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/20" },
   indigo: { text: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
+  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
 };
 
 export default function MovieRail({
@@ -78,7 +79,7 @@ export default function MovieRail({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="max-w-7xl mx-auto px-6"
+      className="max-w-[1600px] mx-auto px-6"
     >
       <div className="flex items-end justify-between mb-4 gap-4">
         <div>
@@ -124,7 +125,7 @@ export default function MovieRail({
       >
         {isLoading
           ? Array.from({ length: 8 }).map((_, i) => (
-              <div key={`${id}-skel-${i}`} className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px]">
+              <div key={`${id}-skel-${i}`} className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px] xl:w-[220px]">
                 <MovieCard isLoading />
               </div>
             ))
@@ -132,7 +133,7 @@ export default function MovieRail({
               <div
                 key={`${id}-${movie.id}`}
                 role="listitem"
-                className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px]"
+                className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px] xl:w-[220px]"
               >
                 <MovieCard
                   movie={movie}

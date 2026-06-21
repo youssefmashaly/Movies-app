@@ -22,7 +22,7 @@ import AuthModal from "./components/AuthModal";
 // Icons
 import {
   Star, Film, Bookmark, SlidersHorizontal, Eye, HelpCircle, ArrowRight,
-  TrendingUp, Flame, CalendarClock, Compass, PlayCircle
+  TrendingUp, Flame, CalendarClock, Compass, PlayCircle, Gem, X as XIcon
 } from "lucide-react";
 
 export default function App() {
@@ -43,7 +43,13 @@ export default function App() {
 
   // Filter state
   const [selectedGenre, setSelectedGenre] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<string>("popularity"); // popularity, releaseDate
+  const [sortBy, setSortBy] = useState<string>("popularity"); // popularity, releaseDate, rating, alphabetical
+  const [minRating, setMinRating] = useState<number>(0); // 0 = Any
+  const [selectedYear, setSelectedYear] = useState<string>("All");
+
+  // Watchlist browsing state
+  const [watchlistSortBy, setWatchlistSortBy] = useState<string>("dateAdded");
+  const [watchlistGenreFilter, setWatchlistGenreFilter] = useState<string>("All");
 
   // Watchlist state
   const [watchlistMovies, setWatchlistMovies] = useState<Movie[]>([]);
@@ -90,7 +96,7 @@ export default function App() {
   useEffect(() => {
     if (!searchQuery.trim()) {
       // Revert to current standard list based on sorting
-      setMovies(sortBy === "popularity" ? trendingMovies : latestMovies);
+      setMovies(sortBy === "releaseDate" ? latestMovies : trendingMovies);
       setSearchLoading(false);
       return;
     }
@@ -116,7 +122,7 @@ export default function App() {
   // 4. Update movies list when SortBy swaps
   useEffect(() => {
     if (searchQuery.trim()) return; // Keep search results if search is active
-    setMovies(sortBy === "popularity" ? trendingMovies : latestMovies);
+    setMovies(sortBy === "releaseDate" ? latestMovies : trendingMovies);
   }, [sortBy, trendingMovies, latestMovies, searchQuery]);
 
   // 5. Watchlist Real-time syncing from Firestore
@@ -141,9 +147,10 @@ export default function App() {
           releaseDate: d.releaseDate,
           voteAverage: d.voteAverage,
           voteCount: 0,
-          genres: [],
+          genres: d.genres || [],
           overview: "",
-          backdropPath: d.posterPath || ""
+          backdropPath: d.posterPath || "",
+          addedAt: d.addedAt?.toMillis ? d.addedAt.toMillis() : Date.now()
         });
       });
       setWatchlistMovies(list);
@@ -178,6 +185,7 @@ export default function App() {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
+          genres: movie.genres || [],
           userId: user.uid,
           addedAt: serverTimestamp() || Date.now()
         });
@@ -216,11 +224,100 @@ export default function App() {
       .slice(4, 16);
   }, [trendingMovies, latestMovies, watchlistMovies, watchlistIds]);
 
-  // Filter movies by Selected Genre from explore view
-  const filteredMovies = movies.filter((m) => {
-    if (selectedGenre === "All") return true;
-    return m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase());
-  });
+  // Combined, de-duplicated pool used for genre sections / year options / hidden gems
+  // (purely client-side reuse of data we already fetched — no extra API calls)
+  const combinedMoviePool = useMemo(() => {
+    const map = new Map<string, Movie>();
+    [...trendingMovies, ...latestMovies].forEach((m) => map.set(m.id, m));
+    return Array.from(map.values());
+  }, [trendingMovies, latestMovies]);
+
+  // Dynamic "Browse by Genre" rows: only genres with enough titles to feel like
+  // a real row, capped so the homepage doesn't sprawl forever.
+  const genreSections = useMemo(() => {
+    return ALL_GENRES.filter((g) => g !== "All")
+      .map((g) => ({
+        genre: g,
+        movies: combinedMoviePool.filter((m) => m.genres?.some((mg) => mg.toLowerCase() === g.toLowerCase()))
+      }))
+      .filter((section) => section.movies.length >= 4)
+      .slice(0, 6);
+  }, [combinedMoviePool]);
+
+  // Years actually present in the fetched data, for the release-year filter
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    combinedMoviePool.forEach((m) => {
+      if (m.releaseDate) years.add(m.releaseDate.split("-")[0]);
+    });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [combinedMoviePool]);
+
+  // "Hidden Gems" recommendation row: high rating, lower vote count — curated
+  // entirely from data already on hand, no new endpoint required.
+  const hiddenGemMovies = useMemo(() => {
+    if (combinedMoviePool.length === 0) return [];
+    const sortedByVotes = [...combinedMoviePool].sort((a, b) => a.voteCount - b.voteCount);
+    const medianVoteCount = sortedByVotes[Math.floor(sortedByVotes.length / 2)]?.voteCount ?? 0;
+    return combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.5 && m.voteCount > 0 && m.voteCount <= medianVoteCount)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  // Filter (genre + rating + year) and sort the active list — works the same
+  // whether "movies" currently holds the trending/latest pool or search results,
+  // so filters and search naturally combine.
+  const filteredMovies = useMemo(() => {
+    let result = movies.filter((m) => {
+      if (selectedGenre !== "All" && !m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase())) return false;
+      if (minRating > 0 && m.voteAverage < minRating) return false;
+      if (selectedYear !== "All" && m.releaseDate?.split("-")[0] !== selectedYear) return false;
+      return true;
+    });
+
+    if (sortBy === "rating") {
+      result = [...result].sort((a, b) => b.voteAverage - a.voteAverage);
+    } else if (sortBy === "alphabetical") {
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "releaseDate") {
+      result = [...result].sort((a, b) => (b.releaseDate || "").localeCompare(a.releaseDate || ""));
+    }
+    // "popularity" intentionally left in the order the backend already returned
+
+    return result;
+  }, [movies, selectedGenre, minRating, selectedYear, sortBy]);
+
+  const activeFilterCount = [selectedGenre !== "All", minRating > 0, selectedYear !== "All"].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setSelectedGenre("All");
+    setMinRating(0);
+    setSelectedYear("All");
+    setSearchQuery("");
+  };
+
+  // Genres actually present in the user's saved list, for the watchlist genre filter
+  const watchlistGenresAvailable = useMemo(() => {
+    const set = new Set<string>();
+    watchlistMovies.forEach((m) => m.genres?.forEach((g) => set.add(g)));
+    return Array.from(set).sort();
+  }, [watchlistMovies]);
+
+  // Sorted + filtered view of the watchlist (separate from the raw synced list,
+  // which is still used for the "is this saved" lookups and the true empty state)
+  const visibleWatchlistMovies = useMemo(() => {
+    let list = watchlistMovies;
+    if (watchlistGenreFilter !== "All") {
+      list = list.filter((m) => m.genres?.some((g) => g.toLowerCase() === watchlistGenreFilter.toLowerCase()));
+    }
+    const sorted = [...list];
+    if (watchlistSortBy === "rating") sorted.sort((a, b) => b.voteAverage - a.voteAverage);
+    else if (watchlistSortBy === "alphabetical") sorted.sort((a, b) => a.title.localeCompare(b.title));
+    else if (watchlistSortBy === "releaseDate") sorted.sort((a, b) => (b.releaseDate || "").localeCompare(a.releaseDate || ""));
+    else sorted.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)); // dateAdded, newest first
+    return sorted;
+  }, [watchlistMovies, watchlistGenreFilter, watchlistSortBy]);
 
   // Featured billboard movie for top of home page
   const featuredMovie = trendingMovies[0];
@@ -292,7 +389,7 @@ export default function App() {
             >
               {/* Cinematic hero skeleton while the first fetch is in flight */}
               {!searchQuery && moviesLoading && !featuredMovie && (
-                <div className="max-w-7xl mx-auto px-6 mt-4">
+                <div className="max-w-[1600px] mx-auto px-6 mt-4">
                   <div className="skeleton-shimmer relative rounded-3xl border border-neutral-800 h-[380px] sm:h-[430px] md:h-[480px]" />
                 </div>
               )}
@@ -301,7 +398,7 @@ export default function App() {
               {!searchQuery && featuredMovie && (
                 <div
                   id="featured-board"
-                  className="max-w-7xl mx-auto px-6 mt-4"
+                  className="max-w-[1600px] mx-auto px-6 mt-4"
                 >
                   <div className="relative rounded-3xl overflow-hidden border border-neutral-800 bg-neutral-950 h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
                     <motion.img
@@ -452,11 +549,46 @@ export default function App() {
                     isSaved={(id) => watchlistIds.has(id)}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
+                  <MovieRail
+                    id="rail-hidden-gems"
+                    title="Hidden Gems"
+                    subtitle="Highly rated, lower profile picks"
+                    icon={Gem}
+                    accent="emerald"
+                    movies={hiddenGemMovies}
+                    isLoading={moviesLoading}
+                    onMovieClick={handleSelectMovie}
+                    isSaved={(id) => watchlistIds.has(id)}
+                    onToggleSave={handleQuickToggleWatchlist}
+                  />
+                </div>
+              )}
+
+              {/* Browse by Genre: dynamic rows generated from already-fetched data */}
+              {!searchQuery && genreSections.length > 0 && (
+                <div className="space-y-10">
+                  <div className="max-w-[1600px] mx-auto px-6">
+                    <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">Browse by Genre</h2>
+                  </div>
+                  {genreSections.map((section, idx) => (
+                    <MovieRail
+                      key={`genre-rail-${section.genre}`}
+                      id={`rail-genre-${section.genre.toLowerCase()}`}
+                      title={section.genre}
+                      icon={Film}
+                      accent={(["red", "amber", "teal", "indigo", "emerald"] as const)[idx % 5]}
+                      movies={section.movies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  ))}
                 </div>
               )}
 
               {/* Main explore browse grid with sort controls */}
-              <div className="max-w-7xl mx-auto px-6">
+              <div className="max-w-[1600px] mx-auto px-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-neutral-900 gap-4 text-left">
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2 uppercase text-neutral-400">
@@ -468,46 +600,81 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Sorting filters */}
-                  {!searchQuery && (
-                    <div className="flex items-center gap-2 self-start md:self-auto">
-                      <SlidersHorizontal className="h-4 w-4 text-neutral-500" aria-hidden="true" />
-                      <label htmlFor="main-movie-sorting" className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mr-2">Sort:</label>
-                      <select
-                        id="main-movie-sorting"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                  {/* Sort + Rating + Year filters — visible during search too, so filters and search combine */}
+                  <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+                    <SlidersHorizontal className="h-4 w-4 text-neutral-500" aria-hidden="true" />
+                    <label htmlFor="main-movie-sorting" className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mr-1">Sort:</label>
+                    <select
+                      id="main-movie-sorting"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                    >
+                      <option value="popularity">Trending Score</option>
+                      <option value="releaseDate">Release Date</option>
+                      <option value="rating">Rating</option>
+                      <option value="alphabetical">A-Z</option>
+                    </select>
+
+                    <label htmlFor="rating-filter" className="sr-only">Minimum rating</label>
+                    <select
+                      id="rating-filter"
+                      value={minRating}
+                      onChange={(e) => setMinRating(Number(e.target.value))}
+                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                    >
+                      <option value={0}>Any Rating</option>
+                      <option value={6}>6+ Rating</option>
+                      <option value={7}>7+ Rating</option>
+                      <option value={8}>8+ Rating</option>
+                      <option value={9}>9+ Rating</option>
+                    </select>
+
+                    <label htmlFor="year-filter" className="sr-only">Release year</label>
+                    <select
+                      id="year-filter"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                    >
+                      <option value="All">All Years</option>
+                      {availableYears.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+
+                    {activeFilterCount > 0 && (
+                      <button
+                        onClick={clearAllFilters}
+                        className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                       >
-                        <option value="popularity">Trending Score</option>
-                        <option value="releaseDate">Release Date</option>
-                      </select>
-                    </div>
-                  )}
+                        <XIcon className="h-3.5 w-3.5" />
+                        Clear {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Genre Tabs Filter (Horizontal scrolling pill row) */}
-                {!searchQuery && (
-                  <div role="group" aria-label="Filter by genre" className="flex items-center gap-2 overflow-x-auto py-6 pr-4 no-scrollbar scroll-smooth">
-                    {ALL_GENRES.map((g) => {
-                      const isSelected = selectedGenre === g;
-                      return (
-                        <button
-                          key={`genre-pill-${g}`}
-                          onClick={() => setSelectedGenre(g)}
-                          aria-pressed={isSelected}
-                          className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
-                            isSelected
-                              ? "bg-red-650 border-red-650 text-white shadow-lg shadow-red-950/20 font-extrabold"
-                              : "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
-                          }`}
-                        >
-                          {g}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                {/* Genre Tabs Filter (Horizontal scrolling pill row) — combines with search/rating/year */}
+                <div role="group" aria-label="Filter by genre" className="flex items-center gap-2 overflow-x-auto py-6 pr-4 no-scrollbar scroll-smooth">
+                  {ALL_GENRES.map((g) => {
+                    const isSelected = selectedGenre === g;
+                    return (
+                      <button
+                        key={`genre-pill-${g}`}
+                        onClick={() => setSelectedGenre(g)}
+                        aria-pressed={isSelected}
+                        className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
+                          isSelected
+                            ? "bg-red-650 border-red-650 text-white shadow-lg shadow-red-950/20 font-extrabold"
+                            : "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
 
                 {/* Skeletons or Empty checks or Main Grid */}
                 {moviesLoading || searchLoading ? (
@@ -523,24 +690,27 @@ export default function App() {
                       {searchQuery ? `No results for "${searchQuery}"` : "No matching films found"}
                     </h3>
                     <p className="text-xs text-neutral-500 mt-2 max-w-sm mx-auto leading-relaxed">
-                      {searchQuery
+                      {searchQuery && activeFilterCount > 0
+                        ? "Your search and active filters don't overlap. Try loosening a filter."
+                        : searchQuery
                         ? "Try a different title, actor, or genre keyword."
-                        : "Try another genre, or select \"All\" to see every blockbuster."}
+                        : "Try another genre, rating, or year, or reset every filter."}
                     </p>
                     <div className="mt-5 flex items-center justify-center gap-3">
-                      {searchQuery ? (
+                      {searchQuery && (
                         <button
                           onClick={() => setSearchQuery("")}
                           className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Clear search
                         </button>
-                      ) : (
+                      )}
+                      {activeFilterCount > 0 && (
                         <button
-                          onClick={() => setSelectedGenre("All")}
+                          onClick={clearAllFilters}
                           className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
-                          Reset filters
+                          Reset all filters
                         </button>
                       )}
                     </div>
@@ -568,16 +738,52 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="max-w-7xl mx-auto px-6 text-left"
+              className="max-w-[1600px] mx-auto px-6 text-left"
             >
-              <div className="mb-8 pb-5 border-b border-neutral-900">
-                <h1 className="text-2xl font-extrabold text-white flex items-center gap-2 uppercase tracking-wide">
-                  <Bookmark className="h-6 w-6 text-red-500" />
-                  Your Personal Cine-Watchlist
-                </h1>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Keep tabs on premium releases you want to review and analyze. Synced securely to your account.
-                </p>
+              <div className="mb-8 pb-5 border-b border-neutral-900 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-white flex items-center gap-2 uppercase tracking-wide">
+                    <Bookmark className="h-6 w-6 text-red-500" />
+                    Your Personal Cine-Watchlist
+                  </h1>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Keep tabs on premium releases you want to review and analyze. Synced securely to your account.
+                  </p>
+                </div>
+
+                {!watchlistLoading && watchlistMovies.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label htmlFor="watchlist-sorting" className="sr-only">Sort watchlist</label>
+                    <select
+                      id="watchlist-sorting"
+                      value={watchlistSortBy}
+                      onChange={(e) => setWatchlistSortBy(e.target.value)}
+                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                    >
+                      <option value="dateAdded">Recently Added</option>
+                      <option value="rating">Rating</option>
+                      <option value="releaseDate">Release Date</option>
+                      <option value="alphabetical">A-Z</option>
+                    </select>
+
+                    {watchlistGenresAvailable.length > 0 && (
+                      <>
+                        <label htmlFor="watchlist-genre-filter" className="sr-only">Filter watchlist by genre</label>
+                        <select
+                          id="watchlist-genre-filter"
+                          value={watchlistGenreFilter}
+                          onChange={(e) => setWatchlistGenreFilter(e.target.value)}
+                          className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                        >
+                          <option value="All">All Genres</option>
+                          {watchlistGenresAvailable.map((g) => (
+                            <option key={g} value={g}>{g}</option>
+                          ))}
+                        </select>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               {watchlistLoading ? (
@@ -601,9 +807,23 @@ export default function App() {
                     Browse Explore
                   </button>
                 </div>
+              ) : visibleWatchlistMovies.length === 0 ? (
+                <div className="rounded-3xl border border-neutral-900 py-16 text-center mt-8 px-6">
+                  <HelpCircle className="h-10 w-10 text-neutral-600 mx-auto mb-3" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">No saved films in this genre</h3>
+                  <p className="text-xs text-neutral-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                    Switch the genre filter back to "All Genres" to see your full watchlist.
+                  </p>
+                  <button
+                    onClick={() => setWatchlistGenreFilter("All")}
+                    className="mt-5 rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    Reset genre filter
+                  </button>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 mt-8">
-                  {watchlistMovies.map((movie, idx) => (
+                  {visibleWatchlistMovies.map((movie, idx) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}

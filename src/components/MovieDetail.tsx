@@ -142,6 +142,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth }: MovieDetailPr
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
+          genres: movie.genres || [],
           userId: user.uid,
           addedAt: serverTimestamp() || Date.now()
         });

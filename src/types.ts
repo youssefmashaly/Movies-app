@@ -30,6 +30,7 @@ export interface Movie {
   cast?: CastMember[];
   director?: string;
   trailerUrl?: string;  // optional YouTube embed
+  addedAt?: number;     // populated only for watchlist items (ms timestamp)
 }
 
 export interface WatchlistItem {
