@@ -85,7 +85,7 @@ export default function App() {
       // Ensure a Supabase profile row exists for this user. Fire-and-forget:
       // failures are logged only and never affect the Firebase auth state above.
       if (u) {
-        syncProfileFromFirebaseUser({ uid: u.uid, email: u.email, displayName: u.displayName }).then((result) => {
+        syncProfileFromFirebaseUser({ uid: u.uid, email: u.email, displayName: u.displayName, photoURL: u.photoURL }).then((result) => {
           if (result.error) console.error("Supabase profile sync failed:", result.error);
         });
       }
