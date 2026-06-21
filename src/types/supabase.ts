@@ -13,9 +13,20 @@ export interface SupabaseProfile {
   updated_at: string;
 }
 
-export interface SupabaseWatchlistItem {
+// A watchlist "container" — a user can own more than one (the app currently
+// only surfaces a single default one in the UI, but the schema supports more).
+export interface SupabaseWatchlist {
   id: string;
   user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// A single movie entry inside a specific watchlist, linked via watchlist_id.
+export interface SupabaseWatchlistMovie {
+  id: string;
+  watchlist_id: string;
   movie_id: string;
   title: string;
   poster_path: string | null;

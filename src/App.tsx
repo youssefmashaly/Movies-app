@@ -7,10 +7,16 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
 import { syncProfileFromFirebaseUser } from "./services/supabase/profiles";
+import {
+  getOrCreateDefaultWatchlist,
+  listWatchlistMovies,
+  addMovieToWatchlist,
+  removeMovieFromWatchlist
+} from "./services/supabase/watchlists";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -70,6 +76,7 @@ export default function App() {
   // Watchlist state
   const [watchlistMovies, setWatchlistMovies] = useState<Movie[]>([]);
   const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
+  const [defaultWatchlistId, setDefaultWatchlistId] = useState<string | null>(null);
 
   // Personalization state (device-local via localStorage; mirrored to Firestore
   // for signed-in users so preferences follow the account, not just the browser)
@@ -155,42 +162,58 @@ export default function App() {
     setMovies(sortBy === "releaseDate" ? latestMovies : trendingMovies);
   }, [sortBy, trendingMovies, latestMovies, searchQuery]);
 
-  // 5. Watchlist Real-time syncing from Firestore
+  // 5. Watchlist syncing from Supabase (migrated from Firestore)
   useEffect(() => {
     if (!user) {
       setWatchlistMovies([]);
+      setDefaultWatchlistId(null);
       setWatchlistLoading(false);
       return;
     }
 
+    let cancelled = false;
     setWatchlistLoading(true);
-    const q = query(collection(db, "watchlist"), where("userId", "==", user.uid));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list: Movie[] = [];
-      snapshot.forEach((doc) => {
-        const d = doc.data();
-        list.push({
-          id: d.id,
-          title: d.title,
-          posterPath: d.posterPath,
-          releaseDate: d.releaseDate,
-          voteAverage: d.voteAverage,
-          voteCount: 0,
-          genres: d.genres || [],
-          overview: "",
-          backdropPath: d.posterPath || "",
-          addedAt: d.addedAt?.toMillis ? d.addedAt.toMillis() : Date.now()
-        });
-      });
-      setWatchlistMovies(list);
-      setWatchlistLoading(false);
-    }, (error) => {
-      console.error("Watchlist real-time listener error:", error);
-      setWatchlistLoading(false);
-    });
+    (async () => {
+      const watchlistResult = await getOrCreateDefaultWatchlist(user.uid);
+      if (cancelled) return;
+      if (watchlistResult.error || !watchlistResult.data) {
+        console.error("Failed to load watchlist:", watchlistResult.error);
+        setWatchlistMovies([]);
+        setWatchlistLoading(false);
+        return;
+      }
 
-    return () => unsubscribe();
+      setDefaultWatchlistId(watchlistResult.data.id);
+
+      const moviesResult = await listWatchlistMovies(watchlistResult.data.id);
+      if (cancelled) return;
+      if (moviesResult.error) {
+        console.error("Failed to load watchlist movies:", moviesResult.error);
+        setWatchlistMovies([]);
+        setWatchlistLoading(false);
+        return;
+      }
+
+      const mapped: Movie[] = (moviesResult.data || []).map((m) => ({
+        id: m.movie_id,
+        title: m.title,
+        posterPath: m.poster_path || "",
+        releaseDate: m.release_date || "",
+        voteAverage: m.vote_average || 0,
+        voteCount: 0,
+        genres: m.genres || [],
+        overview: "",
+        backdropPath: m.poster_path || "",
+        addedAt: new Date(m.added_at).getTime()
+      }));
+      setWatchlistMovies(mapped);
+      setWatchlistLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // 6. Persist personalization state locally so guests keep it across visits
@@ -237,25 +260,43 @@ export default function App() {
       setAuthOpen(true);
       return;
     }
-    const docId = `${user.uid}_${movie.id}`;
-    const docRef = doc(db, "watchlist", docId);
+
+    let watchlistId = defaultWatchlistId;
+    if (!watchlistId) {
+      const ensured = await getOrCreateDefaultWatchlist(user.uid);
+      if (ensured.error || !ensured.data) {
+        console.error("Quick watchlist toggle failed:", ensured.error);
+        return;
+      }
+      watchlistId = ensured.data.id;
+      setDefaultWatchlistId(watchlistId);
+    }
+
+    const alreadySaved = watchlistIds.has(movie.id);
+
+    // Optimistic update: Supabase isn't wired to a live listener here (see
+    // task 10 note), so the UI updates immediately rather than waiting on
+    // the round trip, then rolls back if the write actually fails.
+    setWatchlistMovies((prev) => (alreadySaved ? prev.filter((m) => m.id !== movie.id) : [movie, ...prev]));
+
     try {
-      if (watchlistIds.has(movie.id)) {
-        await deleteDoc(docRef);
+      if (alreadySaved) {
+        const result = await removeMovieFromWatchlist(watchlistId, movie.id);
+        if (result.error) throw new Error(result.error);
       } else {
-        await setDoc(docRef, {
-          id: movie.id,
+        const result = await addMovieToWatchlist(watchlistId, {
+          movie_id: movie.id,
           title: movie.title,
-          posterPath: movie.posterPath,
-          releaseDate: movie.releaseDate,
-          voteAverage: movie.voteAverage,
-          genres: movie.genres || [],
-          userId: user.uid,
-          addedAt: serverTimestamp() || Date.now()
+          poster_path: movie.posterPath,
+          release_date: movie.releaseDate,
+          vote_average: movie.voteAverage,
+          genres: movie.genres || []
         });
+        if (result.error) throw new Error(result.error);
       }
     } catch (err) {
       console.error("Quick watchlist toggle failed:", err);
+      setWatchlistMovies((prev) => (alreadySaved ? [movie, ...prev] : prev.filter((m) => m.id !== movie.id)));
     }
   };
 

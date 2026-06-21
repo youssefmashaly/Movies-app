@@ -5,10 +5,6 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
-  doc,
-  setDoc,
-  deleteDoc,
-  getDoc,
   getDocs,
   addDoc,
   query,
@@ -60,12 +56,11 @@ interface MovieDetailProps {
   relatedPool?: Movie[];
   onSelectMovie?: (movie: Movie) => void;
   watchlistIds?: Set<string>;
-  onToggleSave?: (movie: Movie) => void;
+  onToggleSave?: (movie: Movie) => void | Promise<void>;
 }
 
 export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, onSelectMovie, watchlistIds, onToggleSave }: MovieDetailProps) {
   const [user, setUser] = useState(auth.currentUser);
-  const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
   const [posterError, setPosterError] = useState(false);
@@ -86,26 +81,6 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
     });
     return () => unsubscribe();
   }, []);
-
-  // Sync Watchlist state
-  useEffect(() => {
-    if (!user) {
-      setIsInWatchlist(false);
-      return;
-    }
-
-    const checkWatchlist = async () => {
-      try {
-        const docRef = doc(db, "watchlist", `${user.uid}_${movie.id}`);
-        const docSnap = await getDoc(docRef);
-        setIsInWatchlist(docSnap.exists());
-      } catch (err) {
-        console.error("Error checking watchlist:", err);
-      }
-    };
-
-    checkWatchlist();
-  }, [user, movie.id]);
 
   // Sync / Listen to Reviews in Real-Time
   useEffect(() => {
@@ -157,34 +132,18 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
     return () => unsubscribe();
   }, [movie.id]);
 
-  // Toggle watchlist
+  // Toggle watchlist — delegates to the parent's handler (Supabase-backed),
+  // so this page and the rest of the app always read/write the same source.
   const handleToggleWatchlist = async () => {
     if (!user) {
       onOpenAuth();
       return;
     }
+    if (!onToggleSave) return;
 
     setWatchlistLoading(true);
-    const docId = `${user.uid}_${movie.id}`;
-    const docRef = doc(db, "watchlist", docId);
-
     try {
-      if (isInWatchlist) {
-        await deleteDoc(docRef);
-        setIsInWatchlist(false);
-      } else {
-        await setDoc(docRef, {
-          id: movie.id,
-          title: movie.title,
-          posterPath: movie.posterPath,
-          releaseDate: movie.releaseDate,
-          voteAverage: movie.voteAverage,
-          genres: movie.genres || [],
-          userId: user.uid,
-          addedAt: serverTimestamp() || Date.now()
-        });
-        setIsInWatchlist(true);
-      }
+      await onToggleSave(movie);
     } catch (err) {
       console.error("Error updating watchlist:", err);
     } finally {
@@ -245,6 +204,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   const formattedRuntime = useMemo(() => formatRuntime(movie.runtime), [movie.runtime]);
   const hasOverview = !!movie.overview && movie.overview.trim().length > 0;
   const isLongOverview = hasOverview && movie.overview.length > 280;
+  const isInWatchlist = watchlistIds?.has(movie.id) ?? false;
 
   return (
     <motion.div
