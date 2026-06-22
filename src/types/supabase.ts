@@ -69,6 +69,15 @@ export interface SupabaseReview {
   updated_at: string;
 }
 
+// Returned by listMovieReviews — includes the reviewer's profile fields via
+// a PostgREST join so no second round-trip is needed.
+export interface SupabaseReviewWithProfile extends SupabaseReview {
+  profiles: {
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
 // Every service function resolves to this shape and never throws, so
 // callers can handle failures without try/catch at the call site.
 export interface SupabaseResult<T> {

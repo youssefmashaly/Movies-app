@@ -10,6 +10,8 @@ export interface Review {
   movieId: string;
   userId: string;
   userEmail: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
   rating: number; // 1 to 10 scale
   comment: string;
   createdAt: number; // timestamp

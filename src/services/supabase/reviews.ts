@@ -1,18 +1,18 @@
 import { supabase, isSupabaseConfigured } from "../../supabase";
-import { SupabaseReview, SupabaseResult } from "../../types/supabase";
+import { SupabaseReview, SupabaseReviewWithProfile, SupabaseResult } from "../../types/supabase";
 
 const TABLE = "reviews";
 
-export async function listMovieReviews(movieId: string): Promise<SupabaseResult<SupabaseReview[]>> {
+export async function listMovieReviews(movieId: string): Promise<SupabaseResult<SupabaseReviewWithProfile[]>> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   try {
     const { data, error } = await supabase
       .from(TABLE)
-      .select("*")
+      .select("*, profiles(display_name, avatar_url)")
       .eq("movie_id", movieId)
       .order("created_at", { ascending: false });
     if (error) return { data: null, error: error.message };
-    return { data: (data as SupabaseReview[]) ?? [], error: null };
+    return { data: (data as SupabaseReviewWithProfile[]) ?? [], error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Failed to fetch reviews." };
   }

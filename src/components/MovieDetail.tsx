@@ -5,7 +5,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { 
   ArrowLeft, Star, Clock, Calendar, Film, Bookmark, BookmarkCheck,
-  User, MessageSquare, Send, Film as PlayIcon, Sparkles, CheckCircle2, Info, Compass, Pencil, Trash2
+  MessageSquare, Send, Film as PlayIcon, Sparkles, CheckCircle2, Info, Compass, Pencil, Trash2
 } from "lucide-react";
 import MovieRail from "./MovieRail";
 import { listMovieReviews, getUserReview, createReview, updateReview, deleteReview } from "../services/supabase/reviews";
@@ -92,7 +92,9 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
         id: r.id,
         movieId: r.movie_id,
         userId: r.user_id,
-        userEmail: r.user_id, // display name not stored; use uid as fallback
+        userEmail: r.profiles?.display_name || r.user_id,
+        displayName: r.profiles?.display_name ?? null,
+        avatarUrl: r.profiles?.avatar_url ?? null,
         rating: r.rating ?? 0,
         comment: r.comment,
         createdAt: new Date(r.created_at).getTime()
@@ -181,6 +183,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             movieId: movie.id,
             userId: user.uid,
             userEmail: user.displayName || user.email || user.uid,
+            displayName: user.displayName ?? null,
+            avatarUrl: user.photoURL ?? null,
             rating: newRating,
             comment: newComment,
             createdAt: Date.now()
@@ -625,53 +629,107 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               )}
             </div>
 
-            {/* Displaying existing user reviews */}
+            {/* Community Reviews Feed */}
             <div className="space-y-4">
-              <h3 className="text-base font-bold text-white uppercase tracking-wider text-neutral-400 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-neutral-500" />
-                Latest critiques ({reviews.length})
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-white uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-neutral-500" />
+                  Community Reviews
+                </h3>
+                {reviews.length > 0 && (
+                  <span className="text-xs font-bold text-neutral-400 bg-neutral-800 border border-neutral-700 px-2.5 py-1 rounded-full">
+                    {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                  </span>
+                )}
+              </div>
 
               {reviewsLoading ? (
                 <div className="space-y-3">
-                  <div className="h-16 w-full rounded-xl bg-neutral-900/50 animate-pulse" />
-                  <div className="h-16 w-full rounded-xl bg-neutral-900/50 animate-pulse" />
-                </div>
-              ) : reviews.length === 0 ? (
-                <div className="rounded-xl bg-neutral-950 px-4 py-6 text-center border border-neutral-900">
-                  <p className="text-xs text-neutral-400">
-                    No critiques yet. Star this film first!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
-                  {reviews.map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="rounded-xl border border-neutral-900 bg-neutral-950 p-4 space-y-2 text-sm text-left"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="rounded-full bg-neutral-800 p-1 text-neutral-400">
-                            <User className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="font-semibold text-xs text-neutral-300 truncate max-w-[120px]">
-                            {rev.userEmail}
-                          </span>
+                  {[1, 2].map((i) => (
+                    <div key={i} className="rounded-xl border border-neutral-900 bg-neutral-950 p-4 space-y-3 animate-pulse">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-neutral-800 shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-2.5 w-24 rounded bg-neutral-800" />
+                          <div className="h-2 w-16 rounded bg-neutral-800/60" />
                         </div>
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/5">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          {rev.rating}/10
-                        </span>
+                        <div className="h-5 w-10 rounded bg-neutral-800" />
                       </div>
-                      <p className="text-xs text-neutral-400 break-words leading-relaxed">
-                        {rev.comment}
-                      </p>
-                      <div className="text-[10px] text-neutral-600 text-right">
-                        {new Date(rev.createdAt).toLocaleDateString()}
+                      <div className="space-y-1">
+                        <div className="h-2 w-full rounded bg-neutral-800/60" />
+                        <div className="h-2 w-4/5 rounded bg-neutral-800/40" />
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-neutral-800 px-4 py-8 text-center space-y-2">
+                  <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto" />
+                  <p className="text-sm font-semibold text-neutral-500">No reviews yet</p>
+                  <p className="text-xs text-neutral-600">
+                    {user ? "Be the first to review this film." : "Sign in to leave the first review."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                  {reviews.map((rev) => {
+                    const isOwn = rev.userId === user?.uid;
+                    const initials = (rev.displayName || rev.userEmail || "?")
+                      .split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase();
+                    return (
+                      <div
+                        key={rev.id}
+                        className={`rounded-xl border p-4 space-y-3 text-sm text-left transition-colors ${
+                          isOwn
+                            ? "border-red-500/20 bg-red-500/5"
+                            : "border-neutral-900 bg-neutral-950"
+                        }`}
+                      >
+                        {/* Reviewer row */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {/* Avatar */}
+                            {rev.avatarUrl ? (
+                              <img
+                                src={rev.avatarUrl}
+                                alt={rev.displayName || "Reviewer"}
+                                referrerPolicy="no-referrer"
+                                className="h-8 w-8 rounded-full object-cover shrink-0 border border-neutral-700"
+                              />
+                            ) : (
+                              <div className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold bg-neutral-800 border border-neutral-700 text-neutral-300">
+                                {initials}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-xs text-neutral-200 truncate max-w-[140px]">
+                                  {rev.displayName || "Anonymous"}
+                                </span>
+                                {isOwn && (
+                                  <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded-full">
+                                    You
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-neutral-600 mt-0.5">
+                                {new Date(rev.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Rating badge */}
+                          <span className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/10">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {rev.rating}/10
+                          </span>
+                        </div>
+                        {/* Review text */}
+                        <p className="text-xs text-neutral-400 break-words leading-relaxed">
+                          {rev.comment}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
