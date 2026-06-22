@@ -7,10 +7,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+// firebase/firestore: no active writes remain after preferences moved to Supabase
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
-import { syncProfileFromFirebaseUser } from "./services/supabase/profiles";
+import { syncProfileFromFirebaseUser, saveFavoriteGenres, getProfileWithGenres } from "./services/supabase/profiles";
 import {
   getOrCreateDefaultWatchlist,
   listWatchlistMovies,
@@ -229,24 +229,26 @@ export default function App() {
     localStorage.setItem(ONBOARDING_DISMISSED_KEY, JSON.stringify(onboardingDismissed));
   }, [onboardingDismissed]);
 
-  // 7. On sign-in, prefer preferences already saved to the account; if none
-  // exist yet, push whatever was picked locally as a guest so it isn't lost.
+  // 7. On sign-in, hydrate favourite genres from Supabase profiles.favorite_genres.
+  // If the account has saved genres, they win over whatever is in localStorage
+  // (account follows the user across devices). If the account has none but the
+  // guest picked some locally, push them up so they aren't lost.
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
-        const prefRef = doc(db, "preferences", user.uid);
-        const snap = await getDoc(prefRef);
-        if (snap.exists() && Array.isArray(snap.data().favoriteGenres)) {
-          setFavoriteGenres(snap.data().favoriteGenres);
+        const result = await getProfileWithGenres(user.uid);
+        if (result.error) { console.error("Failed to sync genre preferences:", result.error); return; }
+        const saved = result.data?.favorite_genres ?? [];
+        if (saved.length > 0) {
+          setFavoriteGenres(saved);
         } else if (favoriteGenres.length > 0) {
-          await setDoc(prefRef, { favoriteGenres, userId: user.uid }, { merge: true });
+          await saveFavoriteGenres(user.uid, favoriteGenres);
         }
       } catch (err) {
         console.error("Failed to sync genre preferences:", err);
       }
     })();
-    // Intentionally only re-runs when the signed-in user changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -309,7 +311,8 @@ export default function App() {
     setFavoriteGenres(updated);
     if (user) {
       try {
-        await setDoc(doc(db, "preferences", user.uid), { favoriteGenres: updated, userId: user.uid }, { merge: true });
+        const result = await saveFavoriteGenres(user.uid, updated);
+        if (result.error) console.error("Failed to save genre preference:", result.error);
       } catch (err) {
         console.error("Failed to save genre preference:", err);
       }

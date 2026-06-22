@@ -61,6 +61,20 @@ export async function updateProfile(
 // both attempt an insert, racing each other. A single upsert with
 // ON CONFLICT closes that race in one round trip — Postgres serializes it,
 // so a duplicate row is never possible.
+export async function saveFavoriteGenres(userId: string, genres: string[]): Promise<SupabaseResult<null>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { error } = await supabase
+      .from(TABLE)
+      .update({ favorite_genres: genres, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+    if (error) return { data: null, error: error.message };
+    return { data: null, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to save favorite genres." };
+  }
+}
+
 export async function upsertProfile(
   profile: Pick<SupabaseProfile, "id" | "email" | "display_name" | "avatar_url">
 ): Promise<SupabaseResult<SupabaseProfile>> {
@@ -110,4 +124,21 @@ export async function syncProfileFromFirebaseUser(firebaseUser: {
     display_name: firebaseUser.displayName,
     avatar_url: firebaseUser.photoURL
   });
+}
+
+// Reads the full profile back after upsert so callers can hydrate
+// favourite_genres without a second round trip.
+export async function getProfileWithGenres(userId: string): Promise<SupabaseResult<SupabaseProfile & { favorite_genres: string[] }>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("id, display_name, avatar_url, email, favorite_genres, created_at, updated_at")
+      .eq("id", userId)
+      .maybeSingle();
+    if (error) return { data: null, error: error.message };
+    return { data: data as (SupabaseProfile & { favorite_genres: string[] }) | null, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch profile." };
+  }
 }
