@@ -18,16 +18,57 @@ export async function listMovieReviews(movieId: string): Promise<SupabaseResult<
   }
 }
 
+export async function getUserReview(userId: string, movieId: string): Promise<SupabaseResult<SupabaseReview>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("user_id", userId)
+      .eq("movie_id", movieId)
+      .maybeSingle();
+    if (error) return { data: null, error: error.message };
+    return { data: data as SupabaseReview | null, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch review." };
+  }
+}
+
 export async function createReview(
-  review: Omit<SupabaseReview, "id" | "created_at" | "updated_at">
+  review: Pick<SupabaseReview, "user_id" | "movie_id" | "rating" | "comment"> & { movie_title: string }
 ): Promise<SupabaseResult<SupabaseReview>> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   try {
-    const { data, error } = await supabase.from(TABLE).insert(review).select().single();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .insert({ ...review, movie_title: review.movie_title })
+      .select()
+      .single();
     if (error) return { data: null, error: error.message };
     return { data: data as SupabaseReview, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Failed to create review." };
+  }
+}
+
+export async function updateReview(
+  reviewId: string,
+  userId: string,
+  updates: Pick<SupabaseReview, "rating" | "comment">
+): Promise<SupabaseResult<SupabaseReview>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", reviewId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+    if (error) return { data: null, error: error.message };
+    return { data: data as SupabaseReview, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to update review." };
   }
 }
 

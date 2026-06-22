@@ -1,23 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Movie, Review } from "../types";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
-} from "firebase/firestore";
 import { 
   ArrowLeft, Star, Clock, Calendar, Film, Bookmark, BookmarkCheck,
-  User, MessageSquare, Send, Film as PlayIcon, Sparkles, CheckCircle2, Info, Compass
+  User, MessageSquare, Send, Film as PlayIcon, Sparkles, CheckCircle2, Info, Compass, Pencil, Trash2
 } from "lucide-react";
 import MovieRail from "./MovieRail";
+import { listMovieReviews, getUserReview, createReview, updateReview, deleteReview } from "../services/supabase/reviews";
+import { getUserRating, setUserRating, deleteRating } from "../services/supabase/ratings";
 
 // Pure helpers — cheap, no allocation beyond a single Date parse per call.
 function formatReleaseDate(dateStr?: string): string {
@@ -73,6 +65,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   const [newComment, setNewComment] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [userReviewId, setUserReviewId] = useState<string | null>(null);
+  const [isEditingReview, setIsEditingReview] = useState(false);
 
   // Auth sync
   useEffect(() => {
@@ -82,55 +76,56 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
     return () => unsubscribe();
   }, []);
 
-  // Sync / Listen to Reviews in Real-Time
+  // Load all reviews for this movie from Supabase
   useEffect(() => {
-    const q = query(
-      collection(db, "reviews"),
-      where("movieId", "==", movie.id),
-      orderBy("createdAt", "desc")
-    );
+    let cancelled = false;
+    setReviewsLoading(true);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loaded: Review[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        loaded.push({
-          id: doc.id,
-          movieId: data.movieId,
-          userId: data.userId,
-          userEmail: data.userEmail,
-          rating: data.rating,
-          comment: data.comment,
-          createdAt: data.createdAt?.seconds * 1000 || data.createdAt || Date.now(),
-        });
-      });
-      setReviews(loaded);
+    listMovieReviews(movie.id).then((result) => {
+      if (cancelled) return;
+      if (result.error) {
+        console.error("Failed to load reviews:", result.error);
+        setReviewsLoading(false);
+        return;
+      }
+      const mapped: Review[] = (result.data ?? []).map((r) => ({
+        id: r.id,
+        movieId: r.movie_id,
+        userId: r.user_id,
+        userEmail: r.user_id, // display name not stored; use uid as fallback
+        rating: r.rating ?? 0,
+        comment: r.comment,
+        createdAt: new Date(r.created_at).getTime()
+      }));
+      setReviews(mapped);
       setReviewsLoading(false);
-    }, (error) => {
-      console.error("Reviews real-time listen failed:", error);
-      // Fallback: simple getDocs
-      getDocs(query(collection(db, "reviews"), where("movieId", "==", movie.id)))
-        .then((snapshot) => {
-          const loaded: Review[] = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            loaded.push({
-              id: doc.id,
-              movieId: data.movieId,
-              userId: data.userId,
-              userEmail: data.userEmail,
-              rating: data.rating,
-              comment: data.comment,
-              createdAt: data.createdAt?.seconds * 1000 || Date.now()
-            });
-          });
-          setReviews(loaded);
-          setReviewsLoading(false);
-        });
     });
 
-    return () => unsubscribe();
+    return () => { cancelled = true; };
   }, [movie.id]);
+
+  // Load current user's own review so form pre-fills for editing
+  useEffect(() => {
+    if (!user) { setUserReviewId(null); return; }
+    let cancelled = false;
+
+    getUserReview(user.uid, movie.id).then((result) => {
+      if (cancelled || result.error) return;
+      if (result.data) {
+        setUserReviewId(result.data.id);
+        setNewRating(result.data.rating ?? 10);
+        setNewComment(result.data.comment);
+        setIsEditingReview(true);
+      } else {
+        setUserReviewId(null);
+        setNewRating(10);
+        setNewComment("");
+        setIsEditingReview(false);
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [user, movie.id]);
 
   // Toggle watchlist — delegates to the parent's handler (Supabase-backed),
   // so this page and the rest of the app always read/write the same source.
@@ -151,33 +146,72 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
     }
   };
 
-  // Submit review
+  // Create or update the current user's review
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      onOpenAuth();
-      return;
-    }
-
+    if (!user) { onOpenAuth(); return; }
     if (!newComment.trim()) return;
 
     setSubmitLoading(true);
     try {
-      await addDoc(collection(db, "reviews"), {
-        movieId: movie.id,
-        userId: user.uid,
-        userEmail: user.displayName || user.email || "Movie Critic",
-        rating: Number(newRating),
-        comment: newComment,
-        createdAt: serverTimestamp() || Date.now()
-      });
-
-      setNewComment("");
-      setNewRating(10);
+      if (isEditingReview && userReviewId) {
+        // Update existing
+        const result = await updateReview(userReviewId, user.uid, { rating: newRating, comment: newComment });
+        if (result.error) throw new Error(result.error);
+        setReviews((prev) => prev.map((r) =>
+          r.id === userReviewId ? { ...r, rating: newRating, comment: newComment } : r
+        ));
+      } else {
+        // Create new
+        const result = await createReview({
+          user_id: user.uid,
+          movie_id: movie.id,
+          movie_title: movie.title,
+          rating: newRating,
+          comment: newComment
+        });
+        if (result.error) throw new Error(result.error);
+        if (result.data) {
+          setUserReviewId(result.data.id);
+          setIsEditingReview(true);
+          // Also persist the standalone rating row
+          await setUserRating(user.uid, movie.id, movie.title, newRating);
+          const newReview: Review = {
+            id: result.data.id,
+            movieId: movie.id,
+            userId: user.uid,
+            userEmail: user.displayName || user.email || user.uid,
+            rating: newRating,
+            comment: newComment,
+            createdAt: Date.now()
+          };
+          setReviews((prev) => [newReview, ...prev]);
+        }
+      }
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (err) {
-      console.error("Error creating review:", err);
+      console.error("Error saving review:", err);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Delete the current user's own review
+  const handleDeleteReview = async () => {
+    if (!user || !userReviewId) return;
+    setSubmitLoading(true);
+    try {
+      const result = await deleteReview(userReviewId, user.uid);
+      if (result.error) throw new Error(result.error);
+      await deleteRating(user.uid, movie.id);
+      setReviews((prev) => prev.filter((r) => r.id !== userReviewId));
+      setUserReviewId(null);
+      setIsEditingReview(false);
+      setNewRating(10);
+      setNewComment("");
+    } catch (err) {
+      console.error("Error deleting review:", err);
     } finally {
       setSubmitLoading(false);
     }
@@ -489,12 +523,25 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
 
             {/* Write a review box */}
             <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 backdrop-blur-sm self-start">
-              <h3 className="text-lg font-bold text-white mb-1 tracking-tight flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-amber-400" />
-                Community Review
-              </h3>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  {isEditingReview ? "Your Review" : "Community Review"}
+                </h3>
+                {isEditingReview && userReviewId && (
+                  <button
+                    onClick={handleDeleteReview}
+                    disabled={submitLoading}
+                    aria-label="Delete your review"
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                )}
+              </div>
               <p className="text-xs text-neutral-400 mb-4">
-                Cast your vote and review this film!
+                {isEditingReview ? "Update or remove your published review." : "Cast your vote and review this film!"}
               </p>
 
               {user ? (
@@ -506,7 +553,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5 text-center text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      Review published in real-time!
+                      {isEditingReview ? "Review updated!" : "Review published!"}
                     </motion.div>
                   )}
 
@@ -549,6 +596,11 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   >
                     {submitLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : isEditingReview ? (
+                      <>
+                        <Pencil className="h-4 w-4" />
+                        Update Review
+                      </>
                     ) : (
                       <>
                         <Send className="h-4 w-4" />

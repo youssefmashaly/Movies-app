@@ -52,7 +52,8 @@ export interface SupabaseRating {
   id: string;
   user_id: string;
   movie_id: string;
-  rating: number; // 1-10 scale, matches the existing Firestore Review.rating convention
+  movie_title: string;
+  rating: number; // 1-10 scale
   created_at: string;
   updated_at: string;
 }
@@ -61,8 +62,9 @@ export interface SupabaseReview {
   id: string;
   user_id: string;
   movie_id: string;
+  movie_title: string;
   rating: number;
-  comment: string;
+  comment: string; // schema column is named "comment" after the migration rename
   created_at: string;
   updated_at: string;
 }
