@@ -1,21 +1,44 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Movie } from "../types";
-import { Sparkles, Send, Film, HelpCircle, Loader2, ArrowRight } from "lucide-react";
+import { Sparkles, Send, Film, HelpCircle, Loader2, ArrowRight, TrendingUp, Star } from "lucide-react";
 import { ALL_GENRES } from "../movies-data";
 import MovieCard from "./MovieCard";
+import { buildUserPreferenceProfile, profileToRequestPayload } from "../services/recommendations";
+import type { UserPreferenceProfile } from "../services/recommendations";
 
 interface AIMatchmakerProps {
   onSelectMovie: (movie: Movie) => void;
+  userId?: string;
+  watchlistId?: string | null;
+  favoriteGenres?: string[];
+  watchlistMovies?: Movie[];
+  recentlyViewedMovies?: Movie[];
 }
 
-export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
+const CONFIDENCE_STYLES: Record<string, { label: string; classes: string }> = {
+  high:   { label: "High match",   classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+  medium: { label: "Good match",   classes: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+  low:    { label: "General pick", classes: "text-neutral-400 bg-neutral-800 border-neutral-700" }
+};
+
+export default function AIMatchmaker({
+  onSelectMovie,
+  userId,
+  watchlistId = null,
+  favoriteGenres = [],
+  watchlistMovies = [],
+  recentlyViewedMovies = []
+}: AIMatchmakerProps) {
   const [mood, setMood] = useState("");
   const [genre, setGenre] = useState("All");
   const [loading, setLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState("");
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [error, setError] = useState("");
+  const [recommendationReason, setRecommendationReason] = useState("");
+  const [confidence, setConfidence] = useState<"high" | "medium" | "low">("low");
+  const [_profile, setProfile] = useState<UserPreferenceProfile | null>(null);
 
   const handleMatchmake = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,25 +48,33 @@ export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
     setError("");
     setRecommendations([]);
     setAiFeedback("");
+    setRecommendationReason("");
 
     try {
+      const builtProfile = userId
+        ? await buildUserPreferenceProfile(userId, watchlistId, favoriteGenres, watchlistMovies, recentlyViewedMovies)
+        : null;
+      setProfile(builtProfile);
+
+      const personalizationPayload = builtProfile ? profileToRequestPayload(builtProfile) : {};
+
       const response = await fetch("/api/movies/ai-recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mood: mood,
+          mood,
           genreFilter: genre,
-          userWatchlistTitles: [] // Optional watchlist expansion
+          ...personalizationPayload
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Matchmaking request failed.");
-      }
+      if (!response.ok) throw new Error("Matchmaking request failed.");
 
       const data = await response.json();
       setAiFeedback(data.aiFeedback || "");
       setRecommendations(data.recommendations || []);
+      setRecommendationReason(data.recommendationReason || builtProfile?.primaryReason || "");
+      setConfidence(data.confidence || builtProfile?.confidence || "low");
     } catch (err: any) {
       console.error(err);
       setError("The Oracle is currently busy gazing into the cosmos. Try again in a moment!");
@@ -145,6 +176,36 @@ export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
             </form>
           </div>
 
+          {/* Personalization signal panel */}
+          {(favoriteGenres.length > 0 || watchlistMovies.length > 0 || recentlyViewedMovies.length > 0) && (
+            <div className="rounded-2xl border border-indigo-500/10 bg-indigo-500/5 p-4 space-y-2">
+              <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5" />
+                Personalizing from your activity
+              </h3>
+              <ul className="space-y-1.5">
+                {favoriteGenres.length > 0 && (
+                  <li className="text-xs text-neutral-400 flex items-center gap-1.5">
+                    <Star className="h-3 w-3 text-indigo-400 shrink-0" />
+                    Favorite genres: <span className="text-white font-medium">{favoriteGenres.slice(0, 3).join(", ")}</span>
+                  </li>
+                )}
+                {watchlistMovies.length > 0 && (
+                  <li className="text-xs text-neutral-400 flex items-center gap-1.5">
+                    <Star className="h-3 w-3 text-indigo-400 shrink-0" />
+                    <span className="text-white font-medium">{watchlistMovies.length}</span> saved films
+                  </li>
+                )}
+                {recentlyViewedMovies.length > 0 && (
+                  <li className="text-xs text-neutral-400 flex items-center gap-1.5">
+                    <Star className="h-3 w-3 text-indigo-400 shrink-0" />
+                    <span className="text-white font-medium">{recentlyViewedMovies.length}</span> recently viewed
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
           {/* Quick preset suggestions */}
           <div className="rounded-2xl border border-neutral-900 bg-neutral-950/40 p-6">
             <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
@@ -219,10 +280,28 @@ export default function AIMatchmaker({ onSelectMovie }: AIMatchmakerProps) {
                 )}
 
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-widest text-neutral-400 flex items-center gap-2">
-                    <Film className="h-5 w-5 text-neutral-500" />
-                    Curated Cinema Set
-                  </h3>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                    <h3 className="text-lg font-bold text-white uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+                      <Film className="h-5 w-5 text-neutral-500" />
+                      Curated Cinema Set
+                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {recommendationReason && (
+                        <span className="text-xs font-semibold text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3" />
+                          {recommendationReason}
+                        </span>
+                      )}
+                      {(() => {
+                        const c = CONFIDENCE_STYLES[confidence] || CONFIDENCE_STYLES.low;
+                        return (
+                          <span className={`text-xs font-semibold border px-2.5 py-1 rounded-full ${c.classes}`}>
+                            {c.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {recommendations.map((rec) => (

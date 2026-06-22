@@ -209,7 +209,7 @@ Respond ONLY with a single JSON array object [ ... ]. Do not wrap it in markdown
   // Allows users with accounts to ask for a custom watchlist or curated recommendations based on mood!
   app.post("/api/movies/ai-recommend", async (req, res) => {
     try {
-      const { mood, genreFilter, userWatchlistTitles } = req.body;
+      const { mood, genreFilter, userWatchlistTitles, favoriteGenres, recentlyViewedTitles, highlyRatedTitles, primaryReason, confidence } = req.body;
       const ai = getAI();
       
       if (!ai) {
@@ -217,19 +217,37 @@ Respond ONLY with a single JSON array object [ ... ]. Do not wrap it in markdown
         const subset = PRESET_MOVIES.slice(0, 3);
         return res.json({
           recommendations: subset,
-          aiFeedback: "Here are some awesome cinematic blockbusters tailored for you. (Configure a Gemini API Key to unlock bespoke mood-based AI recommendations!)"
+          aiFeedback: "Here are some awesome cinematic blockbusters tailored for you. (Configure a Gemini API Key to unlock bespoke mood-based AI recommendations!)",
+          recommendationReason: "From our curated collection",
+          confidence: "low"
         });
       }
 
-      const prompt = `You are the CinemaOracle, a elite film critic and movie curator.
+      const hasPersonalization = (favoriteGenres?.length || recentlyViewedTitles?.length || highlyRatedTitles?.length || userWatchlistTitles?.length);
+
+      const personalizationBlock = hasPersonalization ? `
+User Preference Profile:
+- Favorite genres: [${(favoriteGenres || []).join(", ") || "not specified"}]
+- Watchlist (already saved, avoid duplicates): [${(userWatchlistTitles || []).join(", ") || "empty"}]
+- Recently viewed: [${(recentlyViewedTitles || []).join(", ") || "none"}]
+- Movies they rated 8+/10: [${(highlyRatedTitles || []).join(", ") || "none"}]
+- Primary personalization signal: "${primaryReason || "general preferences"}"
+- Profile confidence: ${confidence || "low"}` : `
+User Preference Profile: No personalization data available — recommend broadly acclaimed films.`;
+
+      const prompt = `You are the CinemaOracle, an elite film critic and movie curator.
 The user wants recommendations based on:
 - Current Mood/Context: "${mood || "surprise me"}"
 - Preferred Genre limit: "${genreFilter || "Any"}"
-- Current Watchlist they have already saved: [${(userWatchlistTitles || []).join(", ")}]
+${personalizationBlock}
 
-Recommend 4 specific real movies they would love. Provide:
-1. "aiFeedback": A beautiful, compelling, short (2-3 sentences), personalized critical write-up explaining why this curated selection matches their mood.
-2. "recommendations": An array of those 4 movies with full detail structures matching the Movie typescript interface:
+Recommend 4 specific real movies they would love. When personalization data is available, lean heavily on it — prefer movies matching their top genres and similar in tone to their highly-rated titles. Avoid titles already in their watchlist.
+
+Provide:
+1. "aiFeedback": A beautiful, compelling, short (2-3 sentences) personalized critical write-up explaining why this curated selection matches their mood AND their taste profile. Start with a phrase like "Because you enjoyed..." or "Given your love of..." when personalization data is available.
+2. "recommendationReason": A single short phrase (max 8 words) explaining the primary reason for these picks. Examples: "Because you like Sci-Fi & Action", "Similar to movies you rated highly", "Matches your preferred genres", "Based on your viewing history". Use the user's actual data where possible.
+3. "confidence": One of "high", "medium", or "low" reflecting how well the picks match the profile.
+4. "recommendations": An array of those 4 movies with full detail structures matching the Movie typescript interface:
 
 export interface CastMember {
   id: string;
@@ -256,6 +274,8 @@ export interface Movie {
 Format output as a single JSON object with fields:
 {
   "aiFeedback": "...",
+  "recommendationReason": "...",
+  "confidence": "...",
   "recommendations": [ ... ]
 }
 
@@ -283,7 +303,9 @@ Provide ONLY the raw JSON structure, with no markdown tick marks or wrapping.`;
       // Fallback
       res.json({
         recommendations: PRESET_MOVIES.slice(0, 3),
-        aiFeedback: "Here's a hand-picked, premium recommendation list from our master archives to match your mood!"
+        aiFeedback: "Here's a hand-picked, premium recommendation list from our master archives to match your mood!",
+        recommendationReason: "From our curated collection",
+        confidence: "low"
       });
     }
   });

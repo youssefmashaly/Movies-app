@@ -1135,7 +1135,14 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <AIMatchmaker onSelectMovie={handleSelectMovie} />
+              <AIMatchmaker
+                onSelectMovie={handleSelectMovie}
+                userId={user?.uid}
+                watchlistId={defaultWatchlistId}
+                favoriteGenres={favoriteGenres}
+                watchlistMovies={watchlistMovies}
+                recentlyViewedMovies={recentlyViewed}
+              />
             </motion.div>
           )}
         </AnimatePresence>
