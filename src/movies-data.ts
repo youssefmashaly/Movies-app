@@ -420,6 +420,786 @@ export const PRESET_MOVIES: Movie[] = [
       { id: "c194", name: "Maura Tierney", character: "Jo Carter", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
     ],
     trailerUrl: "https://www.youtube.com/embed/Lp_iqZMuCDk"
+  },
+
+  // ── ids 21–57 ─────────────────────────────────────────────────────────────
+
+  {
+    id: "21",
+    title: "The Dark Knight",
+    tagline: "Why so serious?",
+    overview: "Batman raises the stakes in his war on crime. With the help of Lieutenant Jim Gordon and District Attorney Harvey Dent, he sets out to dismantle the remaining criminal organizations that plague Gotham. But the emergence of a mysterious criminal mastermind known as the Joker throws the city into chaos.",
+    posterPath: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&q=80",
+    releaseDate: "2008-07-18",
+    voteAverage: 9.0,
+    voteCount: 32000,
+    runtime: 152,
+    genres: ["Action", "Crime", "Drama", "Thriller"],
+    director: "Christopher Nolan",
+    cast: [
+      { id: "c211", name: "Christian Bale", character: "Bruce Wayne / Batman", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c212", name: "Heath Ledger", character: "The Joker", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c213", name: "Aaron Eckhart", character: "Harvey Dent", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c214", name: "Maggie Gyllenhaal", character: "Rachel Dawes", profilePath: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/EXeTwQWrcwY"
+  },
+  {
+    id: "22",
+    title: "Parasite",
+    tagline: "Act like you own the place.",
+    overview: "All unemployed, Ki-taek's family takes a keen interest in the wealthy and glamorous Park family. After his son Ki-woo is recommended for a tutoring job, each member of Ki-taek's family infiltrates the household and plans to become permanent guests.",
+    posterPath: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1600&q=80",
+    releaseDate: "2019-05-30",
+    voteAverage: 8.5,
+    voteCount: 17000,
+    runtime: 132,
+    genres: ["Comedy", "Drama", "Thriller"],
+    director: "Bong Joon-ho",
+    cast: [
+      { id: "c221", name: "Song Kang-ho", character: "Ki-taek", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c222", name: "Lee Sun-kyun", character: "Park Dong-ik", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c223", name: "Cho Yeo-jeong", character: "Choi Yeon-gyo", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" },
+      { id: "c224", name: "Choi Woo-shik", character: "Ki-woo", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/5xH0HfJHsaY"
+  },
+  {
+    id: "23",
+    title: "Inception",
+    tagline: "Your mind is the scene of the crime.",
+    overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O., but his tragic past may doom the project and his team to disaster.",
+    posterPath: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=1600&q=80",
+    releaseDate: "2010-07-16",
+    voteAverage: 8.8,
+    voteCount: 35000,
+    runtime: 148,
+    genres: ["Sci-Fi", "Action", "Thriller"],
+    director: "Christopher Nolan",
+    cast: [
+      { id: "c231", name: "Leonardo DiCaprio", character: "Dom Cobb", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c232", name: "Joseph Gordon-Levitt", character: "Arthur", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c233", name: "Elliot Page", character: "Ariadne", profilePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80" },
+      { id: "c234", name: "Tom Hardy", character: "Eames", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/YoHD9XEInc0"
+  },
+  {
+    id: "24",
+    title: "The Shawshank Redemption",
+    tagline: "Fear can hold you prisoner. Hope can set you free.",
+    overview: "Framed in the 1940s for the double murder of his wife and her lover, upstanding banker Andy Dufresne begins a new life at the Shawshank State Penitentiary, where he puts his accounting skills to work for an amoral warden.",
+    posterPath: "https://images.unsplash.com/photo-1445711651178-14f6ff8a2044?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1520209759809-a9bcb6cb3241?w=1600&q=80",
+    releaseDate: "1994-09-23",
+    voteAverage: 9.3,
+    voteCount: 28000,
+    runtime: 142,
+    genres: ["Drama", "Crime"],
+    director: "Frank Darabont",
+    cast: [
+      { id: "c241", name: "Tim Robbins", character: "Andy Dufresne", profilePath: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&q=80" },
+      { id: "c242", name: "Morgan Freeman", character: "Ellis Boyd 'Red' Redding", profilePath: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=200&q=80" },
+      { id: "c243", name: "Bob Gunton", character: "Warden Norton", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c244", name: "William Sadler", character: "Heywood", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/6hB3S9bIaco"
+  },
+  {
+    id: "25",
+    title: "The Lion King",
+    tagline: "The king has returned.",
+    overview: "A young lion prince flees his kingdom after the murder of his father by his uncle Scar. Years later, with help from a meerkat, a warthog, and his childhood friend Nala, Simba returns to challenge his uncle for the throne.",
+    posterPath: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1504173010664-32509107de8f?w=1600&q=80",
+    releaseDate: "1994-06-24",
+    voteAverage: 8.5,
+    voteCount: 19000,
+    runtime: 88,
+    genres: ["Animation", "Family", "Drama"],
+    director: "Roger Allers, Rob Minkoff",
+    cast: [
+      { id: "c251", name: "Matthew Broderick", character: "Simba (voice)", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c252", name: "James Earl Jones", character: "Mufasa (voice)", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c253", name: "Jeremy Irons", character: "Scar (voice)", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c254", name: "Nathan Lane", character: "Timon (voice)", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/4sj1MT05lAA"
+  },
+  {
+    id: "26",
+    title: "Pulp Fiction",
+    tagline: "You won't know the facts until you've seen the fiction.",
+    overview: "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption in Los Angeles.",
+    posterPath: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=1600&q=80",
+    releaseDate: "1994-10-14",
+    voteAverage: 8.9,
+    voteCount: 26000,
+    runtime: 154,
+    genres: ["Crime", "Drama", "Thriller"],
+    director: "Quentin Tarantino",
+    cast: [
+      { id: "c261", name: "John Travolta", character: "Vincent Vega", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c262", name: "Samuel L. Jackson", character: "Jules Winnfield", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c263", name: "Uma Thurman", character: "Mia Wallace", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c264", name: "Bruce Willis", character: "Butch Coolidge", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/s7EdQ4FqbhY"
+  },
+  {
+    id: "27",
+    title: "Schindler's List",
+    tagline: "Whoever saves one life, saves the world entire.",
+    overview: "In German-occupied Poland during World War II, industrialist Oskar Schindler gradually becomes concerned for his Jewish workforce after witnessing their persecution by the Nazis.",
+    posterPath: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=80",
+    releaseDate: "1993-12-15",
+    voteAverage: 9.0,
+    voteCount: 15000,
+    runtime: 195,
+    genres: ["Drama", "History", "Biography"],
+    director: "Steven Spielberg",
+    cast: [
+      { id: "c271", name: "Liam Neeson", character: "Oskar Schindler", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c272", name: "Ben Kingsley", character: "Itzhak Stern", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c273", name: "Ralph Fiennes", character: "Amon Göth", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c274", name: "Caroline Goodall", character: "Emilie Schindler", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/gG22XNhtnoY"
+  },
+  {
+    id: "28",
+    title: "Forrest Gump",
+    tagline: "Life is like a box of chocolates.",
+    overview: "The history of the United States from the 1950s to the '70s unfolds from the perspective of an Alabama man with an IQ of 75, who yearns to be reunited with his childhood sweetheart.",
+    posterPath: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1499336315816-097655dcfbda?w=1600&q=80",
+    releaseDate: "1994-07-06",
+    voteAverage: 8.8,
+    voteCount: 25000,
+    runtime: 142,
+    genres: ["Drama", "Romance", "Comedy"],
+    director: "Robert Zemeckis",
+    cast: [
+      { id: "c281", name: "Tom Hanks", character: "Forrest Gump", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c282", name: "Robin Wright", character: "Jenny Curran", profilePath: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&q=80" },
+      { id: "c283", name: "Gary Sinise", character: "Lieutenant Dan Taylor", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c284", name: "Sally Field", character: "Mrs. Gump", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/bLvqoHBptjg"
+  },
+  {
+    id: "29",
+    title: "The Godfather",
+    tagline: "An offer you can't refuse.",
+    overview: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant youngest son. The transition triggers a war between all the Mafia families.",
+    posterPath: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600&q=80",
+    releaseDate: "1972-03-24",
+    voteAverage: 9.2,
+    voteCount: 20000,
+    runtime: 175,
+    genres: ["Crime", "Drama"],
+    director: "Francis Ford Coppola",
+    cast: [
+      { id: "c291", name: "Marlon Brando", character: "Don Vito Corleone", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c292", name: "Al Pacino", character: "Michael Corleone", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c293", name: "James Caan", character: "Sonny Corleone", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c294", name: "Diane Keaton", character: "Kay Adams", profilePath: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/sY1S34973zA"
+  },
+  {
+    id: "30",
+    title: "The Lord of the Rings: The Fellowship of the Ring",
+    tagline: "One ring to rule them all.",
+    overview: "A meek Hobbit and eight companions set out on a journey to destroy the powerful One Ring and save Middle-earth from the Dark Lord Sauron.",
+    posterPath: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1443890923422-7819ed4101c0?w=1600&q=80",
+    releaseDate: "2001-12-19",
+    voteAverage: 8.8,
+    voteCount: 30000,
+    runtime: 178,
+    genres: ["Adventure", "Fantasy", "Action"],
+    director: "Peter Jackson",
+    cast: [
+      { id: "c301", name: "Elijah Wood", character: "Frodo Baggins", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c302", name: "Ian McKellen", character: "Gandalf", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c303", name: "Viggo Mortensen", character: "Aragorn", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c304", name: "Cate Blanchett", character: "Galadriel", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/V75dMMIW2B4"
+  },
+  {
+    id: "31",
+    title: "Goodfellas",
+    tagline: "Three decades of the Mob.",
+    overview: "The story of Henry Hill and his life in the mob, covering his relationship with his wife Karen Hill and his mob partners Jimmy Conway and Tommy DeVito in the Italian-American crime syndicate.",
+    posterPath: "https://images.unsplash.com/photo-1566125882500-87e10f726cdc?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1534351590666-13e3e96b5702?w=1600&q=80",
+    releaseDate: "1990-09-19",
+    voteAverage: 8.7,
+    voteCount: 12000,
+    runtime: 146,
+    genres: ["Crime", "Drama", "Biography"],
+    director: "Martin Scorsese",
+    cast: [
+      { id: "c311", name: "Ray Liotta", character: "Henry Hill", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c312", name: "Robert De Niro", character: "James Conway", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c313", name: "Joe Pesci", character: "Tommy DeVito", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c314", name: "Lorraine Bracco", character: "Karen Hill", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/qo5jJpHtI1Y"
+  },
+  {
+    id: "32",
+    title: "Joker",
+    tagline: "Put on a happy face.",
+    overview: "In Gotham City, mentally troubled comedian Arthur Fleck is disregarded and mistreated by society. He then embarks on a downward spiral of revolution and bloody crime, becoming the criminal mastermind known as the Joker.",
+    posterPath: "https://images.unsplash.com/photo-1559583985-c80d8ad9b29f?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1573496799515-eebbb63814f2?w=1600&q=80",
+    releaseDate: "2019-10-04",
+    voteAverage: 8.4,
+    voteCount: 21000,
+    runtime: 122,
+    genres: ["Crime", "Drama", "Thriller"],
+    director: "Todd Phillips",
+    cast: [
+      { id: "c321", name: "Joaquin Phoenix", character: "Arthur Fleck / Joker", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c322", name: "Robert De Niro", character: "Murray Franklin", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c323", name: "Zazie Beetz", character: "Sophie Dumond", profilePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80" },
+      { id: "c324", name: "Frances Conroy", character: "Penny Fleck", profilePath: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/zAGVQLHvwOY"
+  },
+  {
+    id: "33",
+    title: "Avengers: Endgame",
+    tagline: "Whatever it takes.",
+    overview: "After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more in order to reverse Thanos' actions and restore balance to the universe.",
+    posterPath: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1600&q=80",
+    releaseDate: "2019-04-26",
+    voteAverage: 8.4,
+    voteCount: 29000,
+    runtime: 181,
+    genres: ["Action", "Adventure", "Sci-Fi"],
+    director: "Anthony Russo, Joe Russo",
+    cast: [
+      { id: "c331", name: "Robert Downey Jr.", character: "Tony Stark / Iron Man", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c332", name: "Chris Evans", character: "Steve Rogers / Captain America", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c333", name: "Scarlett Johansson", character: "Natasha Romanoff / Black Widow", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" },
+      { id: "c334", name: "Chris Hemsworth", character: "Thor Odinson", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/TcMBFSGVi1c"
+  },
+  {
+    id: "34",
+    title: "La La Land",
+    tagline: "Here's to the fools who dream.",
+    overview: "While navigating their careers in Los Angeles, a pianist and an actress fall in love while attempting to reconcile their aspirations for the future.",
+    posterPath: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1600&q=80",
+    releaseDate: "2016-12-09",
+    voteAverage: 8.0,
+    voteCount: 14000,
+    runtime: 128,
+    genres: ["Romance", "Drama", "Comedy"],
+    director: "Damien Chazelle",
+    cast: [
+      { id: "c341", name: "Ryan Gosling", character: "Sebastian Wilder", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c342", name: "Emma Stone", character: "Mia Dolan", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c343", name: "John Legend", character: "Keith", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c344", name: "Rosemarie DeWitt", character: "Laura", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8"
+  },
+  {
+    id: "35",
+    title: "Get Out",
+    tagline: "Just because you're invited doesn't mean you're welcome.",
+    overview: "A young African-American visits his white girlfriend's parents for the weekend, where his increasingly disturbing discoveries lead to a truth unimaginable.",
+    posterPath: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80",
+    releaseDate: "2017-02-24",
+    voteAverage: 7.7,
+    voteCount: 9800,
+    runtime: 104,
+    genres: ["Horror", "Mystery", "Thriller"],
+    director: "Jordan Peele",
+    cast: [
+      { id: "c351", name: "Daniel Kaluuya", character: "Chris Washington", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c352", name: "Allison Williams", character: "Rose Armitage", profilePath: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&q=80" },
+      { id: "c353", name: "Bradley Whitford", character: "Dean Armitage", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c354", name: "Catherine Keener", character: "Missy Armitage", profilePath: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/DzfpyUB60YY"
+  },
+  {
+    id: "36",
+    title: "Coco",
+    tagline: "The land of the dead has never felt so alive.",
+    overview: "Aspiring musician Miguel, confronted with his family's ancestral ban on music, enters the Land of the Dead to find his great-great-grandfather, a legendary singer.",
+    posterPath: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1600&q=80",
+    releaseDate: "2017-11-22",
+    voteAverage: 8.4,
+    voteCount: 11000,
+    runtime: 105,
+    genres: ["Animation", "Family", "Adventure"],
+    director: "Lee Unkrich, Adrian Molina",
+    cast: [
+      { id: "c361", name: "Anthony Gonzalez", character: "Miguel (voice)", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c362", name: "Gael García Bernal", character: "Héctor (voice)", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c363", name: "Benjamin Bratt", character: "Ernesto de la Cruz (voice)", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c364", name: "Alanna Ubach", character: "Mamá Imelda (voice)", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/Ga6RYejo6Hk"
+  },
+  {
+    id: "37",
+    title: "Mad Max: Fury Road",
+    tagline: "What a lovely day.",
+    overview: "In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search of her homeland with the aid of a group of female prisoners, a psychotic worshiper, and a drifter named Max.",
+    posterPath: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1600&q=80",
+    releaseDate: "2015-05-15",
+    voteAverage: 8.1,
+    voteCount: 13500,
+    runtime: 120,
+    genres: ["Action", "Adventure", "Sci-Fi"],
+    director: "George Miller",
+    cast: [
+      { id: "c371", name: "Tom Hardy", character: "Max Rockatansky", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c372", name: "Charlize Theron", character: "Imperator Furiosa", profilePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80" },
+      { id: "c373", name: "Nicholas Hoult", character: "Nux", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c374", name: "Hugh Keays-Byrne", character: "Immortan Joe", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/hEJnMQG9ev8"
+  },
+  {
+    id: "38",
+    title: "Knives Out",
+    tagline: "Hell of a mess.",
+    overview: "A detective investigates the death of a patriarch of an eccentric, combative family. When a will reading reveals he left everything to his nurse, all members become suspects.",
+    posterPath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80",
+    releaseDate: "2019-11-27",
+    voteAverage: 7.9,
+    voteCount: 10200,
+    runtime: 130,
+    genres: ["Mystery", "Comedy", "Crime", "Thriller"],
+    director: "Rian Johnson",
+    cast: [
+      { id: "c381", name: "Daniel Craig", character: "Benoit Blanc", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c382", name: "Ana de Armas", character: "Marta Cabrera", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c383", name: "Chris Evans", character: "Ransom Drysdale", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c384", name: "Jamie Lee Curtis", character: "Linda Drysdale", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/qGqiHJTsRkQ"
+  },
+  {
+    id: "39",
+    title: "Whiplash",
+    tagline: "The road to greatness can take you to the edge.",
+    overview: "A promising young drummer enrolls at a cut-throat music conservatory where his dreams of greatness are mentored by an instructor who will stop at nothing to realise a student's potential.",
+    posterPath: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1600&q=80",
+    releaseDate: "2014-10-10",
+    voteAverage: 8.5,
+    voteCount: 8900,
+    runtime: 107,
+    genres: ["Drama", "Biography"],
+    director: "Damien Chazelle",
+    cast: [
+      { id: "c391", name: "Miles Teller", character: "Andrew Neiman", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c392", name: "J.K. Simmons", character: "Terence Fletcher", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c393", name: "Melissa Benoist", character: "Nicole", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" },
+      { id: "c394", name: "Paul Reiser", character: "Jim Neiman", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/7d_jQycdQGo"
+  },
+  {
+    id: "40",
+    title: "The Social Network",
+    tagline: "You don't get to 500 million friends without making a few enemies.",
+    overview: "As Harvard student Mark Zuckerberg creates the social networking site that would become known as Facebook, he is sued by the twins who claimed he stole their idea and by the co-founder who was later squeezed out of the business.",
+    posterPath: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80",
+    releaseDate: "2010-10-01",
+    voteAverage: 7.8,
+    voteCount: 9500,
+    runtime: 120,
+    genres: ["Drama", "Biography"],
+    director: "David Fincher",
+    cast: [
+      { id: "c401", name: "Jesse Eisenberg", character: "Mark Zuckerberg", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c402", name: "Andrew Garfield", character: "Eduardo Saverin", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c403", name: "Justin Timberlake", character: "Sean Parker", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c404", name: "Rooney Mara", character: "Erica Albright", profilePath: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/lB95KLmpLR4"
+  },
+  {
+    id: "41",
+    title: "Hereditary",
+    tagline: "Every family tree hides a secret.",
+    overview: "When the matriarch of the Graham family passes away, her daughter's family begins to unravel cryptic and terrifying secrets about their ancestry. The more they discover, the more they find themselves trying to outrun the sinister fate they seem to have inherited.",
+    posterPath: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=1600&q=80",
+    releaseDate: "2018-06-08",
+    voteAverage: 7.3,
+    voteCount: 6200,
+    runtime: 127,
+    genres: ["Horror", "Drama", "Mystery"],
+    director: "Ari Aster",
+    cast: [
+      { id: "c411", name: "Toni Collette", character: "Annie Graham", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c412", name: "Alex Wolff", character: "Peter Graham", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c413", name: "Milly Shapiro", character: "Charlie Graham", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" },
+      { id: "c414", name: "Gabriel Byrne", character: "Steve Graham", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/V6wWKNij_1M"
+  },
+  {
+    id: "42",
+    title: "Spirited Away",
+    tagline: "The tunnel led Chihiro to a magical world.",
+    overview: "During her family's move to the suburbs, a sulky 10-year-old girl wanders into a world ruled by gods, witches, and spirits, and where humans are changed into beasts.",
+    posterPath: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1600&q=80",
+    releaseDate: "2003-03-28",
+    voteAverage: 9.0,
+    voteCount: 16000,
+    runtime: 125,
+    genres: ["Animation", "Family", "Fantasy", "Adventure"],
+    director: "Hayao Miyazaki",
+    cast: [
+      { id: "c421", name: "Daveigh Chase", character: "Chihiro Ogino (voice)", profilePath: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" },
+      { id: "c422", name: "Suzanne Pleshette", character: "Yubaba / Zeniba (voice)", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" },
+      { id: "c423", name: "Jason Marsden", character: "Haku (voice)", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c424", name: "Susan Egan", character: "Lin (voice)", profilePath: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/ByXuk9QqQkk"
+  },
+  {
+    id: "43",
+    title: "Arrival",
+    tagline: "Why are they here?",
+    overview: "A linguist works with the military to communicate with alien lifeforms after twelve mysterious spacecraft appear around the world.",
+    posterPath: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1600&q=80",
+    releaseDate: "2016-11-11",
+    voteAverage: 7.9,
+    voteCount: 8100,
+    runtime: 116,
+    genres: ["Sci-Fi", "Drama", "Mystery"],
+    director: "Denis Villeneuve",
+    cast: [
+      { id: "c431", name: "Amy Adams", character: "Louise Banks", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c432", name: "Jeremy Renner", character: "Ian Donnelly", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c433", name: "Forest Whitaker", character: "Colonel Weber", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c434", name: "Michael Stuhlbarg", character: "Agent Halpern", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/tFMo3UJ4B4g"
+  },
+  {
+    id: "44",
+    title: "The Witch",
+    tagline: "Evil takes many forms.",
+    overview: "A family in 1630s New England is torn apart by the forces of witchcraft, black magic, and possession after being exiled from their Puritan plantation.",
+    posterPath: "https://images.unsplash.com/photo-1515630278258-407f994de2cb?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1476842634003-7dcca8f832de?w=1600&q=80",
+    releaseDate: "2015-02-27",
+    voteAverage: 6.9,
+    voteCount: 4800,
+    runtime: 92,
+    genres: ["Horror", "Fantasy", "Mystery"],
+    director: "Robert Eggers",
+    cast: [
+      { id: "c441", name: "Anya Taylor-Joy", character: "Thomasin", profilePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80" },
+      { id: "c442", name: "Ralph Ineson", character: "William", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c443", name: "Kate Dickie", character: "Katherine", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" },
+      { id: "c444", name: "Harvey Scrimshaw", character: "Caleb", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/iQXmlf3Sefg"
+  },
+  {
+    id: "45",
+    title: "About Time",
+    tagline: "Live life. Love life.",
+    overview: "At the age of 21, Tim Lake discovers he can travel in time. The night after another unsatisfactory New Year's party, his father tells him the family secret: the men in their family can travel through time.",
+    posterPath: "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
+    releaseDate: "2013-11-08",
+    voteAverage: 7.8,
+    voteCount: 5900,
+    runtime: 123,
+    genres: ["Romance", "Comedy", "Drama"],
+    director: "Richard Curtis",
+    cast: [
+      { id: "c451", name: "Domhnall Gleeson", character: "Tim Lake", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c452", name: "Rachel McAdams", character: "Mary", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" },
+      { id: "c453", name: "Bill Nighy", character: "Dad", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c454", name: "Tom Hollander", character: "Harry", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/6mHPGAF5G6E"
+  },
+  {
+    id: "46",
+    title: "Toy Story",
+    tagline: "Hang on for the ride of your life.",
+    overview: "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.",
+    posterPath: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80",
+    releaseDate: "1995-11-22",
+    voteAverage: 8.3,
+    voteCount: 17500,
+    runtime: 81,
+    genres: ["Animation", "Comedy", "Family"],
+    director: "John Lasseter",
+    cast: [
+      { id: "c461", name: "Tom Hanks", character: "Woody (voice)", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c462", name: "Tim Allen", character: "Buzz Lightyear (voice)", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c463", name: "Don Rickles", character: "Mr. Potato Head (voice)", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c464", name: "Wallace Shawn", character: "Rex (voice)", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/v-PjgYDrg70"
+  },
+  {
+    id: "47",
+    title: "No Country for Old Men",
+    tagline: "There are no clean getaways.",
+    overview: "Violence and mayhem ensue after a hunter stumbles upon a drug deal gone wrong and finds two million dollars and a hoard of heroin.",
+    posterPath: "https://images.unsplash.com/photo-1504275107627-0c2ba7a43dba?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+    releaseDate: "2007-11-09",
+    voteAverage: 8.1,
+    voteCount: 9100,
+    runtime: 122,
+    genres: ["Crime", "Drama", "Thriller"],
+    director: "Joel Coen, Ethan Coen",
+    cast: [
+      { id: "c471", name: "Tommy Lee Jones", character: "Sheriff Ed Tom Bell", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c472", name: "Javier Bardem", character: "Anton Chigurh", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c473", name: "Josh Brolin", character: "Llewelyn Moss", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c474", name: "Kelly Macdonald", character: "Carla Jean Moss", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/38A__WT3-o0"
+  },
+  {
+    id: "48",
+    title: "Amélie",
+    tagline: "She'll change your life.",
+    overview: "Amélie is an innocent and naive girl in Paris with her own sense of justice. She decides to help those around her and, along the way, discovers love.",
+    posterPath: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1549144511-f099e773c147?w=1600&q=80",
+    releaseDate: "2001-09-28",
+    voteAverage: 8.3,
+    voteCount: 7700,
+    runtime: 122,
+    genres: ["Romance", "Comedy", "Drama"],
+    director: "Jean-Pierre Jeunet",
+    cast: [
+      { id: "c481", name: "Audrey Tautou", character: "Amélie Poulain", profilePath: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" },
+      { id: "c482", name: "Mathieu Kassovitz", character: "Nino Quincampoix", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c483", name: "Rufus", character: "Raphaël Poulain", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" },
+      { id: "c484", name: "Lorella Cravotta", character: "Amandine Poulain", profilePath: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/HkFtDkpVj6o"
+  },
+  {
+    id: "49",
+    title: "2001: A Space Odyssey",
+    tagline: "The ultimate trip.",
+    overview: "After discovering a mysterious artifact buried beneath the Lunar surface, a spacecraft is sent to Jupiter to find its origins with the help of the supercomputer H.A.L. 9000.",
+    posterPath: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1454789548928-9efd52dc4031?w=1600&q=80",
+    releaseDate: "1968-04-02",
+    voteAverage: 8.3,
+    voteCount: 8200,
+    runtime: 149,
+    genres: ["Sci-Fi", "Adventure", "Mystery"],
+    director: "Stanley Kubrick",
+    cast: [
+      { id: "c491", name: "Keir Dullea", character: "Dr. Dave Bowman", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c492", name: "Gary Lockwood", character: "Dr. Frank Poole", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c493", name: "William Sylvester", character: "Dr. Heywood Floyd", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c494", name: "Douglas Rain", character: "HAL 9000 (voice)", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/oR_e9y-bka0"
+  },
+  {
+    id: "50",
+    title: "Silver Linings Playbook",
+    tagline: "Watch for the silver lining.",
+    overview: "After spending eight months in a mental institution, a formerly married man moves back in with his parents and tries to reconcile with his ex-wife. Things get more complicated when he meets a young woman.",
+    posterPath: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1600&q=80",
+    releaseDate: "2012-11-21",
+    voteAverage: 7.7,
+    voteCount: 7100,
+    runtime: 122,
+    genres: ["Romance", "Comedy", "Drama"],
+    director: "David O. Russell",
+    cast: [
+      { id: "c501", name: "Bradley Cooper", character: "Pat Solitano Jr.", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c502", name: "Jennifer Lawrence", character: "Tiffany Maxwell", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c503", name: "Robert De Niro", character: "Pat Solitano Sr.", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c504", name: "Jacki Weaver", character: "Dolores Solitano", profilePath: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/IOBHAMJl7JE"
+  },
+  {
+    id: "51",
+    title: "Up",
+    tagline: "Adventure is out there.",
+    overview: "78-year-old Carl Fredricksen travels to Paradise Falls in his house equipped with balloons, inadvertently taking a young stowaway on the trip of a lifetime.",
+    posterPath: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1600&q=80",
+    releaseDate: "2009-05-29",
+    voteAverage: 8.3,
+    voteCount: 16800,
+    runtime: 96,
+    genres: ["Animation", "Adventure", "Comedy", "Family"],
+    director: "Pete Docter",
+    cast: [
+      { id: "c511", name: "Edward Asner", character: "Carl Fredricksen (voice)", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c512", name: "Jordan Nagai", character: "Russell (voice)", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c513", name: "Bob Peterson", character: "Dug / Alpha (voice)", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c514", name: "Christopher Plummer", character: "Charles F. Muntz (voice)", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/pkqzFUhGPJg"
+  },
+  {
+    id: "52",
+    title: "Gone Girl",
+    tagline: "You don't know what you've got 'til it's gone.",
+    overview: "On the occasion of his fifth wedding anniversary, Nick Dunne reports that his wife, Amy, has gone missing. Under pressure from the police and a growing media frenzy, Nick's portrait of a blissful union begins to crumble.",
+    posterPath: "https://images.unsplash.com/photo-1546539782-6fc531453083?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+    releaseDate: "2014-10-03",
+    voteAverage: 8.1,
+    voteCount: 10800,
+    runtime: 149,
+    genres: ["Drama", "Mystery", "Thriller"],
+    director: "David Fincher",
+    cast: [
+      { id: "c521", name: "Ben Affleck", character: "Nick Dunne", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c522", name: "Rosamund Pike", character: "Amy Dunne", profilePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80" },
+      { id: "c523", name: "Neil Patrick Harris", character: "Desi Collings", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c524", name: "Carrie Coon", character: "Margo Dunne", profilePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/OfgPD4GYPO0"
+  },
+  {
+    id: "53",
+    title: "The Grand Budapest Hotel",
+    tagline: "Check in. Engage life.",
+    overview: "The adventures of Gustave H, a legendary concierge at a famous European hotel between the wars, and Zero Moustafa, the lobby boy who becomes his most trusted friend.",
+    posterPath: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1600&q=80",
+    releaseDate: "2014-03-28",
+    voteAverage: 8.1,
+    voteCount: 8600,
+    runtime: 99,
+    genres: ["Comedy", "Drama", "Mystery"],
+    director: "Wes Anderson",
+    cast: [
+      { id: "c531", name: "Ralph Fiennes", character: "M. Gustave H.", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+      { id: "c532", name: "Tony Revolori", character: "Zero Moustafa", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c533", name: "Saoirse Ronan", character: "Agatha", profilePath: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" },
+      { id: "c534", name: "F. Murray Abraham", character: "Mr. Moustafa", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/1Fg5iWmQjwk"
+  },
+  {
+    id: "54",
+    title: "The Revenant",
+    tagline: "Blood lost. Life found.",
+    overview: "A frontiersman on a fur trading expedition in the 1820s fights for survival after being mauled by a bear and left for dead by members of his own hunting team.",
+    posterPath: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1446329813274-7c9036bd9a1f?w=1600&q=80",
+    releaseDate: "2015-12-25",
+    voteAverage: 8.0,
+    voteCount: 9300,
+    runtime: 156,
+    genres: ["Adventure", "Drama", "Action"],
+    director: "Alejandro González Iñárritu",
+    cast: [
+      { id: "c541", name: "Leonardo DiCaprio", character: "Hugh Glass", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c542", name: "Tom Hardy", character: "John Fitzgerald", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c543", name: "Will Poulter", character: "Jim Bridger", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c544", name: "Domhnall Gleeson", character: "Captain Andrew Henry", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/LoebZZ8K5N0"
+  },
+  {
+    id: "55",
+    title: "Eternal Sunshine of the Spotless Mind",
+    tagline: "You can erase someone from your mind. Getting them out of your heart is another story.",
+    overview: "When their relationship turns sour, a couple undergoes a medical procedure to have each other erased from their memories. But it is only through the process of loss that they discover what they had to begin with.",
+    posterPath: "https://images.unsplash.com/photo-1499343162400-4e04caf9e50e?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?w=1600&q=80",
+    releaseDate: "2004-03-19",
+    voteAverage: 8.3,
+    voteCount: 8800,
+    runtime: 108,
+    genres: ["Romance", "Drama", "Sci-Fi"],
+    director: "Michel Gondry",
+    cast: [
+      { id: "c551", name: "Jim Carrey", character: "Joel Barish", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c552", name: "Kate Winslet", character: "Clementine Kruczynski", profilePath: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" },
+      { id: "c553", name: "Mark Ruffalo", character: "Stan", profilePath: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" },
+      { id: "c554", name: "Elijah Wood", character: "Patrick", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/yMP7F0RKDJI"
+  },
+  {
+    id: "56",
+    title: "1917",
+    tagline: "Time is the enemy.",
+    overview: "April 6th, 1917. As a regiment assembles to wage war deep in enemy territory, two soldiers are assigned to race against time and deliver a message that will stop 1,600 men from walking straight into a deadly trap.",
+    posterPath: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1600&q=80",
+    releaseDate: "2019-12-25",
+    voteAverage: 8.2,
+    voteCount: 8400,
+    runtime: 119,
+    genres: ["Drama", "Action", "History"],
+    director: "Sam Mendes",
+    cast: [
+      { id: "c561", name: "George MacKay", character: "Lance Corporal Schofield", profilePath: "https://images.unsplash.com/photo-1474176857210-7287d38d27c6?w=200&q=80" },
+      { id: "c562", name: "Dean-Charles Chapman", character: "Lance Corporal Blake", profilePath: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80" },
+      { id: "c563", name: "Mark Strong", character: "Captain Smith", profilePath: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
+      { id: "c564", name: "Andrew Scott", character: "Lieutenant Leslie", profilePath: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/YqNYrYUiMfg"
+  },
+  {
+    id: "57",
+    title: "Monty Python and the Holy Grail",
+    tagline: "A motion picture that comes dangerously close to being funny.",
+    overview: "King Arthur and his knights embark on a low-budget search for the Holy Grail, encountering many unexpected obstacles and absurd adversaries along the way.",
+    posterPath: "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?w=600&q=80",
+    backdropPath: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1600&q=80",
+    releaseDate: "1975-05-25",
+    voteAverage: 8.2,
+    voteCount: 7400,
+    runtime: 91,
+    genres: ["Comedy", "Adventure", "Fantasy"],
+    director: "Terry Gilliam, Terry Jones",
+    cast: [
+      { id: "c571", name: "Graham Chapman", character: "King Arthur", profilePath: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
+      { id: "c572", name: "John Cleese", character: "Sir Lancelot", profilePath: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&q=80" },
+      { id: "c573", name: "Terry Gilliam", character: "Patsy", profilePath: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&q=80" },
+      { id: "c574", name: "Eric Idle", character: "Sir Robin", profilePath: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80" }
+    ],
+    trailerUrl: "https://www.youtube.com/embed/SORY_PnuBNU"
   }
 ];
 
