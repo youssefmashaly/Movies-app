@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { Film, Search, Bookmark, Sparkles, User, LogOut, LogIn, Menu, X, Loader2 } from "lucide-react";
+import { Film, Search, Bookmark, Sparkles, User, LogOut, LogIn, Menu, X, Loader2, UserCircle } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;
@@ -57,7 +57,8 @@ export default function Navbar({
   const menuItems = [
     { id: "explore", label: "Explore", icon: Film },
     { id: "watchlist", label: "Watchlist", icon: Bookmark, authRequired: true },
-    { id: "oracle", label: "AI Matchmaker", icon: Sparkles }
+    { id: "oracle", label: "AI Matchmaker", icon: Sparkles },
+    { id: "profile", label: "Profile", icon: UserCircle, authRequired: true }
   ];
 
   return (

@@ -72,6 +72,23 @@ export async function updateReview(
   }
 }
 
+export async function listUserReviews(userId: string, limit: number = 20): Promise<SupabaseResult<SupabaseReview[]>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    return { data: (data as SupabaseReview[]) ?? [], error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch user reviews." };
+  }
+}
+
+
 export async function deleteReview(reviewId: string, userId: string): Promise<SupabaseResult<null>> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   try {

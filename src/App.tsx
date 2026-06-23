@@ -25,6 +25,7 @@ import MovieRail from "./components/MovieRail";
 import MovieDetail from "./components/MovieDetail";
 import AIMatchmaker from "./components/AIMatchmaker";
 import AuthModal from "./components/AuthModal";
+import UserProfile from "./components/UserProfile";
 
 // Icons
 import {
@@ -1127,7 +1128,7 @@ export default function App() {
                 </div>
               )}
             </motion.div>
-          ) : (
+          ) : activeTab === "oracle" ? (
             /* 4. AI MATCHMAKER / ORACLE VIEW */
             <motion.div
               key="oracle-tab"
@@ -1143,6 +1144,16 @@ export default function App() {
                 watchlistMovies={watchlistMovies}
                 recentlyViewedMovies={recentlyViewed}
               />
+            </motion.div>
+          ) : (
+            /* 5. USER PROFILE */
+            <motion.div
+              key="profile-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <UserProfile />
             </motion.div>
           )}
         </AnimatePresence>

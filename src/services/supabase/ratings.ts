@@ -64,3 +64,19 @@ export async function listMovieRatings(movieId: string): Promise<SupabaseResult<
     return { data: null, error: err instanceof Error ? err.message : "Failed to fetch movie ratings." };
   }
 }
+
+export async function listUserRatings(userId: string, limit: number = 20): Promise<SupabaseResult<SupabaseRating[]>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    return { data: (data as SupabaseRating[]) ?? [], error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch user ratings." };
+  }
+}
