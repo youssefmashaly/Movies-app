@@ -33,6 +33,7 @@ export interface Movie {
   director?: string;
   trailerUrl?: string;  // optional YouTube embed
   addedAt?: number;     // populated only for watchlist items (ms timestamp)
+  tmdbId?: number;      // TMDB numeric movie ID — used for artwork migration
 }
 
 export interface WatchlistItem {
