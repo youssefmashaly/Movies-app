@@ -66,9 +66,10 @@ export default function App() {
 
   // Filter state
   const [selectedGenre, setSelectedGenre] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<string>("popularity"); // popularity, releaseDate, rating, alphabetical
-  const [minRating, setMinRating] = useState<number>(0); // 0 = Any
+  const [sortBy, setSortBy] = useState<string>("popularity");
+  const [minRating, setMinRating] = useState<number>(0);
   const [selectedYear, setSelectedYear] = useState<string>("All");
+  const [maxRuntime, setMaxRuntime] = useState<number>(0); // 0 = Any
 
   // Watchlist browsing state
   const [watchlistSortBy, setWatchlistSortBy] = useState<string>("dateAdded");
@@ -419,35 +420,113 @@ export default function App() {
       .slice(0, 16);
   }, [combinedMoviePool]);
 
-  // Filter (genre + rating + year) and sort the active list — works the same
-  // whether "movies" currently holds the trending/latest pool or search results,
-  // so filters and search naturally combine.
+  // Discovery collections — curated client-side from existing pool, no new API calls
+  const awardWinners = useMemo(() => {
+    const awardKeywords = ["biography", "history", "drama"];
+    return combinedMoviePool
+      .filter((m) => m.voteAverage >= 8.0 && m.genres?.some((g) => awardKeywords.includes(g.toLowerCase())))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const criticallyAcclaimed = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => m.voteAverage >= 8.4)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const familyNight = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => m.genres?.some((g) => ["animation", "family"].includes(g.toLowerCase())))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const mindBending = useMemo(() => {
+    const mbKeywords = ["sci-fi", "mystery", "thriller"];
+    return combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => mbKeywords.includes(g.toLowerCase())))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const basedOnTrueStories = useMemo(() => {
+    const trueStoryKeywords = ["biography", "history"];
+    return combinedMoviePool
+      .filter((m) => m.genres?.some((g) => trueStoryKeywords.includes(g.toLowerCase())))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const feelGood = useMemo(() => {
+    const feelGoodKeywords = ["comedy", "romance", "animation", "family"];
+    return combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => feelGoodKeywords.includes(g.toLowerCase())))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const internationalCinema = useMemo(() => {
+    const englishDirectors = new Set([
+      "christopher nolan", "steven spielberg", "david fincher", "martin scorsese",
+      "quentin tarantino", "peter jackson", "ridley scott", "james cameron",
+      "peter weir", "ron howard", "frank darabont", "jonathan demme",
+      "danny boyle", "adam mckay", "barry jenkins", "martin mcdonagh",
+      "noah baumbach", "dan gilroy", "lenny abrahamson", "garth davis",
+      "mel gibson", "dean deblois, chris sanders", "andrew stanton", "brad bird",
+      "john lasseter", "pete docter", "andrew stanton", "josh safdiej, benny safdie"
+    ]);
+    return combinedMoviePool
+      .filter((m) => m.director && !englishDirectors.has(m.director.toLowerCase()))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const cultClassics = useMemo(() => {
+    const cutoff = new Date("2010-01-01").toISOString().split("T")[0];
+    return combinedMoviePool
+      .filter((m) => (m.releaseDate || "") < cutoff && m.voteAverage >= 8.0)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  // Filter (genre + rating + year + runtime) and sort the active list
   const filteredMovies = useMemo(() => {
     let result = movies.filter((m) => {
       if (selectedGenre !== "All" && !m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase())) return false;
       if (minRating > 0 && m.voteAverage < minRating) return false;
       if (selectedYear !== "All" && m.releaseDate?.split("-")[0] !== selectedYear) return false;
+      if (maxRuntime > 0 && m.runtime && m.runtime > maxRuntime) return false;
       return true;
     });
 
-    if (sortBy === "rating") {
+    if (sortBy === "rating-desc") {
+      result = [...result].sort((a, b) => b.voteAverage - a.voteAverage);
+    } else if (sortBy === "rating-asc") {
+      result = [...result].sort((a, b) => a.voteAverage - b.voteAverage);
+    } else if (sortBy === "rating") {
       result = [...result].sort((a, b) => b.voteAverage - a.voteAverage);
     } else if (sortBy === "alphabetical") {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "alphabetical-desc") {
+      result = [...result].sort((a, b) => b.title.localeCompare(a.title));
     } else if (sortBy === "releaseDate") {
       result = [...result].sort((a, b) => (b.releaseDate || "").localeCompare(a.releaseDate || ""));
+    } else if (sortBy === "releaseDate-asc") {
+      result = [...result].sort((a, b) => (a.releaseDate || "").localeCompare(b.releaseDate || ""));
     }
-    // "popularity" intentionally left in the order the backend already returned
 
     return result;
-  }, [movies, selectedGenre, minRating, selectedYear, sortBy]);
+  }, [movies, selectedGenre, minRating, selectedYear, maxRuntime, sortBy]);
 
-  const activeFilterCount = [selectedGenre !== "All", minRating > 0, selectedYear !== "All"].filter(Boolean).length;
+  const activeFilterCount = [selectedGenre !== "All", minRating > 0, selectedYear !== "All", maxRuntime > 0].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setSelectedGenre("All");
     setMinRating(0);
     setSelectedYear("All");
+    setMaxRuntime(0);
     setSearchQuery("");
   };
 
@@ -830,6 +909,118 @@ export default function App() {
                     isSaved={(id) => watchlistIds.has(id)}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
+                  {criticallyAcclaimed.length >= 4 && (
+                    <MovieRail
+                      id="rail-critically-acclaimed"
+                      title="Critically Acclaimed"
+                      subtitle="The films critics won't stop talking about"
+                      icon={Star}
+                      accent="amber"
+                      movies={criticallyAcclaimed}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {awardWinners.length >= 4 && (
+                    <MovieRail
+                      id="rail-award-winners"
+                      title="Award Winners"
+                      subtitle="Oscar favourites and festival darlings"
+                      icon={TrendingUp}
+                      accent="indigo"
+                      movies={awardWinners}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {mindBending.length >= 4 && (
+                    <MovieRail
+                      id="rail-mind-bending"
+                      title="Mind-Bending"
+                      subtitle="Films that challenge how you see the world"
+                      icon={Compass}
+                      accent="teal"
+                      movies={mindBending}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {familyNight.length >= 4 && (
+                    <MovieRail
+                      id="rail-family-night"
+                      title="Family Night"
+                      subtitle="Everyone at the table will love these"
+                      icon={Heart}
+                      accent="emerald"
+                      movies={familyNight}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {feelGood.length >= 4 && (
+                    <MovieRail
+                      id="rail-feel-good"
+                      title="Feel-Good Movies"
+                      subtitle="Guaranteed to leave you smiling"
+                      icon={Flame}
+                      accent="amber"
+                      movies={feelGood}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {basedOnTrueStories.length >= 4 && (
+                    <MovieRail
+                      id="rail-true-stories"
+                      title="Based on True Stories"
+                      subtitle="Real events, cinematic scale"
+                      icon={History}
+                      accent="red"
+                      movies={basedOnTrueStories}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {internationalCinema.length >= 4 && (
+                    <MovieRail
+                      id="rail-international"
+                      title="International Cinema"
+                      subtitle="World-class storytelling from every corner of the globe"
+                      icon={Gem}
+                      accent="teal"
+                      movies={internationalCinema}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {cultClassics.length >= 4 && (
+                    <MovieRail
+                      id="rail-cult-classics"
+                      title="Cult Classics"
+                      subtitle="Timeless films that defined generations"
+                      icon={CalendarClock}
+                      accent="indigo"
+                      movies={cultClassics}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
                 </div>
               )}
 
@@ -880,9 +1071,12 @@ export default function App() {
                       className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                     >
                       <option value="popularity">Trending Score</option>
-                      <option value="releaseDate">Release Date</option>
-                      <option value="rating">Rating</option>
-                      <option value="alphabetical">A-Z</option>
+                      <option value="rating-desc">Highest Rated</option>
+                      <option value="rating-asc">Lowest Rated</option>
+                      <option value="releaseDate">Newest First</option>
+                      <option value="releaseDate-asc">Oldest First</option>
+                      <option value="alphabetical">A → Z</option>
+                      <option value="alphabetical-desc">Z → A</option>
                     </select>
 
                     <label htmlFor="rating-filter" className="sr-only">Minimum rating</label>
@@ -893,10 +1087,10 @@ export default function App() {
                       className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                     >
                       <option value={0}>Any Rating</option>
-                      <option value={6}>6+ Rating</option>
-                      <option value={7}>7+ Rating</option>
-                      <option value={8}>8+ Rating</option>
-                      <option value={9}>9+ Rating</option>
+                      <option value={6}>6+ Stars</option>
+                      <option value={7}>7+ Stars</option>
+                      <option value={8}>8+ Stars</option>
+                      <option value={9}>9+ Stars</option>
                     </select>
 
                     <label htmlFor="year-filter" className="sr-only">Release year</label>
@@ -910,6 +1104,20 @@ export default function App() {
                       {availableYears.map((y) => (
                         <option key={y} value={y}>{y}</option>
                       ))}
+                    </select>
+
+                    <label htmlFor="runtime-filter" className="sr-only">Max runtime</label>
+                    <select
+                      id="runtime-filter"
+                      value={maxRuntime}
+                      onChange={(e) => setMaxRuntime(Number(e.target.value))}
+                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                    >
+                      <option value={0}>Any Length</option>
+                      <option value={90}>Under 90 min</option>
+                      <option value={120}>Under 2 hrs</option>
+                      <option value={150}>Under 2.5 hrs</option>
+                      <option value={180}>Under 3 hrs</option>
                     </select>
 
                     {activeFilterCount > 0 && (
@@ -944,6 +1152,47 @@ export default function App() {
                     );
                   })}
                 </div>
+
+                {/* Result count + active filter badges */}
+                {!moviesLoading && !searchLoading && (
+                  <div className="flex flex-wrap items-center gap-2 pt-2 pb-4">
+                    <span className="text-xs text-neutral-500 font-medium">
+                      {filteredMovies.length} {filteredMovies.length === 1 ? "film" : "films"}
+                    </span>
+                    {selectedGenre !== "All" && (
+                      <button
+                        onClick={() => setSelectedGenre("All")}
+                        className="flex items-center gap-1 rounded-full bg-red-500/15 border border-red-500/25 px-2.5 py-1 text-[11px] font-semibold text-red-400 hover:bg-red-500/25 transition-colors cursor-pointer"
+                      >
+                        {selectedGenre} <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {minRating > 0 && (
+                      <button
+                        onClick={() => setMinRating(0)}
+                        className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2.5 py-1 text-[11px] font-semibold text-amber-400 hover:bg-amber-500/25 transition-colors cursor-pointer"
+                      >
+                        {minRating}+ Stars <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {selectedYear !== "All" && (
+                      <button
+                        onClick={() => setSelectedYear("All")}
+                        className="flex items-center gap-1 rounded-full bg-teal-500/15 border border-teal-500/25 px-2.5 py-1 text-[11px] font-semibold text-teal-400 hover:bg-teal-500/25 transition-colors cursor-pointer"
+                      >
+                        {selectedYear} <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {maxRuntime > 0 && (
+                      <button
+                        onClick={() => setMaxRuntime(0)}
+                        className="flex items-center gap-1 rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-1 text-[11px] font-semibold text-indigo-400 hover:bg-indigo-500/25 transition-colors cursor-pointer"
+                      >
+                        Under {maxRuntime} min <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Skeletons or Empty checks or Main Grid */}
                 {moviesLoading || searchLoading ? (
