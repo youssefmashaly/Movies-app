@@ -26,6 +26,7 @@ import MovieDetail from "./components/MovieDetail";
 import AIMatchmaker from "./components/AIMatchmaker";
 import AuthModal from "./components/AuthModal";
 import UserProfile from "./components/UserProfile";
+import UserDashboard from "./components/UserDashboard";
 
 // Icons
 import {
@@ -1394,7 +1395,7 @@ export default function App() {
                 recentlyViewedMovies={recentlyViewed}
               />
             </motion.div>
-          ) : (
+          ) : activeTab === "profile" ? (
             /* 5. USER PROFILE */
             <motion.div
               key="profile-tab"
@@ -1403,6 +1404,24 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
             >
               <UserProfile />
+            </motion.div>
+          ) : (
+            /* 6. PERSONAL DASHBOARD */
+            <motion.div
+              key="dashboard-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <UserDashboard
+                recentlyViewed={recentlyViewed}
+                watchlistMovies={watchlistMovies}
+                favoriteGenres={favoriteGenres}
+                combinedMoviePool={combinedMoviePool}
+                onSelectMovie={handleSelectMovie}
+                onToggleSave={handleQuickToggleWatchlist}
+                watchlistIds={watchlistIds}
+              />
             </motion.div>
           )}
         </AnimatePresence>
