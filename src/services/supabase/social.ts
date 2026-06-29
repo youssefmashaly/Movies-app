@@ -284,31 +284,6 @@ export async function getFollowCounts(userId: string): Promise<SupabaseResult<{ 
   }
 }
 
-export async function getSharedGenres(userAGenres: string[], userBGenres: string[]): Promise<string[]> {
-  const setB = new Set(userBGenres);
-  return userAGenres.filter(g => setB.has(g));
-}
-
-export async function listFollowingReviews(followingIds: string[], limit = 30): Promise<SupabaseResult<CommunityReview[]>> {
-  if (!isSupabaseConfigured || followingIds.length === 0) return { data: [], error: null };
-  try {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select("id, user_id, movie_id, movie_title, rating, comment, created_at, profiles(display_name, avatar_url)")
-      .in("user_id", followingIds)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-    if (error) return { data: null, error: error.message };
-    const normalized = (data ?? []).map((row: any) => ({
-      ...row,
-      profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
-    })) as CommunityReview[];
-    return { data: normalized, error: null };
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch following reviews." };
-  }
-}
-
 // ── Active Reviewers ──────────────────────────────────────────────────────────
 
 export async function listActiveReviewers(limit = 8): Promise<SupabaseResult<PublicProfile[]>> {
@@ -417,12 +392,11 @@ export async function getHelpfulVoteCounts(reviewIds: string[]): Promise<Supabas
   }
 }
 
-// ── Trending Reviews ──────────────────────────────────────────────────────────
+// ── Trending Reviews (last 7 days, ranked by likes) ───────────────────────────
 
 export async function listTrendingReviews(limit = 10): Promise<SupabaseResult<CommunityReview[]>> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   try {
-    // Pull recent reviews + their like counts, sort client-side (avoids a view/RPC)
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabase
       .from("reviews")
@@ -454,6 +428,28 @@ export async function listTrendingReviews(limit = 10): Promise<SupabaseResult<Co
   }
 }
 
+// ── Following-filtered review feed ────────────────────────────────────────────
+
+export async function listFollowingReviews(followingIds: string[], limit = 30): Promise<SupabaseResult<CommunityReview[]>> {
+  if (!isSupabaseConfigured || followingIds.length === 0) return { data: [], error: null };
+  try {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("id, user_id, movie_id, movie_title, rating, comment, created_at, profiles(display_name, avatar_url)")
+      .in("user_id", followingIds)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    const normalized = (data ?? []).map((row: any) => ({
+      ...row,
+      profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
+    })) as CommunityReview[];
+    return { data: normalized, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch following reviews." };
+  }
+}
+
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 
 export interface LeaderboardEntry {
@@ -464,12 +460,12 @@ export interface LeaderboardEntry {
   label: string;
 }
 
-export async function getReviewLeaderboard(limit = 10): Promise<SupabaseResult<LeaderboardEntry[]>> {
+export async function getReviewLeaderboard(limit = 8): Promise<SupabaseResult<LeaderboardEntry[]>> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   try {
     const { data, error } = await supabase
       .from("reviews")
-      .select("user_id, profiles(id, display_name, avatar_url)")
+      .select("user_id, profiles(display_name, avatar_url)")
       .limit(500);
     if (error) return { data: null, error: error.message };
 
@@ -481,7 +477,13 @@ export async function getReviewLeaderboard(limit = 10): Promise<SupabaseResult<L
     }
 
     const entries: LeaderboardEntry[] = Object.entries(counts)
-      .map(([user_id, v]) => ({ user_id, display_name: v.display_name, avatar_url: v.avatar_url, score: v.count, label: `${v.count} review${v.count !== 1 ? "s" : ""}` }))
+      .map(([user_id, v]) => ({
+        user_id,
+        display_name: v.display_name,
+        avatar_url: v.avatar_url,
+        score: v.count,
+        label: `${v.count} review${v.count !== 1 ? "s" : ""}`,
+      }))
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
@@ -491,48 +493,15 @@ export async function getReviewLeaderboard(limit = 10): Promise<SupabaseResult<L
   }
 }
 
-export async function getMostLikedLeaderboard(limit = 10): Promise<SupabaseResult<LeaderboardEntry[]>> {
-  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
-  try {
-    const { data: reviews, error: rErr } = await supabase
-      .from("reviews")
-      .select("id, user_id, profiles(display_name, avatar_url)")
-      .limit(500);
-    if (rErr) return { data: null, error: rErr.message };
+// ── Suggested Users with Taste Matching ──────────────────────────────────────
 
-    const { data: likes, error: lErr } = await supabase
-      .from("review_likes")
-      .select("review_id")
-      .limit(2000);
-    if (lErr) return { data: null, error: lErr.message };
-
-    const likesPerReview: Record<string, number> = {};
-    for (const l of likes ?? []) likesPerReview[l.review_id] = (likesPerReview[l.review_id] ?? 0) + 1;
-
-    const userLikes: Record<string, { total: number; display_name: string | null; avatar_url: string | null }> = {};
-    for (const r of reviews ?? []) {
-      const p = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
-      if (!userLikes[r.user_id]) userLikes[r.user_id] = { total: 0, display_name: p?.display_name ?? null, avatar_url: p?.avatar_url ?? null };
-      userLikes[r.user_id].total += likesPerReview[r.id] ?? 0;
-    }
-
-    const entries: LeaderboardEntry[] = Object.entries(userLikes)
-      .map(([user_id, v]) => ({ user_id, display_name: v.display_name, avatar_url: v.avatar_url, score: v.total, label: `${v.total} like${v.total !== 1 ? "s" : ""}` }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
-
-    return { data: entries, error: null };
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch most liked leaderboard." };
-  }
-}
-
-// ── Suggested Users (Taste Matching) ─────────────────────────────────────────
-
-export interface SuggestedUser extends PublicProfile {
+export interface SuggestedUser {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  favorite_genres: string[] | null;
   tasteMatchPct: number;
   sharedGenres: string[];
-  sharedMovieHint: string | null;
   reviewCount: number;
 }
 
@@ -542,18 +511,15 @@ export async function getSuggestedUsers(
   alreadyFollowingIds: string[],
   limit = 6
 ): Promise<SupabaseResult<SuggestedUser[]>> {
-  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  if (!isSupabaseConfigured) return { data: [], error: null };
   try {
-    // Fetch all profiles with genres, excluding self and already-followed
     const excluded = [userId, ...alreadyFollowingIds];
     const { data: profiles, error: pErr } = await supabase
       .from("profiles")
       .select("id, display_name, avatar_url, favorite_genres")
-      .not("id", "in", `(${excluded.join(",")})`)
       .limit(80);
     if (pErr) return { data: null, error: pErr.message };
 
-    // Fetch review counts per user
     const { data: reviewRows, error: rErr } = await supabase
       .from("reviews")
       .select("user_id")
@@ -563,10 +529,10 @@ export async function getSuggestedUsers(
     const reviewCounts: Record<string, number> = {};
     for (const r of reviewRows ?? []) reviewCounts[r.user_id] = (reviewCounts[r.user_id] ?? 0) + 1;
 
-    // Compute taste match per candidate
     const mySet = new Set(myGenres.map(g => g.toLowerCase()));
+
     const candidates: SuggestedUser[] = (profiles ?? [])
-      .filter(p => p.id !== userId)
+      .filter(p => !excluded.includes(p.id))
       .map(p => {
         const theirGenres: string[] = p.favorite_genres ?? [];
         const shared = theirGenres.filter(g => mySet.has(g.toLowerCase()));
@@ -579,7 +545,6 @@ export async function getSuggestedUsers(
           favorite_genres: p.favorite_genres,
           tasteMatchPct,
           sharedGenres: shared,
-          sharedMovieHint: null,
           reviewCount: reviewCounts[p.id] ?? 0,
         };
       })
@@ -611,25 +576,25 @@ export function computeBadges(stats: {
   followerCount: number;
   favoriteGenres: string[];
 }): Badge[] {
-  const badges: Badge[] = [];
   const { reviewCount, ratingCount, watchlistSize, likeCount, followerCount, favoriteGenres } = stats;
+  const badges: Badge[] = [];
 
-  if (reviewCount >= 1)  badges.push({ id: "reviewer",      label: "Reviewer",         icon: "✍️",  color: "blue",   description: "Wrote their first review" });
-  if (reviewCount >= 10) badges.push({ id: "critic",        label: "Critic",           icon: "🎬",  color: "indigo", description: "Wrote 10 or more reviews" });
-  if (reviewCount >= 25) badges.push({ id: "top-critic",    label: "Top Critic",       icon: "🏆",  color: "amber",  description: "Wrote 25 or more reviews" });
-  if (ratingCount >= 10) badges.push({ id: "explorer",      label: "Movie Explorer",   icon: "🧭",  color: "teal",   description: "Rated 10 or more movies" });
-  if (ratingCount >= 50) badges.push({ id: "cinephile",     label: "Cinephile",        icon: "🎥",  color: "purple", description: "Rated 50 or more movies" });
-  if (watchlistSize >= 20) badges.push({ id: "collector",   label: "Collector",        icon: "📚",  color: "emerald", description: "Saved 20+ movies to watchlist" });
-  if (likeCount >= 10)   badges.push({ id: "helpful",       label: "Helpful",          icon: "👍",  color: "green",  description: "Received 10 or more likes" });
-  if (likeCount >= 50)   badges.push({ id: "community-fav", label: "Community Fav",   icon: "❤️",  color: "red",    description: "Received 50 or more likes" });
-  if (followerCount >= 5)  badges.push({ id: "rising",      label: "Rising Star",      icon: "⭐",  color: "amber",  description: "Has 5 or more followers" });
-  if (followerCount >= 20) badges.push({ id: "influencer",  label: "Top Contributor",  icon: "🌟",  color: "yellow", description: "Has 20 or more followers" });
+  if (reviewCount >= 1)  badges.push({ id: "reviewer",      label: "Reviewer",       icon: "✍️",  color: "blue",    description: "Wrote their first review" });
+  if (reviewCount >= 10) badges.push({ id: "critic",        label: "Critic",         icon: "🎬",  color: "indigo",  description: "Wrote 10+ reviews" });
+  if (reviewCount >= 25) badges.push({ id: "top-critic",    label: "Top Critic",     icon: "🏆",  color: "amber",   description: "Wrote 25+ reviews" });
+  if (ratingCount >= 10) badges.push({ id: "explorer",      label: "Explorer",       icon: "🧭",  color: "teal",    description: "Rated 10+ movies" });
+  if (ratingCount >= 50) badges.push({ id: "cinephile",     label: "Cinephile",      icon: "🎥",  color: "purple",  description: "Rated 50+ movies" });
+  if (watchlistSize >= 20) badges.push({ id: "collector",   label: "Collector",      icon: "📚",  color: "emerald", description: "Saved 20+ movies" });
+  if (likeCount >= 10)   badges.push({ id: "helpful",       label: "Helpful",        icon: "👍",  color: "green",   description: "Received 10+ likes" });
+  if (likeCount >= 50)   badges.push({ id: "community-fav", label: "Community Fav", icon: "❤️",  color: "red",     description: "Received 50+ likes" });
+  if (followerCount >= 5)  badges.push({ id: "rising",      label: "Rising Star",    icon: "⭐",  color: "amber",   description: "5+ followers" });
+  if (followerCount >= 20) badges.push({ id: "influencer",  label: "Top Contributor",icon: "🌟",  color: "yellow",  description: "20+ followers" });
 
   const lowerGenres = favoriteGenres.map(g => g.toLowerCase());
-  if (lowerGenres.includes("horror"))  badges.push({ id: "horror-expert", label: "Horror Expert", icon: "👻", color: "red",    description: "Loves horror films" });
-  if (lowerGenres.includes("sci-fi"))  badges.push({ id: "scifi-master",  label: "Sci-Fi Master", icon: "🚀", color: "blue",   description: "Loves sci-fi films" });
-  if (lowerGenres.includes("drama"))   badges.push({ id: "drama-fan",     label: "Drama Fan",     icon: "🎭", color: "purple", description: "Loves drama films" });
-  if (lowerGenres.includes("comedy"))  badges.push({ id: "comedy-lover",  label: "Comedy Lover",  icon: "😂", color: "yellow", description: "Loves comedy films" });
+  if (lowerGenres.includes("horror"))  badges.push({ id: "horror-expert", label: "Horror Expert", icon: "👻", color: "red",    description: "Loves horror" });
+  if (lowerGenres.includes("sci-fi"))  badges.push({ id: "scifi-master",  label: "Sci-Fi Master", icon: "🚀", color: "blue",   description: "Loves sci-fi" });
+  if (lowerGenres.includes("drama"))   badges.push({ id: "drama-fan",     label: "Drama Fan",     icon: "🎭", color: "purple", description: "Loves drama" });
+  if (lowerGenres.includes("comedy"))  badges.push({ id: "comedy-lover",  label: "Comedy Lover",  icon: "😂", color: "yellow", description: "Loves comedy" });
 
   return badges;
 }

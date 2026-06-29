@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Heart, Star, Users, MessageSquare, Loader2,
+  Heart, Star, Users, MessageSquare, Loader2, ThumbsUp,
   User, TrendingUp, Film, RefreshCw, UserPlus, UserCheck,
-  ThumbsUp, Trophy, Sparkles, Zap
+  Trophy, Sparkles, Zap, Flame
 } from "lucide-react";
 import { auth } from "../firebase";
 import {
   listCommunityReviews,
-  listFollowingReviews,
   listTrendingReviews,
+  listFollowingReviews,
   likeReview,
   unlikeReview,
   getUserLikes,
@@ -20,8 +20,8 @@ import {
   getHelpfulVoteCounts,
   listActiveReviewers,
   getReviewLeaderboard,
-  getMostLikedLeaderboard,
   getSuggestedUsers,
+  getPublicProfile,
   followUser,
   unfollowUser,
   getFollowingIds,
@@ -60,27 +60,14 @@ function Avatar({ url, name, size = "md" }: { url?: string | null; name?: string
 // ─── ReviewCard ───────────────────────────────────────────────────────────────
 
 function ReviewCard({
-  review,
-  liked,
-  likeCount,
-  onLike,
-  helpful,
-  helpfulCount,
-  onHelpful,
-  isAuthed,
-  isOwn,
-  isTrending,
+  review, liked, likeCount, onLike,
+  helpful, helpfulCount, onHelpful,
+  isAuthed, isOwn, isTrending,
 }: {
   review: CommunityReview;
-  liked: boolean;
-  likeCount: number;
-  onLike: (id: string) => void;
-  helpful: boolean;
-  helpfulCount: number;
-  onHelpful: (id: string) => void;
-  isAuthed: boolean;
-  isOwn: boolean;
-  isTrending?: boolean;
+  liked: boolean; likeCount: number; onLike: (id: string) => void;
+  helpful: boolean; helpfulCount: number; onHelpful: (id: string) => void;
+  isAuthed: boolean; isOwn: boolean; isTrending?: boolean;
 }) {
   const displayName = review.profiles?.display_name ?? "Anonymous";
   const avatarUrl = review.profiles?.avatar_url ?? null;
@@ -96,11 +83,10 @@ function ReviewCard({
         <div className="flex items-center gap-2.5 min-w-0">
           <Avatar url={avatarUrl} name={displayName} />
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-sm font-semibold text-white truncate">{displayName}</span>
-              {isOwn && (
-                <span className="rounded-full bg-red-600/20 border border-red-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-red-400">You</span>
-              )}
+              {isOwn && <span className="rounded-full bg-red-600/20 border border-red-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-red-400">You</span>}
+              {isTrending && <span className="flex items-center gap-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 px-1.5 py-0.5 text-[10px] font-bold text-amber-400"><Zap className="h-2.5 w-2.5" />Trending</span>}
             </div>
             <span className="text-[11px] text-neutral-500">{timeAgo(review.created_at)}</span>
           </div>
@@ -128,9 +114,8 @@ function ReviewCard({
           onClick={() => isAuthed && onLike(review.id)}
           disabled={!isAuthed}
           className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-            liked
-              ? "bg-red-500/20 border border-red-500/30 text-red-400"
-              : "bg-neutral-800/60 border border-neutral-700/50 text-neutral-500 hover:text-red-400 hover:border-red-500/30"
+            liked ? "bg-red-500/20 border border-red-500/30 text-red-400"
+                  : "bg-neutral-800/60 border border-neutral-700/50 text-neutral-500 hover:text-red-400 hover:border-red-500/30"
           } disabled:cursor-default disabled:opacity-50`}
           title={isAuthed ? (liked ? "Unlike" : "Like") : "Sign in to like"}
         >
@@ -138,23 +123,17 @@ function ReviewCard({
           <span>{likeCount > 0 ? likeCount : ""} {liked ? "Liked" : "Like"}</span>
         </button>
         <button
-          onClick={() => isAuthed && onHelpful(review.id)}
+          onClick={() => isAuthed && !isOwn && onHelpful(review.id)}
           disabled={!isAuthed || isOwn}
           className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-            helpful
-              ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400"
-              : "bg-neutral-800/60 border border-neutral-700/50 text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/30"
+            helpful ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400"
+                    : "bg-neutral-800/60 border border-neutral-700/50 text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/30"
           } disabled:cursor-default disabled:opacity-50`}
           title={isOwn ? "Can't vote on your own review" : isAuthed ? (helpful ? "Remove helpful vote" : "Mark as helpful") : "Sign in to vote"}
         >
           <ThumbsUp className={`h-3.5 w-3.5 ${helpful ? "fill-emerald-400" : ""}`} />
-          <span>{helpfulCount > 0 ? helpfulCount : ""} {helpful ? "Helpful" : "Helpful?"}</span>
+          <span>{helpfulCount > 0 ? helpfulCount : ""} Helpful</span>
         </button>
-        {isTrending && (
-          <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
-            <Zap className="h-2.5 w-2.5" /> Trending
-          </span>
-        )}
       </div>
     </motion.div>
   );
@@ -209,36 +188,47 @@ function ReviewerCard({
 
 // ─── main component ──────────────────────────────────────────────────────────
 
+type FeedTab = "everyone" | "trending" | "following";
+type SidebarTab = "active" | "suggested" | "leaderboard";
+
 export default function CommunityFeed() {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
 
-  const [feedTab, setFeedTab] = useState<"everyone" | "following" | "trending">("everyone");
+  // feed state
+  const [feedTab, setFeedTab] = useState<FeedTab>("everyone");
   const [reviews, setReviews] = useState<CommunityReview[]>([]);
-  const [followingReviews, setFollowingReviews] = useState<CommunityReview[]>([]);
   const [trendingReviews, setTrendingReviews] = useState<CommunityReview[]>([]);
+  const [followingReviews, setFollowingReviews] = useState<CommunityReview[]>([]);
+
+  // sidebar state
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("active");
   const [reviewers, setReviewers] = useState<PublicProfile[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+
+  // interaction state
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [helpfulIds, setHelpfulIds] = useState<Set<string>>(new Set());
   const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+
+  // loading state
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState<Set<string>>(new Set());
   const [helpfulLoading, setHelpfulLoading] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
-  const [sidebarTab, setSidebarTab] = useState<"reviewers" | "suggested" | "leaderboard">("reviewers");
 
   const load = useCallback(async () => {
     setLoading(true);
 
+    // Core parallel fetch
     const [reviewsRes, reviewersRes, trendingRes, leaderboardRes] = await Promise.all([
       listCommunityReviews(30),
       listActiveReviewers(8),
       listTrendingReviews(10),
-      getReviewLeaderboard(5),
+      getReviewLeaderboard(8),
     ]);
 
     const fetchedReviews = reviewsRes.data ?? [];
@@ -247,8 +237,9 @@ export default function CommunityFeed() {
     setTrendingReviews(trendingRes.data ?? []);
     setLeaderboard(leaderboardRes.data ?? []);
 
+    // Like + helpful counts for the main feed
     if (fetchedReviews.length > 0) {
-      const ids = fetchedReviews.map((r) => r.id);
+      const ids = fetchedReviews.map(r => r.id);
       const [countsRes, helpfulRes] = await Promise.all([
         getReviewLikeCounts(ids),
         getHelpfulVoteCounts(ids),
@@ -257,78 +248,57 @@ export default function CommunityFeed() {
       setHelpfulCounts(helpfulRes.data ?? {});
     }
 
+    // Auth-gated data
     if (userId) {
       const [likesRes, followRes, helpfulVotesRes] = await Promise.all([
         getUserLikes(userId),
         getFollowingIds(userId),
         getUserHelpfulVotes(userId),
       ]);
-      const likedSet = new Set(likesRes.data ?? []);
       const followingSet = new Set(followRes.data ?? []);
-      setLikedIds(likedSet);
+      setLikedIds(new Set(likesRes.data ?? []));
       setFollowingIds(followingSet);
       setHelpfulIds(new Set(helpfulVotesRes.data ?? []));
 
+      // Following feed
       if (followingSet.size > 0) {
         const fwRes = await listFollowingReviews(Array.from(followingSet), 30);
         setFollowingReviews(fwRes.data ?? []);
-      } else {
-        setFollowingReviews([]);
       }
 
-      // Suggested users (non-blocking, after main load)
-      const myGenres = (reviewersRes.data ?? []).length > 0
-        ? [] // will be replaced with real profile genres below
-        : [];
-      getFollowingIds(userId).then(async (fRes) => {
-        // fetch my own profile genres from the reviewers list isn't reliable; use getPublicProfile
-        const { getPublicProfile } = await import("../services/supabase/social");
-        const profileRes = await getPublicProfile(userId);
-        const genres = profileRes.data?.favorite_genres ?? [];
-        const alreadyFollowing = fRes.data ?? [];
-        const sugRes = await getSuggestedUsers(userId, genres, alreadyFollowing, 6);
+      // Suggested users — needs my genres, load non-blocking after main render
+      getPublicProfile(userId).then(async profileRes => {
+        const myGenres = profileRes.data?.favorite_genres ?? [];
+        const alreadyFollowing = Array.from(followingSet);
+        const sugRes = await getSuggestedUsers(userId, myGenres, alreadyFollowing, 6);
         setSuggestedUsers(sugRes.data ?? []);
       });
     }
+
     setLoading(false);
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
 
+  // ── handlers ─────────────────────────────────────────────────────────────
+
   const handleLike = async (reviewId: string) => {
     if (!userId || likeLoading.has(reviewId)) return;
-    setLikeLoading((s) => new Set(s).add(reviewId));
+    setLikeLoading(s => new Set(s).add(reviewId));
     const isLiked = likedIds.has(reviewId);
-    setLikedIds((prev) => {
-      const next = new Set(prev);
-      isLiked ? next.delete(reviewId) : next.add(reviewId);
-      return next;
-    });
-    setLikeCounts((prev) => ({
-      ...prev,
-      [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isLiked ? -1 : 1)),
-    }));
-    if (isLiked) {
-      await unlikeReview(reviewId, userId);
-    } else {
-      await likeReview(reviewId, userId);
-    }
-    setLikeLoading((s) => { const n = new Set(s); n.delete(reviewId); return n; });
+    setLikedIds(prev => { const n = new Set(prev); isLiked ? n.delete(reviewId) : n.add(reviewId); return n; });
+    setLikeCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isLiked ? -1 : 1)) }));
+    if (isLiked) await unlikeReview(reviewId, userId);
+    else await likeReview(reviewId, userId);
+    setLikeLoading(s => { const n = new Set(s); n.delete(reviewId); return n; });
   };
 
   const handleHelpful = async (reviewId: string) => {
     if (!userId || helpfulLoading.has(reviewId)) return;
     setHelpfulLoading(s => new Set(s).add(reviewId));
     const isHelpful = helpfulIds.has(reviewId);
-    setHelpfulIds(prev => {
-      const next = new Set(prev);
-      isHelpful ? next.delete(reviewId) : next.add(reviewId);
-      return next;
-    });
-    setHelpfulCounts(prev => ({
-      ...prev,
-      [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isHelpful ? -1 : 1)),
-    }));
+    setHelpfulIds(prev => { const n = new Set(prev); isHelpful ? n.delete(reviewId) : n.add(reviewId); return n; });
+    setHelpfulCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isHelpful ? -1 : 1)) }));
     if (isHelpful) await unvoteHelpful(reviewId, userId);
     else await voteHelpful(reviewId, userId);
     setHelpfulLoading(s => { const n = new Set(s); n.delete(reviewId); return n; });
@@ -336,20 +306,46 @@ export default function CommunityFeed() {
 
   const handleFollow = async (targetId: string) => {
     if (!userId || followLoading.has(targetId)) return;
-    setFollowLoading((s) => new Set(s).add(targetId));
+    setFollowLoading(s => new Set(s).add(targetId));
     const isFollowing = followingIds.has(targetId);
-    setFollowingIds((prev) => {
-      const next = new Set(prev);
-      isFollowing ? next.delete(targetId) : next.add(targetId);
-      return next;
-    });
-    if (isFollowing) {
-      await unfollowUser(userId, targetId);
-    } else {
-      await followUser(userId, targetId);
-    }
-    setFollowLoading((s) => { const n = new Set(s); n.delete(targetId); return n; });
+    setFollowingIds(prev => { const n = new Set(prev); isFollowing ? n.delete(targetId) : n.add(targetId); return n; });
+    if (isFollowing) await unfollowUser(userId, targetId);
+    else await followUser(userId, targetId);
+    setFollowLoading(s => { const n = new Set(s); n.delete(targetId); return n; });
   };
+
+  // ── helpers ───────────────────────────────────────────────────────────────
+
+  const renderReviewList = (list: CommunityReview[], emptyIcon: React.ReactNode, emptyMsg: string, emptyHint?: string) =>
+    list.length === 0 ? (
+      <div className="rounded-2xl border border-neutral-800 py-16 text-center">
+        <div className="flex justify-center mb-3">{emptyIcon}</div>
+        <p className="text-sm text-neutral-500">{emptyMsg}</p>
+        {emptyHint && <p className="text-xs text-neutral-600 mt-1">{emptyHint}</p>}
+      </div>
+    ) : (
+      <AnimatePresence mode="popLayout">
+        {list.map(review => (
+          <ReviewCard
+            key={review.id}
+            review={review}
+            liked={likedIds.has(review.id)}
+            likeCount={likeCounts[review.id] ?? review.like_count ?? 0}
+            onLike={handleLike}
+            helpful={helpfulIds.has(review.id)}
+            helpfulCount={helpfulCounts[review.id] ?? 0}
+            onHelpful={handleHelpful}
+            isAuthed={!!userId}
+            isOwn={review.user_id === userId}
+            isTrending={feedTab === "trending"}
+          />
+        ))}
+      </AnimatePresence>
+    );
+
+  const activeList = feedTab === "trending" ? trendingReviews : feedTab === "following" ? followingReviews : reviews;
+
+  // ── render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -377,123 +373,56 @@ export default function CommunityFeed() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* ── REVIEW FEED (2/3 width) ── */}
+          {/* ── FEED (2/3) ── */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Feed tabs */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-4 flex-wrap">
-              <button
-                onClick={() => setFeedTab("everyone")}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  feedTab === "everyone" ? "bg-red-600 text-white shadow" : "text-neutral-400 hover:text-white"
-                }`}
-              >
-                <Users className="h-3.5 w-3.5" />
-                Everyone
-              </button>
-              <button
-                onClick={() => setFeedTab("trending")}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  feedTab === "trending" ? "bg-amber-500 text-white shadow" : "text-neutral-400 hover:text-white"
-                }`}
-              >
-                <Zap className="h-3.5 w-3.5" />
-                Trending
-              </button>
-              {userId && (
+
+            {/* Feed tab switcher */}
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-2">
+              {([
+                { key: "everyone",  label: "Everyone",  icon: Users },
+                { key: "trending",  label: "Trending",  icon: Flame },
+                ...(userId ? [{ key: "following" as FeedTab, label: "Following", icon: UserCheck }] : []),
+              ] as { key: FeedTab; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
                 <button
-                  onClick={() => setFeedTab("following")}
+                  key={key}
+                  onClick={() => setFeedTab(key)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    feedTab === "following" ? "bg-red-600 text-white shadow" : "text-neutral-400 hover:text-white"
+                    feedTab === key
+                      ? key === "trending" ? "bg-amber-500 text-white shadow" : "bg-red-600 text-white shadow"
+                      : "text-neutral-400 hover:text-white"
                   }`}
                 >
-                  <UserCheck className="h-3.5 w-3.5" />
-                  Following
-                  {followingReviews.length > 0 && feedTab !== "following" && (
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                  {key === "following" && followingReviews.length > 0 && feedTab !== "following" && (
                     <span className="ml-0.5 rounded-full bg-red-500/30 text-red-300 px-1.5 text-[10px]">{followingReviews.length}</span>
                   )}
                 </button>
-              )}
+              ))}
             </div>
 
-            {feedTab === "everyone" ? (
-              reviews.length === 0 ? (
-                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
-                  <MessageSquare className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
-                  <p className="text-sm text-neutral-500">No reviews yet. Be the first!</p>
-                </div>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {reviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      liked={likedIds.has(review.id)}
-                      likeCount={likeCounts[review.id] ?? 0}
-                      onLike={handleLike}
-                      helpful={helpfulIds.has(review.id)}
-                      helpfulCount={helpfulCounts[review.id] ?? 0}
-                      onHelpful={handleHelpful}
-                      isAuthed={!!userId}
-                      isOwn={review.user_id === userId}
-                    />
-                  ))}
-                </AnimatePresence>
-              )
-            ) : feedTab === "trending" ? (
-              trendingReviews.length === 0 ? (
-                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
-                  <Zap className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
-                  <p className="text-sm text-neutral-500">No trending reviews this week yet.</p>
-                </div>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {trendingReviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      liked={likedIds.has(review.id)}
-                      likeCount={likeCounts[review.id] ?? review.like_count ?? 0}
-                      onLike={handleLike}
-                      helpful={helpfulIds.has(review.id)}
-                      helpfulCount={helpfulCounts[review.id] ?? 0}
-                      onHelpful={handleHelpful}
-                      isAuthed={!!userId}
-                      isOwn={review.user_id === userId}
-                      isTrending
-                    />
-                  ))}
-                </AnimatePresence>
-              )
-            ) : (
-              followingReviews.length === 0 ? (
-                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
-                  <UserCheck className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
-                  <p className="text-sm text-neutral-500 mb-1">No reviews from people you follow yet.</p>
-                  <p className="text-xs text-neutral-600">Follow more members from the sidebar.</p>
-                </div>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {followingReviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      liked={likedIds.has(review.id)}
-                      likeCount={likeCounts[review.id] ?? 0}
-                      onLike={handleLike}
-                      helpful={helpfulIds.has(review.id)}
-                      helpfulCount={helpfulCounts[review.id] ?? 0}
-                      onHelpful={handleHelpful}
-                      isAuthed={!!userId}
-                      isOwn={review.user_id === userId}
-                    />
-                  ))}
-                </AnimatePresence>
-              )
+            {/* Review list */}
+            {feedTab === "everyone" && renderReviewList(
+              activeList,
+              <MessageSquare className="h-8 w-8 text-neutral-700" />,
+              "No reviews yet. Be the first!"
+            )}
+            {feedTab === "trending" && renderReviewList(
+              activeList,
+              <Flame className="h-8 w-8 text-neutral-700" />,
+              "No trending reviews this week yet.",
+              "Reviews gain trending status from community likes."
+            )}
+            {feedTab === "following" && renderReviewList(
+              activeList,
+              <UserCheck className="h-8 w-8 text-neutral-700" />,
+              "No reviews from people you follow yet.",
+              "Follow members from the sidebar to see their reviews here."
             )}
           </div>
 
-          {/* ── SIDEBAR (1/3 width) ── */}
-          <div className="space-y-6">
+          {/* ── SIDEBAR (1/3) ── */}
+          <div className="space-y-5">
 
             {!firebaseUser && (
               <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 text-center space-y-2">
@@ -503,8 +432,8 @@ export default function CommunityFeed() {
             )}
 
             {/* Community stats */}
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 space-y-3">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
+              <div className="flex items-center gap-2 mb-3">
                 <Users className="h-4 w-4 text-red-500" />
                 <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-400">Community</h2>
               </div>
@@ -523,10 +452,10 @@ export default function CommunityFeed() {
             {/* Sidebar tab switcher */}
             <div className="flex gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800">
               {([
-                { key: "reviewers",   label: "Active",     icon: TrendingUp },
-                { key: "suggested",   label: "For You",    icon: Sparkles },
-                { key: "leaderboard", label: "Top",        icon: Trophy },
-              ] as const).map(({ key, label, icon: Icon }) => (
+                { key: "active",      label: "Active",   icon: TrendingUp },
+                { key: "suggested",   label: "For You",  icon: Sparkles },
+                { key: "leaderboard", label: "Top",      icon: Trophy },
+              ] as { key: SidebarTab; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
                 <button
                   key={key}
                   onClick={() => setSidebarTab(key)}
@@ -534,16 +463,17 @@ export default function CommunityFeed() {
                     sidebarTab === key ? "bg-red-600 text-white" : "text-neutral-500 hover:text-white"
                   }`}
                 >
-                  <Icon className="h-3 w-3" />
-                  {label}
+                  <Icon className="h-3 w-3" />{label}
                 </button>
               ))}
             </div>
 
-            {/* Active Reviewers panel */}
-            {sidebarTab === "reviewers" && reviewers.length > 0 && (
+            {/* Active Reviewers */}
+            {sidebarTab === "active" && (
               <div className="space-y-2">
-                {reviewers.map((profile) => (
+                {reviewers.length === 0 ? (
+                  <p className="text-xs text-neutral-600 text-center py-6">No reviewers yet.</p>
+                ) : reviewers.map(profile => (
                   <ReviewerCard
                     key={profile.id}
                     profile={profile}
@@ -556,62 +486,67 @@ export default function CommunityFeed() {
               </div>
             )}
 
-            {/* Suggested Users panel */}
+            {/* Suggested Users / Taste Matching */}
             {sidebarTab === "suggested" && (
               <div className="space-y-2">
-                {suggestedUsers.length === 0 ? (
+                {!userId ? (
                   <div className="rounded-2xl border border-neutral-800 py-8 text-center">
                     <Sparkles className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
-                    <p className="text-xs text-neutral-500">
-                      {userId ? "Set favorite genres in your profile to get suggestions." : "Sign in to see suggested users."}
-                    </p>
+                    <p className="text-xs text-neutral-500">Sign in to discover users with similar taste.</p>
                   </div>
-                ) : (
-                  suggestedUsers.map((u) => (
-                    <div key={u.id} className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 space-y-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-400 flex-shrink-0 overflow-hidden">
-                          {u.avatar_url
-                            ? <img src={u.avatar_url} alt={u.display_name ?? ""} className="w-full h-full object-cover" />
-                            : (u.display_name ?? "?")[0].toUpperCase()
-                          }
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{u.display_name ?? "Anonymous"}</p>
-                          <p className="text-[11px] text-neutral-500">{u.reviewCount} review{u.reviewCount !== 1 ? "s" : ""}</p>
-                        </div>
-                        {!followingIds.has(u.id) && userId && (
-                          <button
-                            onClick={() => handleFollow(u.id)}
-                            className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-all cursor-pointer flex-shrink-0"
-                          >
-                            <UserPlus className="h-3 w-3" /> Follow
-                          </button>
-                        )}
+                ) : suggestedUsers.length === 0 ? (
+                  <div className="rounded-2xl border border-neutral-800 py-8 text-center">
+                    <Sparkles className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
+                    <p className="text-xs text-neutral-500">Set favorite genres in your profile to get suggestions.</p>
+                  </div>
+                ) : suggestedUsers.map(u => (
+                  <motion.div
+                    key={u.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 space-y-2"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Avatar url={u.avatar_url} name={u.display_name} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{u.display_name ?? "Anonymous"}</p>
+                        <p className="text-[11px] text-neutral-500">{u.reviewCount} review{u.reviewCount !== 1 ? "s" : ""}</p>
                       </div>
-                      {u.tasteMatchPct > 0 && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1 rounded-full bg-neutral-800 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400"
-                              style={{ width: `${u.tasteMatchPct}%` }}
-                            />
-                          </div>
-                          <span className="text-[10px] font-bold text-red-400 flex-shrink-0">{u.tasteMatchPct}% match</span>
-                        </div>
-                      )}
-                      {u.sharedGenres.length > 0 && (
-                        <p className="text-[10px] text-neutral-500 truncate">
-                          Both like: {u.sharedGenres.slice(0, 3).join(", ")}
-                        </p>
+                      {!followingIds.has(u.id) && (
+                        <button
+                          onClick={() => handleFollow(u.id)}
+                          className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-all cursor-pointer flex-shrink-0"
+                        >
+                          <UserPlus className="h-3 w-3" /> Follow
+                        </button>
                       )}
                     </div>
-                  ))
-                )}
+                    {/* Taste match bar */}
+                    {u.tasteMatchPct > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] text-neutral-500">Taste match</span>
+                          <span className="text-[10px] font-bold text-red-400">{u.tasteMatchPct}%</span>
+                        </div>
+                        <div className="h-1 rounded-full bg-neutral-800 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-red-700 to-red-400 transition-all"
+                            style={{ width: `${u.tasteMatchPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {u.sharedGenres.length > 0 && (
+                      <p className="text-[10px] text-neutral-500 truncate">
+                        Both like: {u.sharedGenres.slice(0, 3).join(", ")}
+                      </p>
+                    )}
+                  </motion.div>
+                ))}
               </div>
             )}
 
-            {/* Leaderboard panel */}
+            {/* Leaderboard */}
             {sidebarTab === "leaderboard" && (
               <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                 <div className="px-4 py-3 border-b border-neutral-800 flex items-center gap-2">
@@ -620,26 +555,17 @@ export default function CommunityFeed() {
                 </div>
                 <div className="divide-y divide-neutral-800/60">
                   {leaderboard.length === 0 ? (
-                    <div className="py-8 text-center">
-                      <p className="text-xs text-neutral-500">No data yet.</p>
+                    <p className="text-xs text-neutral-600 text-center py-8">No data yet.</p>
+                  ) : leaderboard.map((entry, i) => (
+                    <div key={entry.user_id} className="flex items-center gap-3 px-4 py-2.5">
+                      <span className={`text-xs font-black w-4 flex-shrink-0 ${
+                        i === 0 ? "text-amber-400" : i === 1 ? "text-neutral-300" : i === 2 ? "text-amber-700" : "text-neutral-600"
+                      }`}>{i + 1}</span>
+                      <Avatar url={entry.avatar_url} name={entry.display_name} size="sm" />
+                      <p className="flex-1 text-xs font-semibold text-white truncate">{entry.display_name ?? "Anonymous"}</p>
+                      <span className="text-[11px] text-neutral-500 flex-shrink-0">{entry.label}</span>
                     </div>
-                  ) : (
-                    leaderboard.map((entry, i) => (
-                      <div key={entry.user_id} className="flex items-center gap-3 px-4 py-2.5">
-                        <span className={`text-xs font-black w-4 flex-shrink-0 ${i === 0 ? "text-amber-400" : i === 1 ? "text-neutral-300" : i === 2 ? "text-amber-700" : "text-neutral-600"}`}>
-                          {i + 1}
-                        </span>
-                        <div className="h-7 w-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-[10px] font-bold text-neutral-400 flex-shrink-0 overflow-hidden">
-                          {entry.avatar_url
-                            ? <img src={entry.avatar_url} alt={entry.display_name ?? ""} className="w-full h-full object-cover" />
-                            : (entry.display_name ?? "?")[0].toUpperCase()
-                          }
-                        </div>
-                        <p className="flex-1 text-xs font-semibold text-white truncate">{entry.display_name ?? "Anonymous"}</p>
-                        <span className="text-[11px] text-neutral-500 flex-shrink-0">{entry.label}</span>
-                      </div>
-                    ))
-                  )}
+                  ))}
                 </div>
               </div>
             )}
