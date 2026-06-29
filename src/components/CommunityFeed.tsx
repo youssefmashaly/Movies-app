@@ -2,22 +2,33 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, Star, Users, MessageSquare, Loader2,
-  User, TrendingUp, Film, RefreshCw, UserPlus, UserCheck
+  User, TrendingUp, Film, RefreshCw, UserPlus, UserCheck,
+  ThumbsUp, Trophy, Sparkles, Zap
 } from "lucide-react";
 import { auth } from "../firebase";
 import {
   listCommunityReviews,
   listFollowingReviews,
+  listTrendingReviews,
   likeReview,
   unlikeReview,
   getUserLikes,
   getReviewLikeCounts,
+  voteHelpful,
+  unvoteHelpful,
+  getUserHelpfulVotes,
+  getHelpfulVoteCounts,
   listActiveReviewers,
+  getReviewLeaderboard,
+  getMostLikedLeaderboard,
+  getSuggestedUsers,
   followUser,
   unfollowUser,
   getFollowingIds,
   type CommunityReview,
   type PublicProfile,
+  type LeaderboardEntry,
+  type SuggestedUser,
 } from "../services/supabase/social";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -53,15 +64,23 @@ function ReviewCard({
   liked,
   likeCount,
   onLike,
+  helpful,
+  helpfulCount,
+  onHelpful,
   isAuthed,
   isOwn,
+  isTrending,
 }: {
   review: CommunityReview;
   liked: boolean;
   likeCount: number;
   onLike: (id: string) => void;
+  helpful: boolean;
+  helpfulCount: number;
+  onHelpful: (id: string) => void;
   isAuthed: boolean;
   isOwn: boolean;
+  isTrending?: boolean;
 }) {
   const displayName = review.profiles?.display_name ?? "Anonymous";
   const avatarUrl = review.profiles?.avatar_url ?? null;
@@ -104,7 +123,7 @@ function ReviewCard({
       )}
 
       {/* footer */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex items-center gap-2 pt-1 flex-wrap">
         <button
           onClick={() => isAuthed && onLike(review.id)}
           disabled={!isAuthed}
@@ -118,6 +137,24 @@ function ReviewCard({
           <Heart className={`h-3.5 w-3.5 ${liked ? "fill-red-400" : ""}`} />
           <span>{likeCount > 0 ? likeCount : ""} {liked ? "Liked" : "Like"}</span>
         </button>
+        <button
+          onClick={() => isAuthed && onHelpful(review.id)}
+          disabled={!isAuthed || isOwn}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            helpful
+              ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400"
+              : "bg-neutral-800/60 border border-neutral-700/50 text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/30"
+          } disabled:cursor-default disabled:opacity-50`}
+          title={isOwn ? "Can't vote on your own review" : isAuthed ? (helpful ? "Remove helpful vote" : "Mark as helpful") : "Sign in to vote"}
+        >
+          <ThumbsUp className={`h-3.5 w-3.5 ${helpful ? "fill-emerald-400" : ""}`} />
+          <span>{helpfulCount > 0 ? helpfulCount : ""} {helpful ? "Helpful" : "Helpful?"}</span>
+        </button>
+        {isTrending && (
+          <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+            <Zap className="h-2.5 w-2.5" /> Trending
+          </span>
+        )}
       </div>
     </motion.div>
   );
@@ -176,50 +213,82 @@ export default function CommunityFeed() {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
 
-  const [feedTab, setFeedTab] = useState<"everyone" | "following">("everyone");
+  const [feedTab, setFeedTab] = useState<"everyone" | "following" | "trending">("everyone");
   const [reviews, setReviews] = useState<CommunityReview[]>([]);
   const [followingReviews, setFollowingReviews] = useState<CommunityReview[]>([]);
+  const [trendingReviews, setTrendingReviews] = useState<CommunityReview[]>([]);
   const [reviewers, setReviewers] = useState<PublicProfile[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [helpfulIds, setHelpfulIds] = useState<Set<string>>(new Set());
+  const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState<Set<string>>(new Set());
+  const [helpfulLoading, setHelpfulLoading] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
+  const [sidebarTab, setSidebarTab] = useState<"reviewers" | "suggested" | "leaderboard">("reviewers");
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [reviewsRes, reviewersRes] = await Promise.all([
+
+    const [reviewsRes, reviewersRes, trendingRes, leaderboardRes] = await Promise.all([
       listCommunityReviews(30),
       listActiveReviewers(8),
+      listTrendingReviews(10),
+      getReviewLeaderboard(5),
     ]);
+
     const fetchedReviews = reviewsRes.data ?? [];
     setReviews(fetchedReviews);
     setReviewers(reviewersRes.data ?? []);
+    setTrendingReviews(trendingRes.data ?? []);
+    setLeaderboard(leaderboardRes.data ?? []);
 
     if (fetchedReviews.length > 0) {
       const ids = fetchedReviews.map((r) => r.id);
-      const countsRes = await getReviewLikeCounts(ids);
+      const [countsRes, helpfulRes] = await Promise.all([
+        getReviewLikeCounts(ids),
+        getHelpfulVoteCounts(ids),
+      ]);
       setLikeCounts(countsRes.data ?? {});
+      setHelpfulCounts(helpfulRes.data ?? {});
     }
 
     if (userId) {
-      const [likesRes, followRes] = await Promise.all([
+      const [likesRes, followRes, helpfulVotesRes] = await Promise.all([
         getUserLikes(userId),
         getFollowingIds(userId),
+        getUserHelpfulVotes(userId),
       ]);
       const likedSet = new Set(likesRes.data ?? []);
       const followingSet = new Set(followRes.data ?? []);
       setLikedIds(likedSet);
       setFollowingIds(followingSet);
+      setHelpfulIds(new Set(helpfulVotesRes.data ?? []));
 
-      // fetch following feed if user follows anyone
       if (followingSet.size > 0) {
         const fwRes = await listFollowingReviews(Array.from(followingSet), 30);
         setFollowingReviews(fwRes.data ?? []);
       } else {
         setFollowingReviews([]);
       }
+
+      // Suggested users (non-blocking, after main load)
+      const myGenres = (reviewersRes.data ?? []).length > 0
+        ? [] // will be replaced with real profile genres below
+        : [];
+      getFollowingIds(userId).then(async (fRes) => {
+        // fetch my own profile genres from the reviewers list isn't reliable; use getPublicProfile
+        const { getPublicProfile } = await import("../services/supabase/social");
+        const profileRes = await getPublicProfile(userId);
+        const genres = profileRes.data?.favorite_genres ?? [];
+        const alreadyFollowing = fRes.data ?? [];
+        const sugRes = await getSuggestedUsers(userId, genres, alreadyFollowing, 6);
+        setSuggestedUsers(sugRes.data ?? []);
+      });
     }
     setLoading(false);
   }, [userId]);
@@ -245,6 +314,24 @@ export default function CommunityFeed() {
       await likeReview(reviewId, userId);
     }
     setLikeLoading((s) => { const n = new Set(s); n.delete(reviewId); return n; });
+  };
+
+  const handleHelpful = async (reviewId: string) => {
+    if (!userId || helpfulLoading.has(reviewId)) return;
+    setHelpfulLoading(s => new Set(s).add(reviewId));
+    const isHelpful = helpfulIds.has(reviewId);
+    setHelpfulIds(prev => {
+      const next = new Set(prev);
+      isHelpful ? next.delete(reviewId) : next.add(reviewId);
+      return next;
+    });
+    setHelpfulCounts(prev => ({
+      ...prev,
+      [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isHelpful ? -1 : 1)),
+    }));
+    if (isHelpful) await unvoteHelpful(reviewId, userId);
+    else await voteHelpful(reviewId, userId);
+    setHelpfulLoading(s => { const n = new Set(s); n.delete(reviewId); return n; });
   };
 
   const handleFollow = async (targetId: string) => {
@@ -293,25 +380,30 @@ export default function CommunityFeed() {
           {/* ── REVIEW FEED (2/3 width) ── */}
           <div className="lg:col-span-2 space-y-4">
             {/* Feed tabs */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-4">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-4 flex-wrap">
               <button
                 onClick={() => setFeedTab("everyone")}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  feedTab === "everyone"
-                    ? "bg-red-600 text-white shadow"
-                    : "text-neutral-400 hover:text-white"
+                  feedTab === "everyone" ? "bg-red-600 text-white shadow" : "text-neutral-400 hover:text-white"
                 }`}
               >
                 <Users className="h-3.5 w-3.5" />
                 Everyone
               </button>
+              <button
+                onClick={() => setFeedTab("trending")}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  feedTab === "trending" ? "bg-amber-500 text-white shadow" : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Trending
+              </button>
               {userId && (
                 <button
                   onClick={() => setFeedTab("following")}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    feedTab === "following"
-                      ? "bg-red-600 text-white shadow"
-                      : "text-neutral-400 hover:text-white"
+                    feedTab === "following" ? "bg-red-600 text-white shadow" : "text-neutral-400 hover:text-white"
                   }`}
                 >
                   <UserCheck className="h-3.5 w-3.5" />
@@ -338,8 +430,36 @@ export default function CommunityFeed() {
                       liked={likedIds.has(review.id)}
                       likeCount={likeCounts[review.id] ?? 0}
                       onLike={handleLike}
+                      helpful={helpfulIds.has(review.id)}
+                      helpfulCount={helpfulCounts[review.id] ?? 0}
+                      onHelpful={handleHelpful}
                       isAuthed={!!userId}
                       isOwn={review.user_id === userId}
+                    />
+                  ))}
+                </AnimatePresence>
+              )
+            ) : feedTab === "trending" ? (
+              trendingReviews.length === 0 ? (
+                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
+                  <Zap className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
+                  <p className="text-sm text-neutral-500">No trending reviews this week yet.</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {trendingReviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      liked={likedIds.has(review.id)}
+                      likeCount={likeCounts[review.id] ?? review.like_count ?? 0}
+                      onLike={handleLike}
+                      helpful={helpfulIds.has(review.id)}
+                      helpfulCount={helpfulCounts[review.id] ?? 0}
+                      onHelpful={handleHelpful}
+                      isAuthed={!!userId}
+                      isOwn={review.user_id === userId}
+                      isTrending
                     />
                   ))}
                 </AnimatePresence>
@@ -360,6 +480,9 @@ export default function CommunityFeed() {
                       liked={likedIds.has(review.id)}
                       likeCount={likeCounts[review.id] ?? 0}
                       onLike={handleLike}
+                      helpful={helpfulIds.has(review.id)}
+                      helpfulCount={helpfulCounts[review.id] ?? 0}
+                      onHelpful={handleHelpful}
                       isAuthed={!!userId}
                       isOwn={review.user_id === userId}
                     />
@@ -379,27 +502,7 @@ export default function CommunityFeed() {
               </div>
             )}
 
-            {reviewers.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4 text-red-500" />
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-400">Active Reviewers</h2>
-                </div>
-                <div className="space-y-2">
-                  {reviewers.map((profile) => (
-                    <ReviewerCard
-                      key={profile.id}
-                      profile={profile}
-                      isFollowing={followingIds.has(profile.id)}
-                      isOwn={profile.id === userId}
-                      onFollow={handleFollow}
-                      isAuthed={!!userId}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
+            {/* Community stats */}
             <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-4 w-4 text-red-500" />
@@ -416,6 +519,130 @@ export default function CommunityFeed() {
                 </div>
               </div>
             </div>
+
+            {/* Sidebar tab switcher */}
+            <div className="flex gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800">
+              {([
+                { key: "reviewers",   label: "Active",     icon: TrendingUp },
+                { key: "suggested",   label: "For You",    icon: Sparkles },
+                { key: "leaderboard", label: "Top",        icon: Trophy },
+              ] as const).map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setSidebarTab(key)}
+                  className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
+                    sidebarTab === key ? "bg-red-600 text-white" : "text-neutral-500 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Active Reviewers panel */}
+            {sidebarTab === "reviewers" && reviewers.length > 0 && (
+              <div className="space-y-2">
+                {reviewers.map((profile) => (
+                  <ReviewerCard
+                    key={profile.id}
+                    profile={profile}
+                    isFollowing={followingIds.has(profile.id)}
+                    isOwn={profile.id === userId}
+                    onFollow={handleFollow}
+                    isAuthed={!!userId}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Suggested Users panel */}
+            {sidebarTab === "suggested" && (
+              <div className="space-y-2">
+                {suggestedUsers.length === 0 ? (
+                  <div className="rounded-2xl border border-neutral-800 py-8 text-center">
+                    <Sparkles className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
+                    <p className="text-xs text-neutral-500">
+                      {userId ? "Set favorite genres in your profile to get suggestions." : "Sign in to see suggested users."}
+                    </p>
+                  </div>
+                ) : (
+                  suggestedUsers.map((u) => (
+                    <div key={u.id} className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 space-y-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-400 flex-shrink-0 overflow-hidden">
+                          {u.avatar_url
+                            ? <img src={u.avatar_url} alt={u.display_name ?? ""} className="w-full h-full object-cover" />
+                            : (u.display_name ?? "?")[0].toUpperCase()
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{u.display_name ?? "Anonymous"}</p>
+                          <p className="text-[11px] text-neutral-500">{u.reviewCount} review{u.reviewCount !== 1 ? "s" : ""}</p>
+                        </div>
+                        {!followingIds.has(u.id) && userId && (
+                          <button
+                            onClick={() => handleFollow(u.id)}
+                            className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-all cursor-pointer flex-shrink-0"
+                          >
+                            <UserPlus className="h-3 w-3" /> Follow
+                          </button>
+                        )}
+                      </div>
+                      {u.tasteMatchPct > 0 && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1 rounded-full bg-neutral-800 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400"
+                              style={{ width: `${u.tasteMatchPct}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-red-400 flex-shrink-0">{u.tasteMatchPct}% match</span>
+                        </div>
+                      )}
+                      {u.sharedGenres.length > 0 && (
+                        <p className="text-[10px] text-neutral-500 truncate">
+                          Both like: {u.sharedGenres.slice(0, 3).join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Leaderboard panel */}
+            {sidebarTab === "leaderboard" && (
+              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-800 flex items-center gap-2">
+                  <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Most Reviews</span>
+                </div>
+                <div className="divide-y divide-neutral-800/60">
+                  {leaderboard.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <p className="text-xs text-neutral-500">No data yet.</p>
+                    </div>
+                  ) : (
+                    leaderboard.map((entry, i) => (
+                      <div key={entry.user_id} className="flex items-center gap-3 px-4 py-2.5">
+                        <span className={`text-xs font-black w-4 flex-shrink-0 ${i === 0 ? "text-amber-400" : i === 1 ? "text-neutral-300" : i === 2 ? "text-amber-700" : "text-neutral-600"}`}>
+                          {i + 1}
+                        </span>
+                        <div className="h-7 w-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-[10px] font-bold text-neutral-400 flex-shrink-0 overflow-hidden">
+                          {entry.avatar_url
+                            ? <img src={entry.avatar_url} alt={entry.display_name ?? ""} className="w-full h-full object-cover" />
+                            : (entry.display_name ?? "?")[0].toUpperCase()
+                          }
+                        </div>
+                        <p className="flex-1 text-xs font-semibold text-white truncate">{entry.display_name ?? "Anonymous"}</p>
+                        <span className="text-[11px] text-neutral-500 flex-shrink-0">{entry.label}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
