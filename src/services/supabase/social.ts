@@ -52,7 +52,11 @@ export async function listCommunityReviews(limit = 20): Promise<SupabaseResult<C
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) return { data: null, error: error.message };
-    return { data: (data as CommunityReview[]) ?? [], error: null };
+    const normalized = (data ?? []).map((row: any) => ({
+      ...row,
+      profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
+    })) as CommunityReview[];
+    return { data: normalized, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Failed to fetch community reviews." };
   }
@@ -192,6 +196,119 @@ export async function getFollowingCount(userId: string): Promise<SupabaseResult<
   }
 }
 
+// ── Followers / Following Lists ───────────────────────────────────────────────
+
+export interface FollowWithProfile {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  favorite_genres: string[] | null;
+}
+
+export async function listFollowers(userId: string): Promise<SupabaseResult<FollowWithProfile[]>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from("follows")
+      .select("follower_id, profiles!follows_follower_id_fkey(id, display_name, avatar_url, favorite_genres)")
+      .eq("following_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) return { data: null, error: error.message };
+    const result = (data ?? []).map((row: any) => ({
+      id: row.follower_id,
+      user_id: row.follower_id,
+      display_name: row.profiles?.display_name ?? null,
+      avatar_url: row.profiles?.avatar_url ?? null,
+      favorite_genres: row.profiles?.favorite_genres ?? null,
+    }));
+    return { data: result, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch followers." };
+  }
+}
+
+export async function listFollowing(userId: string): Promise<SupabaseResult<FollowWithProfile[]>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from("follows")
+      .select("following_id, profiles!follows_following_id_fkey(id, display_name, avatar_url, favorite_genres)")
+      .eq("follower_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) return { data: null, error: error.message };
+    const result = (data ?? []).map((row: any) => ({
+      id: row.following_id,
+      user_id: row.following_id,
+      display_name: row.profiles?.display_name ?? null,
+      avatar_url: row.profiles?.avatar_url ?? null,
+      favorite_genres: row.profiles?.favorite_genres ?? null,
+    }));
+    return { data: result, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch following." };
+  }
+}
+
+export async function checkIsFollowing(followerId: string, followingId: string): Promise<SupabaseResult<boolean>> {
+  if (!isSupabaseConfigured) return { data: false, error: null };
+  try {
+    const { count, error } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", followerId)
+      .eq("following_id", followingId);
+    if (error) return { data: null, error: error.message };
+    return { data: (count ?? 0) > 0, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to check follow status." };
+  }
+}
+
+export async function getFollowCounts(userId: string): Promise<SupabaseResult<{ followers: number; following: number }>> {
+  if (!isSupabaseConfigured) return { data: { followers: 0, following: 0 }, error: null };
+  try {
+    const [follRes, folwRes] = await Promise.all([
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
+    ]);
+    return {
+      data: {
+        followers: follRes.count ?? 0,
+        following: folwRes.count ?? 0,
+      },
+      error: follRes.error?.message ?? folwRes.error?.message ?? null,
+    };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch follow counts." };
+  }
+}
+
+export async function getSharedGenres(userAGenres: string[], userBGenres: string[]): Promise<string[]> {
+  const setB = new Set(userBGenres);
+  return userAGenres.filter(g => setB.has(g));
+}
+
+export async function listFollowingReviews(followingIds: string[], limit = 30): Promise<SupabaseResult<CommunityReview[]>> {
+  if (!isSupabaseConfigured || followingIds.length === 0) return { data: [], error: null };
+  try {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("id, user_id, movie_id, movie_title, rating, comment, created_at, profiles(display_name, avatar_url)")
+      .in("user_id", followingIds)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    const normalized = (data ?? []).map((row: any) => ({
+      ...row,
+      profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
+    })) as CommunityReview[];
+    return { data: normalized, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch following reviews." };
+  }
+}
+
 // ── Active Reviewers ──────────────────────────────────────────────────────────
 
 export async function listActiveReviewers(limit = 8): Promise<SupabaseResult<PublicProfile[]>> {
@@ -207,7 +324,8 @@ export async function listActiveReviewers(limit = 8): Promise<SupabaseResult<Pub
     const seen = new Set<string>();
     const reviewers: PublicProfile[] = [];
     for (const row of data ?? []) {
-      const profile = row.profiles as PublicProfile | null;
+      const rawProfile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      const profile = rawProfile as PublicProfile | null;
       if (profile && !seen.has(row.user_id)) {
         seen.add(row.user_id);
         reviewers.push(profile);

@@ -1406,7 +1406,7 @@ export default function App() {
             >
               <UserProfile />
             </motion.div>
-            ) : (
+          ) : activeTab === "community" ? (
             /* 6. COMMUNITY FEED */
             <motion.div
               key="community-tab"
@@ -1416,9 +1416,8 @@ export default function App() {
             >
               <CommunityFeed />
             </motion.div>
-          )}
           ) : (
-            /* 6. PERSONAL DASHBOARD */
+            /* 7. PERSONAL DASHBOARD */
             <motion.div
               key="dashboard-tab"
               initial={{ opacity: 0, y: 15 }}

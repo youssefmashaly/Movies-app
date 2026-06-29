@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   User, Star, BookMarked, Eye, MessageSquare, Edit3, Check, X,
-  Film, Heart, BarChart2, TrendingUp, Loader2, AlertCircle, ChevronRight
+  Film, Heart, BarChart2, TrendingUp, Loader2, AlertCircle, ChevronRight,
+  Users, Calendar, UserPlus, UserCheck, X as XIcon
 } from "lucide-react";
 import { auth } from "../firebase";
 import { getProfileWithGenres, updateProfile, saveFavoriteGenres } from "../services/supabase/profiles";
@@ -10,6 +11,7 @@ import { listUserRatings } from "../services/supabase/ratings";
 import { listUserReviews } from "../services/supabase/reviews";
 import { listRecentlyViewed } from "../services/supabase/recentlyViewed";
 import { getOrCreateDefaultWatchlist, listWatchlistMovies } from "../services/supabase/watchlists";
+import { getFollowCounts, listFollowers, listFollowing, followUser, unfollowUser, type FollowWithProfile } from "../services/supabase/social";
 import { ALL_GENRES } from "../movies-data";
 import type {
   SupabaseRating,
@@ -123,6 +125,13 @@ export default function UserProfile() {
   const [watchlistMovies, setWatchlistMovies] = useState<SupabaseWatchlistMovie[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
+  // social
+  const [followCounts, setFollowCounts] = useState<{ followers: number; following: number }>({ followers: 0, following: 0 });
+  const [socialPanel, setSocialPanel] = useState<"followers" | "following" | null>(null);
+  const [socialList, setSocialList] = useState<FollowWithProfile[]>([]);
+  const [socialLoading, setSocialLoading] = useState(false);
+  const [joinDate, setJoinDate] = useState<string | null>(null);
+
   // edit
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
@@ -149,6 +158,22 @@ export default function UserProfile() {
     setProfileLoading(false);
   }, [userId]);
 
+  const loadSocial = useCallback(async () => {
+    if (!userId) return;
+    const res = await getFollowCounts(userId);
+    if (res.data) setFollowCounts(res.data);
+  }, [userId]);
+
+  const openSocialPanel = async (type: "followers" | "following") => {
+    if (!userId) return;
+    setSocialPanel(type);
+    setSocialLoading(true);
+    setSocialList([]);
+    const res = type === "followers" ? await listFollowers(userId) : await listFollowing(userId);
+    setSocialList(res.data ?? []);
+    setSocialLoading(false);
+  };
+
   const loadActivity = useCallback(async () => {
     if (!userId) return;
     setActivityLoading(true);
@@ -169,7 +194,7 @@ export default function UserProfile() {
     setActivityLoading(false);
   }, [userId]);
 
-  useEffect(() => { loadProfile(); loadActivity(); }, [loadProfile, loadActivity]);
+  useEffect(() => { loadProfile(); loadActivity(); loadSocial(); }, [loadProfile, loadActivity, loadSocial]);
 
   const startEdit = () => {
     setEditName(profile?.display_name ?? "");
@@ -223,6 +248,10 @@ export default function UserProfile() {
   const avatarUrl   = profile?.avatar_url   ?? firebaseUser.photoURL   ?? null;
   const email       = profile?.email        ?? firebaseUser.email       ?? "";
   const favGenres   = profile?.favorite_genres ?? [];
+
+  const formattedJoinDate = joinDate
+    ? new Date(joinDate).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+    : null;
 
   const avgRating = ratings.length
     ? (ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1)
@@ -339,7 +368,80 @@ export default function UserProfile() {
           <Stat icon={Star}          label="Ratings"   value={ratings.length} />
           <Stat icon={MessageSquare} label="Reviews"   value={reviews.length} />
           <Stat icon={Eye}           label="Viewed"    value={recentlyViewed.length} />
+          <button
+            onClick={() => openSocialPanel("followers")}
+            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
+          >
+            <Users className="h-4 w-4 text-red-500 mb-0.5" />
+            <span className="text-2xl font-bold text-white tabular-nums">{followCounts.followers}</span>
+            <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Followers</span>
+          </button>
+          <button
+            onClick={() => openSocialPanel("following")}
+            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
+          >
+            <UserPlus className="h-4 w-4 text-red-500 mb-0.5" />
+            <span className="text-2xl font-bold text-white tabular-nums">{followCounts.following}</span>
+            <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Following</span>
+          </button>
         </div>
+
+        {/* Social Graph Panel */}
+        <AnimatePresence>
+          {socialPanel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+              onClick={() => setSocialPanel(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                className="w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-3xl p-6 max-h-[70vh] flex flex-col"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-base font-bold text-white capitalize">{socialPanel}</h3>
+                  <button onClick={() => setSocialPanel(null)} className="p-1.5 rounded-xl text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+                  {socialLoading ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 text-red-500 animate-spin" /></div>
+                  ) : socialList.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <Users className="h-8 w-8 text-neutral-700 mx-auto mb-2" />
+                      <p className="text-sm text-neutral-500">
+                        {socialPanel === "followers" ? "No followers yet." : "Not following anyone yet."}
+                      </p>
+                    </div>
+                  ) : (
+                    socialList.map(u => (
+                      <div key={u.id} className="flex items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3">
+                        <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-400 text-xs flex-shrink-0 overflow-hidden">
+                          {u.avatar_url
+                            ? <img src={u.avatar_url} alt={u.display_name ?? ""} className="w-full h-full object-cover" />
+                            : (u.display_name ?? "?")[0].toUpperCase()
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{u.display_name ?? "Anonymous"}</p>
+                          {(u.favorite_genres ?? []).length > 0 && (
+                            <p className="text-[11px] text-neutral-500 truncate">{(u.favorite_genres ?? []).slice(0, 3).join(" · ")}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── ACTIVITY ── */}

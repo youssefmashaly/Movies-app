@@ -7,6 +7,7 @@ import {
 import { auth } from "../firebase";
 import {
   listCommunityReviews,
+  listFollowingReviews,
   likeReview,
   unlikeReview,
   getUserLikes,
@@ -175,7 +176,9 @@ export default function CommunityFeed() {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
 
+  const [feedTab, setFeedTab] = useState<"everyone" | "following">("everyone");
   const [reviews, setReviews] = useState<CommunityReview[]>([]);
+  const [followingReviews, setFollowingReviews] = useState<CommunityReview[]>([]);
   const [reviewers, setReviewers] = useState<PublicProfile[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -205,8 +208,18 @@ export default function CommunityFeed() {
         getUserLikes(userId),
         getFollowingIds(userId),
       ]);
-      setLikedIds(new Set(likesRes.data ?? []));
-      setFollowingIds(new Set(followRes.data ?? []));
+      const likedSet = new Set(likesRes.data ?? []);
+      const followingSet = new Set(followRes.data ?? []);
+      setLikedIds(likedSet);
+      setFollowingIds(followingSet);
+
+      // fetch following feed if user follows anyone
+      if (followingSet.size > 0) {
+        const fwRes = await listFollowingReviews(Array.from(followingSet), 30);
+        setFollowingReviews(fwRes.data ?? []);
+      } else {
+        setFollowingReviews([]);
+      }
     }
     setLoading(false);
   }, [userId]);
@@ -279,33 +292,80 @@ export default function CommunityFeed() {
 
           {/* ── REVIEW FEED (2/3 width) ── */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageSquare className="h-4 w-4 text-red-500" />
-              <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-400">
-                Recent Reviews
-              </h2>
-              <span className="ml-auto text-[11px] text-neutral-600">{reviews.length} reviews</span>
+            {/* Feed tabs */}
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-4">
+              <button
+                onClick={() => setFeedTab("everyone")}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  feedTab === "everyone"
+                    ? "bg-red-600 text-white shadow"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Everyone
+              </button>
+              {userId && (
+                <button
+                  onClick={() => setFeedTab("following")}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    feedTab === "following"
+                      ? "bg-red-600 text-white shadow"
+                      : "text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  <UserCheck className="h-3.5 w-3.5" />
+                  Following
+                  {followingReviews.length > 0 && feedTab !== "following" && (
+                    <span className="ml-0.5 rounded-full bg-red-500/30 text-red-300 px-1.5 text-[10px]">{followingReviews.length}</span>
+                  )}
+                </button>
+              )}
             </div>
 
-            {reviews.length === 0 ? (
-              <div className="rounded-2xl border border-neutral-800 py-16 text-center">
-                <MessageSquare className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
-                <p className="text-sm text-neutral-500">No reviews yet. Be the first!</p>
-              </div>
+            {feedTab === "everyone" ? (
+              reviews.length === 0 ? (
+                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
+                  <MessageSquare className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
+                  <p className="text-sm text-neutral-500">No reviews yet. Be the first!</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {reviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      liked={likedIds.has(review.id)}
+                      likeCount={likeCounts[review.id] ?? 0}
+                      onLike={handleLike}
+                      isAuthed={!!userId}
+                      isOwn={review.user_id === userId}
+                    />
+                  ))}
+                </AnimatePresence>
+              )
             ) : (
-              <AnimatePresence mode="popLayout">
-                {reviews.map((review) => (
-                  <ReviewCard
-                    key={review.id}
-                    review={review}
-                    liked={likedIds.has(review.id)}
-                    likeCount={likeCounts[review.id] ?? 0}
-                    onLike={handleLike}
-                    isAuthed={!!userId}
-                    isOwn={review.user_id === userId}
-                  />
-                ))}
-              </AnimatePresence>
+              followingReviews.length === 0 ? (
+                <div className="rounded-2xl border border-neutral-800 py-16 text-center">
+                  <UserCheck className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
+                  <p className="text-sm text-neutral-500 mb-1">No reviews from people you follow yet.</p>
+                  <p className="text-xs text-neutral-600">Follow more members from the sidebar.</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {followingReviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      liked={likedIds.has(review.id)}
+                      likeCount={likeCounts[review.id] ?? 0}
+                      onLike={handleLike}
+                      isAuthed={!!userId}
+                      isOwn={review.user_id === userId}
+                    />
+                  ))}
+                </AnimatePresence>
+              )
             )}
           </div>
 
