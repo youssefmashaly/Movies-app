@@ -26,6 +26,7 @@ import MovieDetail from "./components/MovieDetail";
 import AIMatchmaker from "./components/AIMatchmaker";
 import AuthModal from "./components/AuthModal";
 import UserProfile from "./components/UserProfile";
+import CommunityFeed from "./components/CommunityFeed";
 import UserDashboard from "./components/UserDashboard";
 
 // Icons
@@ -1405,6 +1406,17 @@ export default function App() {
             >
               <UserProfile />
             </motion.div>
+            ) : (
+            /* 6. COMMUNITY FEED */
+            <motion.div
+              key="community-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <CommunityFeed />
+            </motion.div>
+          )}
           ) : (
             /* 6. PERSONAL DASHBOARD */
             <motion.div
