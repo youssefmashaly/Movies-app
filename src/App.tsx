@@ -261,7 +261,7 @@ export default function App() {
 
   // Quick-add/remove from any MovieCard (Trending/Popular/Latest/Recommended rails + grid)
   // without leaving the current view. Mirrors the toggle logic in MovieDetail.
-  const handleQuickToggleWatchlist = async (movie: Movie) => {
+  const handleQuickToggleWatchlist = React.useCallback(async (movie: Movie) => {
     if (!user) {
       setAuthOpen(true);
       return;
@@ -304,7 +304,7 @@ export default function App() {
       console.error("Quick watchlist toggle failed:", err);
       setWatchlistMovies((prev) => (alreadySaved ? [movie, ...prev] : prev.filter((m) => m.id !== movie.id)));
     }
-  };
+  }, [user, defaultWatchlistId, watchlistIds]);
 
   // Toggle a favorite genre on/off. Works for guests (localStorage only, via
   // the persistence effect above) and signed-in users (also mirrored to Firestore).
@@ -577,7 +577,7 @@ export default function App() {
  
  // Shared "open movie" flow: instant transition to the detail view using
   // whatever data we already have, then enrich in the background.
-  const handleSelectMovie = async (movie: Movie) => {
+  const handleSelectMovie = React.useCallback(async (movie: Movie) => {
     try {
       setSelectedMovie(movie); // Instant transition
       trackRecentlyViewed(movie);
@@ -589,7 +589,12 @@ export default function App() {
     } catch (err) {
       console.error("Failed fetching movie details:", err);
     }
-  };
+  }, []);
+
+  // Stable "is this movie saved" check — passed to every MovieRail instance.
+  // Memoized against watchlistIds so it only changes when the set itself changes,
+  // instead of creating a brand-new closure on every render.
+  const isMovieSaved = React.useCallback((id: string) => watchlistIds.has(id), [watchlistIds]);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased select-none pb-12">
@@ -747,6 +752,7 @@ export default function App() {
                       initial={{ scale: 1.08, opacity: 0.6 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 1.4, ease: "easeOut" }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = featuredMovie.posterPath; }}
                       className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
@@ -847,7 +853,7 @@ export default function App() {
                       accent="red"
                       movies={recentlyViewed}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}

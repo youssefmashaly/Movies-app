@@ -50,7 +50,7 @@ function RatingRing({ score }: { score: number }) {
   );
 }
 
-export default function MovieCard({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave }: MovieCardProps) {
+function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave }: MovieCardProps) {
   const [posterError, setPosterError] = useState(false);
 
   if (isLoading || !movie) {
@@ -176,3 +176,6 @@ export default function MovieCard({ movie, isLoading = false, onClick, index = 0
     </motion.div>
   );
 }
+
+const MovieCard = React.memo(MovieCardComponent);
+export default MovieCard;

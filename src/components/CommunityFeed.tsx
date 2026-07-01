@@ -266,11 +266,11 @@ export default function CommunityFeed() {
         setFollowingReviews(fwRes.data ?? []);
       }
 
-      // Suggested users — needs my genres, load non-blocking after main render
+      // Suggested users — reuses followingSet already fetched above instead of
+      // calling getFollowingIds a second time. Non-blocking after main render.
       getPublicProfile(userId).then(async profileRes => {
         const myGenres = profileRes.data?.favorite_genres ?? [];
-        const alreadyFollowing = Array.from(followingSet);
-        const sugRes = await getSuggestedUsers(userId, myGenres, alreadyFollowing, 6);
+        const sugRes = await getSuggestedUsers(userId, myGenres, Array.from(followingSet), 6);
         setSuggestedUsers(sugRes.data ?? []);
       });
     }

@@ -69,6 +69,40 @@ function SectionLabel({ icon: Icon, title }: { icon: React.ElementType; title: s
   );
 }
 
+// Empty-state variant of a MovieRail's header — used when a personalized row
+// has no data yet, so the section explains itself instead of silently vanishing.
+function DashboardEmptyRail({
+  icon: Icon,
+  title,
+  subtitle,
+  message,
+}: {
+  icon: React.ElementType;
+  title: string;
+  subtitle?: string;
+  message: string;
+}) {
+  return (
+    <section>
+      <div className="flex items-end justify-between mb-4 gap-4">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold tracking-tight text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border bg-neutral-800/40 border-neutral-700">
+              <Icon className="h-3.5 w-3.5 text-neutral-500" />
+            </span>
+            {title}
+          </h2>
+          {subtitle && <p className="text-xs text-neutral-500 mt-1 ml-9">{subtitle}</p>}
+        </div>
+      </div>
+      <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 py-10 px-6 text-center">
+        <Icon className="h-7 w-7 text-neutral-700 mx-auto mb-3" />
+        <p className="text-xs text-neutral-500 max-w-sm mx-auto leading-relaxed">{message}</p>
+      </div>
+    </section>
+  );
+}
+
 // ─── main component ──────────────────────────────────────────────────────────
 
 interface UserDashboardProps {
@@ -245,7 +279,7 @@ export default function UserDashboard({
       ) : (
         <>
           {/* ── CONTINUE WATCHING ── */}
-          {recentlyViewed.length > 0 && (
+          {recentlyViewed.length > 0 ? (
             <MovieRail
               id="dash-recently-viewed"
               title="Continue Watching"
@@ -258,10 +292,17 @@ export default function UserDashboard({
               isSaved={(id) => watchlistIds.has(id)}
               onToggleSave={onToggleSave}
             />
+          ) : (
+            <DashboardEmptyRail
+              icon={Eye}
+              title="Continue Watching"
+              subtitle="Pick up where you left off"
+              message="Nothing here yet. Open any movie's page and it'll show up in this row so you can jump back in later."
+            />
           )}
 
           {/* ── BECAUSE YOU WATCHED ── */}
-          {lastWatched && becauseYouWatched.length >= 4 && (
+          {lastWatched && becauseYouWatched.length >= 4 ? (
             <MovieRail
               id="dash-because-watched"
               title={`Because You Watched ${lastWatched.title}`}
@@ -274,10 +315,21 @@ export default function UserDashboard({
               isSaved={(id) => watchlistIds.has(id)}
               onToggleSave={onToggleSave}
             />
+          ) : (
+            <DashboardEmptyRail
+              icon={ChevronRight}
+              title="Because You Watched..."
+              subtitle="Movies with a similar feel"
+              message={
+                lastWatched
+                  ? `We don't have enough similar titles to ${lastWatched.title} yet. Explore a few more genres to unlock this row.`
+                  : "Watch a movie first and we'll build a row of similar picks based on it."
+              }
+            />
           )}
 
           {/* ── YOUR WATCHLIST ── */}
-          {watchlistMovies.length > 0 && (
+          {watchlistMovies.length > 0 ? (
             <MovieRail
               id="dash-watchlist"
               title="Your Watchlist"
@@ -289,6 +341,13 @@ export default function UserDashboard({
               onMovieClick={onSelectMovie}
               isSaved={(id) => watchlistIds.has(id)}
               onToggleSave={onToggleSave}
+            />
+          ) : (
+            <DashboardEmptyRail
+              icon={BookMarked}
+              title="Your Watchlist"
+              subtitle="Movies you've saved to watch"
+              message="Your watchlist is empty. Tap the bookmark icon on any movie card to save it here."
             />
           )}
 
@@ -329,7 +388,7 @@ export default function UserDashboard({
           )}
 
           {/* ── TRENDING IN YOUR GENRE ── */}
-          {trendingInGenre.length >= 4 && primaryGenre && (
+          {trendingInGenre.length >= 4 && primaryGenre ? (
             <MovieRail
               id="dash-trending-genre"
               title={`Trending in ${primaryGenre}`}
@@ -342,10 +401,21 @@ export default function UserDashboard({
               isSaved={(id) => watchlistIds.has(id)}
               onToggleSave={onToggleSave}
             />
+          ) : (
+            <DashboardEmptyRail
+              icon={TrendingUp}
+              title="Trending in Your Favorite Genres"
+              subtitle="The most-watched films in your favourite genre"
+              message={
+                primaryGenre
+                  ? `Not enough trending titles in ${primaryGenre} yet. Check back after watching a few more movies.`
+                  : "Pick a few favorite genres in your profile, or watch some movies, to see what's trending in your favorites."
+              }
+            />
           )}
 
           {/* ── HIDDEN GEMS FOR YOU ── */}
-          {hiddenGemsForYou.length >= 4 && (
+          {hiddenGemsForYou.length >= 4 ? (
             <MovieRail
               id="dash-hidden-gems"
               title="Hidden Gems For You"
@@ -357,6 +427,13 @@ export default function UserDashboard({
               onMovieClick={onSelectMovie}
               isSaved={(id) => watchlistIds.has(id)}
               onToggleSave={onToggleSave}
+            />
+          ) : (
+            <DashboardEmptyRail
+              icon={Film}
+              title="Hidden Gems For You"
+              subtitle="Underrated picks that match your taste"
+              message="We need a bit more signal to surface hidden gems. Save a few favorite genres or watch some movies to unlock this row."
             />
           )}
 
@@ -403,7 +480,7 @@ export default function UserDashboard({
           </section>
 
           {/* ── RECENTLY REVIEWED ── */}
-          {reviews.length > 0 && (
+          {reviews.length > 0 ? (
             <section>
               <SectionLabel icon={MessageSquare} title="Recently Reviewed" />
               <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 divide-y divide-neutral-800/60">
@@ -419,6 +496,16 @@ export default function UserDashboard({
                     <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed">{r.comment}</p>
                   </div>
                 ))}
+              </div>
+            </section>
+          ) : (
+            <section>
+              <SectionLabel icon={MessageSquare} title="Recently Reviewed" />
+              <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 py-10 px-6 text-center">
+                <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto mb-3" />
+                <p className="text-xs text-neutral-500 max-w-sm mx-auto leading-relaxed">
+                  You haven't reviewed anything yet. Share your thoughts on a movie you've watched and it'll show up here.
+                </p>
               </div>
             </section>
           )}

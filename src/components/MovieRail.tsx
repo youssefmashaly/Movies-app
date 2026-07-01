@@ -25,7 +25,7 @@ const ACCENTS: Record<string, { text: string; bg: string; border: string }> = {
   emerald: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
 };
 
-export default function MovieRail({
+function MovieRailComponent({
   id,
   title,
   subtitle,
@@ -148,3 +148,6 @@ export default function MovieRail({
     </motion.section>
   );
 }
+
+const MovieRail = React.memo(MovieRailComponent);
+export default MovieRail;
