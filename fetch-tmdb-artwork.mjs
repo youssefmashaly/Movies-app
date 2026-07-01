@@ -5,8 +5,13 @@
  * Delete this file after migration is complete.
  */
 
-const API_KEY = "5824bee97be9916fc7b8e823174ff4c7";
+const API_KEY = process.env.VITE_TMDB_API_KEY;
 const BASE    = "https://image.tmdb.org/t/p";
+
+if (!API_KEY) {
+  console.error("Missing VITE_TMDB_API_KEY. Run with: node --env-file=.env fetch-tmdb-artwork.mjs");
+  process.exit(1);
+}
 
 const MOVIES = [
   { id: "1",  tmdbId: 693134,  title: "Dune: Part Two",
@@ -149,12 +154,15 @@ async function fetchWithRetry(url, retries = 3) {
 function q(str) { return str ? `"${str}"` : `null`; }
 
 async function run() {
+  const TARGET_IDS = [1178685, 718821, 769, 396342, 204717, 14160, 530915];
+  const TARGET_MOVIES = MOVIES.filter(m => TARGET_IDS.includes(m.tmdbId));
+
   const results = [];
   const failed  = [];
 
-  process.stderr.write(`Fetching ${MOVIES.length} movies from TMDB...\n`);
+  process.stderr.write(`Fetching ${TARGET_MOVIES.length} movies from TMDB...\n`);
 
-  for (const movie of MOVIES) {
+  for (const movie of TARGET_MOVIES) {
     try {
       const url = `https://api.themoviedb.org/3/movie/${movie.tmdbId}?api_key=${API_KEY}&append_to_response=credits`;
       const data = await fetchWithRetry(url);
