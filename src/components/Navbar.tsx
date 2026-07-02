@@ -1,8 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { Film, Search, Bookmark, Sparkles, User, LogOut, LogIn, Menu, X, Loader2, UserCircle, LayoutDashboard } from "lucide-react";
+import { Film, Search, Bookmark, Sparkles, User, LogOut, LogIn, Menu, X, Loader2, UserCircle, LayoutDashboard, Clock, TrendingUp } from "lucide-react";
+import type { Movie } from "../types";
+
+// ── Search history (localStorage, guest-friendly, same pattern as App.tsx) ──
+const SEARCH_HISTORY_KEY = "movieapp:searchHistory";
+const MAX_HISTORY = 6;
+
+function readSearchHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushSearchHistory(query: string): string[] {
+  const trimmed = query.trim();
+  if (!trimmed) return readSearchHistory();
+  const existing = readSearchHistory().filter((q) => q.toLowerCase() !== trimmed.toLowerCase());
+  const updated = [trimmed, ...existing].slice(0, MAX_HISTORY);
+  try {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+  } catch {
+    // ignore storage failures (private browsing, quota, etc.)
+  }
+  return updated;
+}
+
+// Splits a title around the matched query so the match can be visually
+// highlighted without altering the surrounding text or losing casing.
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query.trim()) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-red-500/25 text-red-300 rounded-sm px-0.5">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
 
 interface NavbarProps {
   activeTab: string;
@@ -11,6 +53,7 @@ interface NavbarProps {
   setSearchQuery: (query: string) => void;
   onOpenAuth: () => void;
   searchLoading?: boolean;
+  suggestionPool?: Movie[];
 }
 
 export default function Navbar({
@@ -19,11 +62,66 @@ export default function Navbar({
   searchQuery,
   setSearchQuery,
   onOpenAuth,
-  searchLoading = false
+  searchLoading = false,
+  suggestionPool = []
 }: NavbarProps) {
   const [user, setUser] = useState(auth.currentUser);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // ── search suggestions state ──
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => readSearchHistory());
+  const suggestBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Live title matches — recomputed only when query or pool changes, capped
+  // to keep the dropdown short and the match a cheap client-side filter.
+  const titleMatches = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return suggestionPool
+      .filter((m) => m.title.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [searchQuery, suggestionPool]);
+
+  const showingHistory = searchQuery.trim().length === 0;
+  const suggestionCount = showingHistory ? recentSearches.length : titleMatches.length;
+
+  const commitSearch = (query: string) => {
+    const trimmed = query.trim();
+    setSearchQuery(trimmed);
+    if (activeTab !== "explore") setActiveTab("explore");
+    if (trimmed) setRecentSearches(pushSearchHistory(trimmed));
+    setSuggestOpen(false);
+    setActiveIndex(-1);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!suggestOpen || suggestionCount === 0) {
+      if (e.key === "Enter") commitSearch(searchQuery);
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev + 1) % suggestionCount);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev <= 0 ? suggestionCount - 1 : prev - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex >= 0) {
+        const picked = showingHistory ? recentSearches[activeIndex] : titleMatches[activeIndex]?.title;
+        if (picked) commitSearch(picked);
+      } else {
+        commitSearch(searchQuery);
+      }
+    } else if (e.key === "Escape") {
+      setSuggestOpen(false);
+      setActiveIndex(-1);
+      (e.target as HTMLInputElement).blur();
+    }
+  };
 
   // Monitor auth state changes
   useEffect(() => {
@@ -53,6 +151,8 @@ export default function Navbar({
       console.error("Sign out failed:", err);
     }
   };
+
+  const showSuggestDropdown = suggestOpen && suggestionCount > 0;
 
   const menuItems = [
     { id: "explore", label: "Explore", icon: Film },
@@ -138,10 +238,26 @@ export default function Navbar({
           <input
             id="navbar-search"
             type="text"
+            role="combobox"
+            aria-expanded={showSuggestDropdown}
+            aria-controls="navbar-search-suggestions"
+            aria-autocomplete="list"
+            autoComplete="off"
             placeholder="Search movies, genres..."
             value={searchQuery}
+            onFocus={() => {
+              if (suggestBlurTimeout.current) clearTimeout(suggestBlurTimeout.current);
+              setSuggestOpen(true);
+            }}
+            onBlur={() => {
+              // Delay so a click on a dropdown item registers before we close it
+              suggestBlurTimeout.current = setTimeout(() => setSuggestOpen(false), 120);
+            }}
+            onKeyDown={handleSearchKeyDown}
             onChange={(e) => {
               setSearchQuery(e.target.value);
+              setActiveIndex(-1);
+              setSuggestOpen(true);
               if (activeTab !== "explore") {
                 setActiveTab("explore");
               }
@@ -162,6 +278,75 @@ export default function Navbar({
               </button>
             ) : null}
           </span>
+
+          {/* Instant suggestions dropdown */}
+          <AnimatePresence>
+            {showSuggestDropdown && (
+              <motion.div
+                id="navbar-search-suggestions"
+                role="listbox"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
+              >
+                {showingHistory ? (
+                  <>
+                    <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                      <Clock className="h-3 w-3" /> Recent Searches
+                    </div>
+                    {recentSearches.map((q, i) => (
+                      <button
+                        key={q}
+                        role="option"
+                        aria-selected={activeIndex === i}
+                        type="button"
+                        onMouseDown={() => commitSearch(q)}
+                        onMouseEnter={() => setActiveIndex(i)}
+                        className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                          activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
+                        }`}
+                      >
+                        <Clock className="h-3.5 w-3.5 text-neutral-600 flex-shrink-0" />
+                        <span className="truncate">{q}</span>
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                      <TrendingUp className="h-3 w-3" /> Matching Titles
+                    </div>
+                    {titleMatches.map((movie, i) => (
+                      <button
+                        key={movie.id}
+                        role="option"
+                        aria-selected={activeIndex === i}
+                        type="button"
+                        onMouseDown={() => commitSearch(movie.title)}
+                        onMouseEnter={() => setActiveIndex(i)}
+                        className={`flex w-full items-center gap-3 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                          activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
+                        }`}
+                      >
+                        <img
+                          src={movie.posterPath}
+                          alt=""
+                          className="h-8 w-6 rounded object-cover flex-shrink-0 bg-neutral-800"
+                          loading="lazy"
+                        />
+                        <span className="truncate">{highlightMatch(movie.title, searchQuery)}</span>
+                        <span className="ml-auto text-[10px] text-neutral-600 flex-shrink-0">
+                          {movie.releaseDate?.split("-")[0]}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* User Auth Info Widget */}

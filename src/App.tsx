@@ -33,8 +33,28 @@ import UserDashboard from "./components/UserDashboard";
 import {
   Star, Film, Bookmark, SlidersHorizontal, Eye, HelpCircle, ArrowRight,
   TrendingUp, Flame, CalendarClock, Compass, PlayCircle, Gem, X as XIcon,
-  History, Heart
+  History, Heart, Sparkle, Clapperboard
 } from "lucide-react";
+
+// Seeded shuffle (mulberry32) — deterministic per session seed so re-renders
+// don't reshuffle mid-session (no flicker), but a fresh session gets a
+// different-feeling order. Only used to add soft variety among near-equally
+// relevant candidates, never to override relevance-based sorting/filtering.
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  let s = seed;
+  const rand = () => {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 // localStorage keys for guest-friendly, backend-free personalization
 const FAVORITE_GENRES_KEY = "movieapp:favoriteGenres";
@@ -59,6 +79,10 @@ export default function App() {
   // User state
   const [user, setUser] = useState(auth.currentUser);
 
+  // Stable per-session shuffle seed — computed once on mount, unchanged across
+  // re-renders (no flicker), differs between sessions (soft randomness).
+  const [sessionSeed] = useState<number>(() => Math.floor(Math.random() * 2 ** 31));
+
   // Movie lists state
   const [movies, setMovies] = useState<Movie[]>([]);
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
@@ -72,6 +96,15 @@ export default function App() {
   const [minRating, setMinRating] = useState<number>(0);
   const [selectedYear, setSelectedYear] = useState<string>("All");
   const [maxRuntime, setMaxRuntime] = useState<number>(0); // 0 = Any
+
+  // Advanced filter panel state (Phase 11A Batch 2) — additive, independent
+  // from the quick genre pill row above; combined with AND logic.
+  const [panelGenres, setPanelGenres] = useState<string[]>([]);
+  const [selectedDecade, setSelectedDecade] = useState<string>("All");
+  const [selectedDirector, setSelectedDirector] = useState<string>("All");
+  const [selectedActor, setSelectedActor] = useState<string>("All");
+  const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
+  const [filterSection, setFilterSection] = useState<string | null>("genres");
 
   // Watchlist browsing state
   const [watchlistSortBy, setWatchlistSortBy] = useState<string>("dateAdded");
@@ -357,29 +390,53 @@ export default function App() {
 
   // "Recommended" rail: personalized to favorite genres + watchlist + recently
   // viewed when we have signal, otherwise a diverse, high-rated fallback cut.
+  // Diversity pass: widen the relevance-sorted candidate pool 2x past the
+  // display count, then seeded-shuffle just that widened set — every shown
+  // movie is still highly relevant, but which subset appears varies by session.
   const recommendedMovies = useMemo(() => {
     const sourcePool = trendingMovies.length ? trendingMovies : latestMovies;
     if (sourcePool.length === 0) return [];
+
+    const DISPLAY_COUNT = 16;
 
     if (topAffinityGenres.length > 0) {
       const lowerTop = topAffinityGenres.map((g) => g.toLowerCase());
       const matches = sourcePool.filter(
         (m) => !watchlistIds.has(m.id) && m.genres?.some((g) => lowerTop.includes(g.toLowerCase()))
       );
-      if (matches.length >= 4) return [...matches].sort((a, b) => b.voteAverage - a.voteAverage);
+      if (matches.length >= 4) {
+        const ranked = [...matches].sort((a, b) => b.voteAverage - a.voteAverage);
+        const widened = ranked.slice(0, DISPLAY_COUNT * 2);
+        return seededShuffle(widened, sessionSeed).slice(0, DISPLAY_COUNT);
+      }
     }
 
     // Fallback: a diverse, high-rated cut offset from the Trending rail so it
     // doesn't just look like a duplicate of row one.
-    return [...sourcePool]
+    const fallbackRanked = [...sourcePool]
       .filter((m) => m.voteAverage >= 7)
-      .sort((a, b) => b.voteAverage - a.voteAverage)
-      .slice(4, 16);
-  }, [trendingMovies, latestMovies, topAffinityGenres, watchlistIds]);
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const widenedFallback = fallbackRanked.slice(4, 4 + DISPLAY_COUNT * 2);
+    return seededShuffle(widenedFallback, sessionSeed).slice(0, DISPLAY_COUNT);
+  }, [trendingMovies, latestMovies, topAffinityGenres, watchlistIds, sessionSeed]);
 
   // Surfaces *why* the Recommended row looks the way it does, so it reads as
   // intentional curation rather than a random slice.
   const recommendationReason = topAffinityGenres[0] || null;
+
+  // "Expand Your Horizons" — controlled genre exploration OUTSIDE the user's
+  // top genres. Separate, additive rail; does not alter Recommended's logic.
+  const expandHorizonsMovies = useMemo(() => {
+    const pool = trendingMovies.length ? trendingMovies : latestMovies;
+    if (pool.length === 0 || topAffinityGenres.length === 0) return [];
+    const lowerTop = new Set(topAffinityGenres.map((g) => g.toLowerCase()));
+    const outside = pool.filter(
+      (m) => !watchlistIds.has(m.id) && m.voteAverage >= 7 &&
+        m.genres?.length && !m.genres.some((g) => lowerTop.has(g.toLowerCase()))
+    );
+    const ranked = [...outside].sort((a, b) => b.voteAverage - a.voteAverage);
+    return seededShuffle(ranked.slice(0, 24), sessionSeed).slice(0, 12);
+  }, [trendingMovies, latestMovies, topAffinityGenres, watchlistIds, sessionSeed]);
 
   // Combined, de-duplicated pool used for genre sections / year options / hidden gems
   // (purely client-side reuse of data we already fetched — no extra API calls)
@@ -410,64 +467,133 @@ export default function App() {
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [combinedMoviePool]);
 
+  // Decades present in the catalog, for the advanced filter panel
+  const availableDecades = useMemo(() => {
+    const decades = new Set<number>();
+    combinedMoviePool.forEach((m) => {
+      const year = parseInt(m.releaseDate?.split("-")[0] || "", 10);
+      if (!isNaN(year)) decades.add(Math.floor(year / 10) * 10);
+    });
+    return Array.from(decades).sort((a, b) => b - a);
+  }, [combinedMoviePool]);
+
+  // Directors present in the catalog, alphabetical
+  const availableDirectors = useMemo(() => {
+    const directors = new Set<string>();
+    combinedMoviePool.forEach((m) => {
+      if (m.director) directors.add(m.director);
+    });
+    return Array.from(directors).sort((a, b) => a.localeCompare(b));
+  }, [combinedMoviePool]);
+
+  // Actors present in 2+ catalog movies — capped list so the dropdown stays
+  // usable instead of listing every one-off cast credit.
+  const availableActors = useMemo(() => {
+    const freq = new Map<string, number>();
+    combinedMoviePool.forEach((m) => {
+      m.cast?.forEach((c) => freq.set(c.name, (freq.get(c.name) ?? 0) + 1));
+    });
+    return Array.from(freq.entries())
+      .filter(([, count]) => count >= 2)
+      .map(([name]) => name)
+      .sort((a, b) => a.localeCompare(b));
+  }, [combinedMoviePool]);
+
   // "Hidden Gems" recommendation row: high rating, lower vote count — curated
   // entirely from data already on hand, no new endpoint required.
+  // Diversity pass applied the same way as Recommended (see above).
   const hiddenGemMovies = useMemo(() => {
     if (combinedMoviePool.length === 0) return [];
     const sortedByVotes = [...combinedMoviePool].sort((a, b) => a.voteCount - b.voteCount);
     const medianVoteCount = sortedByVotes[Math.floor(sortedByVotes.length / 2)]?.voteCount ?? 0;
-    return combinedMoviePool
+    const ranked = combinedMoviePool
       .filter((m) => m.voteAverage >= 7.5 && m.voteCount > 0 && m.voteCount <= medianVoteCount)
-      .sort((a, b) => b.voteAverage - a.voteAverage)
-      .slice(0, 16);
-  }, [combinedMoviePool]);
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    return seededShuffle(ranked.slice(0, 32), sessionSeed).slice(0, 16);
+  }, [combinedMoviePool, sessionSeed]);
 
-  // Discovery collections — curated client-side from existing pool, no new API calls
+  // Discovery collections tier — curated client-side from existing pool, no
+  // new API calls. Sequentially deduplicated: each collection below excludes
+  // movies already claimed by an earlier one in this list, so a title doesn't
+  // simultaneously clutter Award Winners AND Critically Acclaimed AND Feel-Good.
+  // Trending/Popular/Latest/decade/director rails are intentionally excluded
+  // from this dedup chain — those are meant to be canonical "full" browses
+  // where a movie should appear if it truly qualifies, overlap and all.
+  const usedInCollections = new Set<string>();
+  const claim = (movies: Movie[]) => {
+    movies.forEach((m) => usedInCollections.add(m.id));
+    return movies;
+  };
+
   const awardWinners = useMemo(() => {
     const awardKeywords = ["biography", "history", "drama"];
-    return combinedMoviePool
+    const result = combinedMoviePool
       .filter((m) => m.voteAverage >= 8.0 && m.genres?.some((g) => awardKeywords.includes(g.toLowerCase())))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
+    return claim(result);
   }, [combinedMoviePool]);
 
   const criticallyAcclaimed = useMemo(() => {
-    return combinedMoviePool
-      .filter((m) => m.voteAverage >= 8.4)
+    const result = combinedMoviePool
+      .filter((m) => m.voteAverage >= 8.4 && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, awardWinners]);
+
+  // "Underrated Movies" — distinct from Hidden Gems: solid-but-not-top ratings
+  // (6.5–7.8) paired with very low vote counts, i.e. genuinely flew under the
+  // radar rather than "great and slightly under-discussed."
+  const underratedMovies = useMemo(() => {
+    if (combinedMoviePool.length === 0) return [];
+    const sortedByVotes = [...combinedMoviePool].sort((a, b) => a.voteCount - b.voteCount);
+    const lowQuartileVoteCount = sortedByVotes[Math.floor(sortedByVotes.length / 4)]?.voteCount ?? 0;
+    const result = combinedMoviePool
+      .filter((m) =>
+        m.voteAverage >= 6.5 && m.voteAverage < 7.8 &&
+        m.voteCount > 0 && m.voteCount <= lowQuartileVoteCount &&
+        !usedInCollections.has(m.id)
+      )
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+    return claim(result);
+  }, [combinedMoviePool, criticallyAcclaimed]);
 
   const familyNight = useMemo(() => {
-    return combinedMoviePool
-      .filter((m) => m.genres?.some((g) => ["animation", "family"].includes(g.toLowerCase())))
+    const result = combinedMoviePool
+      .filter((m) => m.genres?.some((g) => ["animation", "family"].includes(g.toLowerCase())) && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, underratedMovies]);
 
   const mindBending = useMemo(() => {
     const mbKeywords = ["sci-fi", "mystery", "thriller"];
-    return combinedMoviePool
-      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => mbKeywords.includes(g.toLowerCase())))
+    const result = combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => mbKeywords.includes(g.toLowerCase())) && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, familyNight]);
 
   const basedOnTrueStories = useMemo(() => {
     const trueStoryKeywords = ["biography", "history"];
-    return combinedMoviePool
-      .filter((m) => m.genres?.some((g) => trueStoryKeywords.includes(g.toLowerCase())))
+    const result = combinedMoviePool
+      .filter((m) => m.genres?.some((g) => trueStoryKeywords.includes(g.toLowerCase())) && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, mindBending]);
 
   const feelGood = useMemo(() => {
     const feelGoodKeywords = ["comedy", "romance", "animation", "family"];
-    return combinedMoviePool
-      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => feelGoodKeywords.includes(g.toLowerCase())))
+    const result = combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.5 && m.genres?.some((g) => feelGoodKeywords.includes(g.toLowerCase())) && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, basedOnTrueStories]);
 
   const internationalCinema = useMemo(() => {
     const englishDirectors = new Set([
@@ -479,27 +605,80 @@ export default function App() {
       "mel gibson", "dean deblois, chris sanders", "andrew stanton", "brad bird",
       "john lasseter", "pete docter", "andrew stanton", "josh safdiej, benny safdie"
     ]);
-    return combinedMoviePool
-      .filter((m) => m.director && !englishDirectors.has(m.director.toLowerCase()))
+    const result = combinedMoviePool
+      .filter((m) => m.director && !englishDirectors.has(m.director.toLowerCase()) && !usedInCollections.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
-  }, [combinedMoviePool]);
+    return claim(result);
+  }, [combinedMoviePool, feelGood]);
 
   const cultClassics = useMemo(() => {
     const cutoff = new Date("2010-01-01").toISOString().split("T")[0];
+    const result = combinedMoviePool
+      .filter((m) => (m.releaseDate || "") < cutoff && m.voteAverage >= 8.0 && !usedInCollections.has(m.id))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+    return claim(result);
+  }, [combinedMoviePool, internationalCinema]);
+
+  // Decade explore rails — not part of the collections dedup chain by design;
+  // these are canonical "full browse of an era" rows.
+  const decade1990s = useMemo(() => {
     return combinedMoviePool
-      .filter((m) => (m.releaseDate || "") < cutoff && m.voteAverage >= 8.0)
+      .filter((m) => (m.releaseDate || "") >= "1990-01-01" && (m.releaseDate || "") < "2000-01-01")
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 16);
   }, [combinedMoviePool]);
 
-  // Filter (genre + rating + year + runtime) and sort the active list
+  const decade2000s = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => (m.releaseDate || "") >= "2000-01-01" && (m.releaseDate || "") < "2010-01-01")
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  const decade2010s = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => (m.releaseDate || "") >= "2010-01-01" && (m.releaseDate || "") < "2020-01-01")
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+  }, [combinedMoviePool]);
+
+  // Director spotlight rails — canonical full browse of that director's work
+  // in the catalog; also not part of the collections dedup chain.
+  const nolanMovies = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => m.director?.toLowerCase() === "christopher nolan")
+      .sort((a, b) => (a.releaseDate || "").localeCompare(b.releaseDate || ""));
+  }, [combinedMoviePool]);
+
+  const spielbergMovies = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => m.director?.toLowerCase() === "steven spielberg")
+      .sort((a, b) => (a.releaseDate || "").localeCompare(b.releaseDate || ""));
+  }, [combinedMoviePool]);
+
+  const tarantinoMovies = useMemo(() => {
+    return combinedMoviePool
+      .filter((m) => m.director?.toLowerCase() === "quentin tarantino")
+      .sort((a, b) => (a.releaseDate || "").localeCompare(b.releaseDate || ""));
+  }, [combinedMoviePool]);
+
+  // Filter (genre + rating + year + runtime + advanced panel filters) and sort the active list
   const filteredMovies = useMemo(() => {
     let result = movies.filter((m) => {
       if (selectedGenre !== "All" && !m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase())) return false;
       if (minRating > 0 && m.voteAverage < minRating) return false;
       if (selectedYear !== "All" && m.releaseDate?.split("-")[0] !== selectedYear) return false;
       if (maxRuntime > 0 && m.runtime && m.runtime > maxRuntime) return false;
+      if (panelGenres.length > 0 && !m.genres?.some((g) => panelGenres.some((pg) => pg.toLowerCase() === g.toLowerCase()))) return false;
+      if (selectedDecade !== "All") {
+        const year = parseInt(m.releaseDate?.split("-")[0] || "", 10);
+        const decadeStart = parseInt(selectedDecade, 10);
+        if (isNaN(year) || year < decadeStart || year >= decadeStart + 10) return false;
+      }
+      if (selectedDirector !== "All" && m.director !== selectedDirector) return false;
+      if (selectedActor !== "All" && !m.cast?.some((c) => c.name === selectedActor)) return false;
       return true;
     });
 
@@ -520,16 +699,35 @@ export default function App() {
     }
 
     return result;
-  }, [movies, selectedGenre, minRating, selectedYear, maxRuntime, sortBy]);
+  }, [movies, selectedGenre, minRating, selectedYear, maxRuntime, panelGenres, selectedDecade, selectedDirector, selectedActor, sortBy]);
 
-  const activeFilterCount = [selectedGenre !== "All", minRating > 0, selectedYear !== "All", maxRuntime > 0].filter(Boolean).length;
+  const activeFilterCount = [
+    selectedGenre !== "All",
+    minRating > 0,
+    selectedYear !== "All",
+    maxRuntime > 0,
+    panelGenres.length > 0,
+    selectedDecade !== "All",
+    selectedDirector !== "All",
+    selectedActor !== "All",
+  ].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setSelectedGenre("All");
     setMinRating(0);
     setSelectedYear("All");
     setMaxRuntime(0);
+    setPanelGenres([]);
+    setSelectedDecade("All");
+    setSelectedDirector("All");
+    setSelectedActor("All");
     setSearchQuery("");
+  };
+
+  const togglePanelGenre = (genre: string) => {
+    setPanelGenres((prev) =>
+      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+    );
   };
 
   // Genres actually present in the user's saved list, for the watchlist genre filter
@@ -615,6 +813,7 @@ export default function App() {
         setSearchQuery={setSearchQuery}
         onOpenAuth={() => setAuthOpen(true)}
         searchLoading={searchLoading}
+        suggestionPool={combinedMoviePool}
       />
 
       {/* Auth Modal Overlay Popup */}
@@ -1029,6 +1228,118 @@ export default function App() {
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
+                  {underratedMovies.length >= 4 && (
+                    <MovieRail
+                      id="rail-underrated"
+                      title="Underrated Movies"
+                      subtitle="Solid films that flew under the radar"
+                      icon={Gem}
+                      accent="teal"
+                      movies={underratedMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {expandHorizonsMovies.length >= 4 && (
+                    <MovieRail
+                      id="rail-expand-horizons"
+                      title="Expand Your Horizons"
+                      subtitle="Highly rated picks outside your usual genres"
+                      icon={Sparkle}
+                      accent="indigo"
+                      movies={expandHorizonsMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {decade1990s.length >= 4 && (
+                    <MovieRail
+                      id="rail-decade-1990s"
+                      title="Explore the 1990s"
+                      subtitle="A decade of defining cinema"
+                      icon={CalendarClock}
+                      accent="amber"
+                      movies={decade1990s}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {decade2000s.length >= 4 && (
+                    <MovieRail
+                      id="rail-decade-2000s"
+                      title="Explore the 2000s"
+                      subtitle="The 2000s, revisited"
+                      icon={CalendarClock}
+                      accent="red"
+                      movies={decade2000s}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {decade2010s.length >= 4 && (
+                    <MovieRail
+                      id="rail-decade-2010s"
+                      title="Explore the 2010s"
+                      subtitle="The decade that shaped modern film"
+                      icon={CalendarClock}
+                      accent="teal"
+                      movies={decade2010s}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {nolanMovies.length >= 3 && (
+                    <MovieRail
+                      id="rail-director-nolan"
+                      title="Directed by Christopher Nolan"
+                      subtitle="Mind-bending, meticulously crafted"
+                      icon={Clapperboard}
+                      accent="indigo"
+                      movies={nolanMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {spielbergMovies.length >= 3 && (
+                    <MovieRail
+                      id="rail-director-spielberg"
+                      title="Directed by Steven Spielberg"
+                      subtitle="A master of modern blockbusters"
+                      icon={Clapperboard}
+                      accent="amber"
+                      movies={spielbergMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {tarantinoMovies.length >= 3 && (
+                    <MovieRail
+                      id="rail-director-tarantino"
+                      title="Directed by Quentin Tarantino"
+                      subtitle="Sharp dialogue, unmistakable style"
+                      icon={Clapperboard}
+                      accent="red"
+                      movies={tarantinoMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
                 </div>
               )}
 
@@ -1128,6 +1439,19 @@ export default function App() {
                       <option value={180}>Under 3 hrs</option>
                     </select>
 
+                    <button
+                      onClick={() => setFilterPanelOpen(true)}
+                      className="flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:border-red-500/40 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      More Filters
+                      {(panelGenres.length > 0 || selectedDecade !== "All" || selectedDirector !== "All" || selectedActor !== "All") && (
+                        <span className="rounded-full bg-red-600 text-white px-1.5 text-[10px] font-extrabold">
+                          {[panelGenres.length > 0, selectedDecade !== "All", selectedDirector !== "All", selectedActor !== "All"].filter(Boolean).length}
+                        </span>
+                      )}
+                    </button>
+
                     {activeFilterCount > 0 && (
                       <button
                         onClick={clearAllFilters}
@@ -1139,6 +1463,191 @@ export default function App() {
                     )}
                   </div>
                 </div>
+
+                {/* ── ADVANCED FILTER PANEL (drawer) ── */}
+                <AnimatePresence>
+                  {filterPanelOpen && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm"
+                      onClick={() => setFilterPanelOpen(false)}
+                    >
+                      <motion.div
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "tween", duration: 0.25 }}
+                        className="h-full w-full sm:w-[420px] bg-neutral-950 border-l border-neutral-800 overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-neutral-800 bg-neutral-950/95 backdrop-blur-md">
+                          <h2 className="text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
+                            <SlidersHorizontal className="h-4 w-4 text-red-500" />
+                            Advanced Filters
+                          </h2>
+                          <button
+                            onClick={() => setFilterPanelOpen(false)}
+                            aria-label="Close filter panel"
+                            className="rounded-xl p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="p-6 space-y-3">
+
+                          {/* Genres (multi-select) */}
+                          <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                            <button
+                              onClick={() => setFilterSection(filterSection === "genres" ? null : "genres")}
+                              className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
+                            >
+                              <span>Genres {panelGenres.length > 0 && <span className="text-red-400">({panelGenres.length})</span>}</span>
+                              <span className="text-neutral-500">{filterSection === "genres" ? "−" : "+"}</span>
+                            </button>
+                            {filterSection === "genres" && (
+                              <div className="px-4 pb-4 flex flex-wrap gap-2">
+                                {ALL_GENRES.filter((g) => g !== "All").map((g) => {
+                                  const isSelected = panelGenres.includes(g);
+                                  return (
+                                    <button
+                                      key={`panel-genre-${g}`}
+                                      onClick={() => togglePanelGenre(g)}
+                                      aria-pressed={isSelected}
+                                      className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+                                        isSelected
+                                          ? "bg-red-650 border-red-650 text-white"
+                                          : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                      }`}
+                                    >
+                                      {g}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Decade */}
+                          <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                            <button
+                              onClick={() => setFilterSection(filterSection === "decade" ? null : "decade")}
+                              className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
+                            >
+                              <span>Decade {selectedDecade !== "All" && <span className="text-red-400">({selectedDecade}s)</span>}</span>
+                              <span className="text-neutral-500">{filterSection === "decade" ? "−" : "+"}</span>
+                            </button>
+                            {filterSection === "decade" && (
+                              <div className="px-4 pb-4 flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => setSelectedDecade("All")}
+                                  aria-pressed={selectedDecade === "All"}
+                                  className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+                                    selectedDecade === "All"
+                                      ? "bg-red-650 border-red-650 text-white"
+                                      : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                  }`}
+                                >
+                                  Any
+                                </button>
+                                {availableDecades.map((d) => (
+                                  <button
+                                    key={`decade-${d}`}
+                                    onClick={() => setSelectedDecade(String(d))}
+                                    aria-pressed={selectedDecade === String(d)}
+                                    className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+                                      selectedDecade === String(d)
+                                        ? "bg-red-650 border-red-650 text-white"
+                                        : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                    }`}
+                                  >
+                                    {d}s
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Director */}
+                          {availableDirectors.length > 0 && (
+                            <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                              <button
+                                onClick={() => setFilterSection(filterSection === "director" ? null : "director")}
+                                className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
+                              >
+                                <span>Director {selectedDirector !== "All" && <span className="text-red-400">(1)</span>}</span>
+                                <span className="text-neutral-500">{filterSection === "director" ? "−" : "+"}</span>
+                              </button>
+                              {filterSection === "director" && (
+                                <div className="px-4 pb-4">
+                                  <label htmlFor="director-filter" className="sr-only">Filter by director</label>
+                                  <select
+                                    id="director-filter"
+                                    value={selectedDirector}
+                                    onChange={(e) => setSelectedDirector(e.target.value)}
+                                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                                  >
+                                    <option value="All">Any Director</option>
+                                    {availableDirectors.map((d) => (
+                                      <option key={d} value={d}>{d}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Actor */}
+                          {availableActors.length > 0 && (
+                            <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                              <button
+                                onClick={() => setFilterSection(filterSection === "actor" ? null : "actor")}
+                                className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
+                              >
+                                <span>Actor {selectedActor !== "All" && <span className="text-red-400">(1)</span>}</span>
+                                <span className="text-neutral-500">{filterSection === "actor" ? "−" : "+"}</span>
+                              </button>
+                              {filterSection === "actor" && (
+                                <div className="px-4 pb-4">
+                                  <label htmlFor="actor-filter" className="sr-only">Filter by actor</label>
+                                  <select
+                                    id="actor-filter"
+                                    value={selectedActor}
+                                    onChange={(e) => setSelectedActor(e.target.value)}
+                                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                                  >
+                                    <option value="All">Any Actor</option>
+                                    {availableActors.map((a) => (
+                                      <option key={a} value={a}>{a}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                        </div>
+
+                        <div className="sticky bottom-0 flex items-center gap-3 px-6 py-4 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur-md">
+                          <button
+                            onClick={clearAllFilters}
+                            className="flex-1 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer"
+                          >
+                            Clear All
+                          </button>
+                          <button
+                            onClick={() => setFilterPanelOpen(false)}
+                            className="flex-1 rounded-xl bg-red-650 hover:bg-red-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all cursor-pointer"
+                          >
+                            Show {filteredMovies.length} Results
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Genre Tabs Filter (Horizontal scrolling pill row) — combines with search/rating/year */}
                 <div role="group" aria-label="Filter by genre" className="flex items-center gap-2 overflow-x-auto py-6 pr-4 no-scrollbar scroll-smooth">
@@ -1197,6 +1706,39 @@ export default function App() {
                         className="flex items-center gap-1 rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-1 text-[11px] font-semibold text-indigo-400 hover:bg-indigo-500/25 transition-colors cursor-pointer"
                       >
                         Under {maxRuntime} min <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {panelGenres.map((g) => (
+                      <button
+                        key={`badge-${g}`}
+                        onClick={() => togglePanelGenre(g)}
+                        className="flex items-center gap-1 rounded-full bg-red-500/15 border border-red-500/25 px-2.5 py-1 text-[11px] font-semibold text-red-400 hover:bg-red-500/25 transition-colors cursor-pointer"
+                      >
+                        {g} <XIcon className="h-3 w-3" />
+                      </button>
+                    ))}
+                    {selectedDecade !== "All" && (
+                      <button
+                        onClick={() => setSelectedDecade("All")}
+                        className="flex items-center gap-1 rounded-full bg-purple-500/15 border border-purple-500/25 px-2.5 py-1 text-[11px] font-semibold text-purple-400 hover:bg-purple-500/25 transition-colors cursor-pointer"
+                      >
+                        {selectedDecade}s <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {selectedDirector !== "All" && (
+                      <button
+                        onClick={() => setSelectedDirector("All")}
+                        className="flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/25 transition-colors cursor-pointer"
+                      >
+                        Dir: {selectedDirector} <XIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    {selectedActor !== "All" && (
+                      <button
+                        onClick={() => setSelectedActor("All")}
+                        className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2.5 py-1 text-[11px] font-semibold text-amber-400 hover:bg-amber-500/25 transition-colors cursor-pointer"
+                      >
+                        {selectedActor} <XIcon className="h-3 w-3" />
                       </button>
                     )}
                   </div>
