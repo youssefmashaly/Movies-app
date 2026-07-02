@@ -510,17 +510,7 @@ export default function UserDashboard({
             </section>
           )}
 
-          {/* ── EMPTY STATE for new users ── */}
-          {recentlyViewed.length === 0 && watchlistMovies.length === 0 && ratings.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Film className="h-12 w-12 text-neutral-700 mb-4" />
-              <h3 className="text-base font-bold text-white mb-2">Your dashboard is waiting</h3>
-              <p className="text-sm text-neutral-500 max-w-xs">
-                Browse movies, add them to your watchlist, and rate what you've seen — your personal dashboard will come alive.
-              </p>
-            </div>
-          )}
-        </>
+          </>
       )}
     </motion.div>
   );
