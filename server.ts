@@ -20,9 +20,12 @@ function getAI() {
 // Memory cache for generated AI movies so they persist during the session
 const aiMoviesCache = new Map<string, Movie>();
 
-async function startServer() {
+// Builds and returns a fully configured Express app WITHOUT starting a
+// listener — safe to import from serverless entry points (Vercel/Netlify)
+// without triggering app.listen(). Every route below is unchanged from
+// before this refactor; only the wrapping function signature changed.
+export async function createApp() {
   const app = express();
-  const PORT = 3000;
 
   app.use(express.json());
 
@@ -326,9 +329,26 @@ Provide ONLY the raw JSON structure, with no markdown tick marks or wrapping.`;
     });
   }
 
+  return app;
+}
+
+// Traditional persistent-server bootstrap — used for local dev, Render,
+// Railway, and Google Cloud Run. Vercel/Netlify import createApp() directly
+// from their own serverless entry points instead and never call this.
+async function startServer() {
+  const app = await createApp();
+  // Render/Railway/Cloud Run inject PORT themselves (Cloud Run requires
+  // binding to it); falls back to 3000 for local dev where it's unset.
+  const PORT = Number(process.env.PORT) || 3000;
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Movie Database fullstack server running on http://localhost:${PORT}`);
   });
 }
 
-startServer();
+// Skip the auto-listen when this module is loaded by a Vercel or Netlify
+// serverless function (both platforms set these env vars themselves) —
+// prevents a duplicate/conflicting listener from starting inside a
+// serverless context where createApp() is imported but listen() must not run.
+if (!process.env.VERCEL && !process.env.NETLIFY) {
+  startServer();
+}
