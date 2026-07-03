@@ -1,5 +1,6 @@
 import React from "react";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
+import { reportError } from "../lib/analytics";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -26,6 +27,8 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("Unhandled render error caught by ErrorBoundary:", error, info.componentStack);
+    // No-op unless VITE_ANALYTICS_ENABLED + VITE_ANALYTICS_ENDPOINT are set.
+    reportError(error, { componentStack: info.componentStack });
   }
 
   handleReturnHome = () => {
