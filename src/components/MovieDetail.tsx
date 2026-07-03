@@ -223,12 +223,33 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
 
   // Related movies: genre-overlap against whatever pool the parent already fetched
   // (trending + latest combined) — no extra network call, capped for performance.
+  // Diversity pass: widen the candidate pool past the display count, then apply
+  // a shuffle seeded by THIS movie's id — deterministic and flicker-free for
+  // repeat visits to the same title, but different movies (even with heavily
+  // overlapping genres) no longer surface the exact same top-12 block.
   const relatedMovies = useMemo(() => {
     if (!relatedPool || relatedPool.length === 0 || !movie.genres?.length) return [];
-    return relatedPool
+    const ranked = relatedPool
       .filter((m) => m.id !== movie.id && m.genres?.some((g) => movie.genres.some((mg) => mg.toLowerCase() === g.toLowerCase())))
-      .sort((a, b) => b.voteAverage - a.voteAverage)
-      .slice(0, 12);
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+
+    let seed = 0;
+    for (let i = 0; i < movie.id.length; i++) seed = (seed * 31 + movie.id.charCodeAt(i)) | 0;
+
+    const widened = ranked.slice(0, 24);
+    const shuffled = [...widened];
+    let s = seed;
+    const rand = () => {
+      s |= 0; s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 12);
   }, [relatedPool, movie.id, movie.genres]);
 
   // Community average from already-loaded reviews — cheap O(n) over a small list.

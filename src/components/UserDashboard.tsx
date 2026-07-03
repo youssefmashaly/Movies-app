@@ -2,14 +2,41 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   Star, Eye, MessageSquare, BookMarked, TrendingUp,
-  Film, Heart, Award, Zap, Target, Loader2, ChevronRight
+  Film, Heart, Award, Zap, Target, Loader2, ChevronRight,
+  Users, Sparkles, Globe
 } from "lucide-react";
 import { auth } from "../firebase";
 import { listUserRatings } from "../services/supabase/ratings";
 import { listUserReviews } from "../services/supabase/reviews";
+import {
+  getFollowingIds,
+  getSuggestedUsers,
+  getRatingsFromUsers,
+  getCommunityFavoriteMovies,
+  type CollaborativeMovieSignal,
+} from "../services/supabase/social";
 import MovieRail from "./MovieRail";
 import type { Movie } from "../types";
 import type { SupabaseRating, SupabaseReview } from "../types/supabase";
+
+// Deterministic per-session shuffle (mulberry32) — mirrors the same helper in
+// App.tsx. Duplicated locally rather than extracted to a shared module to
+// keep this an additive, self-contained change (no new shared-utils file).
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  let s = seed;
+  const rand = () => {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -131,17 +158,48 @@ export default function UserDashboard({
   const [reviews, setReviews] = useState<SupabaseReview[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
+  // Session-stable shuffle seed, mirrors the pattern used in App.tsx's rails.
+  const [sessionSeed] = useState<number>(() => Math.floor(Math.random() * 2 ** 31));
+
+  // Collaborative discovery signals (Phase 11A final batch)
+  const [followingHighlyRated, setFollowingHighlyRated] = useState<CollaborativeMovieSignal[]>([]);
+  const [similarTasteHighlyRated, setSimilarTasteHighlyRated] = useState<CollaborativeMovieSignal[]>([]);
+  const [communityFavorites, setCommunityFavorites] = useState<CollaborativeMovieSignal[]>([]);
+
   useEffect(() => {
     if (!userId) { setActivityLoading(false); return; }
     setActivityLoading(true);
     Promise.all([
       listUserRatings(userId, 50),
       listUserReviews(userId, 20),
-    ]).then(([r, rv]) => {
+      getFollowingIds(userId),
+    ]).then(([r, rv, followRes]) => {
       setRatings(r.data ?? []);
       setReviews(rv.data ?? []);
       setActivityLoading(false);
+
+      // Collaborative signals load separately/non-blocking — the core
+      // dashboard (ratings/reviews) never waits on these extra queries.
+      const followingIds = followRes.data ?? [];
+      Promise.all([
+        followingIds.length > 0 ? getRatingsFromUsers(followingIds, 8, 200) : Promise.resolve({ data: [], error: null }),
+        getSuggestedUsers(userId, favoriteGenres, followingIds, 10),
+        getCommunityFavoriteMovies(1000),
+      ]).then(([followRatingsRes, suggestedRes, communityRes]) => {
+        setFollowingHighlyRated(followRatingsRes.data ?? []);
+        setCommunityFavorites(communityRes.data ?? []);
+
+        const similarTasteIds = (suggestedRes.data ?? [])
+          .filter((u) => u.tasteMatchPct > 0)
+          .map((u) => u.id);
+        if (similarTasteIds.length > 0) {
+          getRatingsFromUsers(similarTasteIds, 8, 200).then((res) => {
+            setSimilarTasteHighlyRated(res.data ?? []);
+          });
+        }
+      });
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // ─── derived ───────────────────────────────────────────────────────────────
@@ -159,11 +217,39 @@ export default function UserDashboard({
 
   const becauseYouWatched = useMemo(() => {
     if (!lastWatched) return [];
-    return combinedMoviePool
+    const ranked = combinedMoviePool
       .filter((m) => m.id !== lastWatched.id && m.genres?.some((g) => lastWatched.genres?.includes(g)))
-      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    // Widen past the display count, then seeded-shuffle just that widened set —
+    // same relevance tier, less repetition of the exact same top-N every time.
+    return seededShuffle(ranked.slice(0, 24), sessionSeed).slice(0, 12);
+  }, [lastWatched, combinedMoviePool, sessionSeed]);
+
+  // ── Collaborative discovery rails: map aggregated signals onto full Movie
+  // objects using the pool already in memory — no extra network calls. ──
+  const followingHighlyRatedMovies = useMemo(() => {
+    const scoreMap = new Map(followingHighlyRated.map((s) => [s.movie_id, s.avgRating]));
+    return combinedMoviePool
+      .filter((m) => scoreMap.has(m.id))
+      .sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0))
       .slice(0, 12);
-  }, [lastWatched, combinedMoviePool]);
+  }, [followingHighlyRated, combinedMoviePool]);
+
+  const similarTasteHighlyRatedMovies = useMemo(() => {
+    const scoreMap = new Map(similarTasteHighlyRated.map((s) => [s.movie_id, s.avgRating]));
+    return combinedMoviePool
+      .filter((m) => scoreMap.has(m.id))
+      .sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0))
+      .slice(0, 12);
+  }, [similarTasteHighlyRated, combinedMoviePool]);
+
+  const communityFavoriteMovies = useMemo(() => {
+    const scoreMap = new Map(communityFavorites.map((s) => [s.movie_id, s.avgRating]));
+    return combinedMoviePool
+      .filter((m) => scoreMap.has(m.id))
+      .sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0))
+      .slice(0, 12);
+  }, [communityFavorites, combinedMoviePool]);
 
   const basedOnFavorites = useMemo(() => {
     const genres = favoriteGenres.length ? favoriteGenres : mostWatchedGenres;
@@ -467,6 +553,54 @@ export default function UserDashboard({
                   })}
               </div>
             </section>
+          )}
+
+          {/* ── HIGHLY RATED BY PEOPLE YOU FOLLOW ── */}
+          {followingHighlyRatedMovies.length >= 4 && (
+            <MovieRail
+              id="dash-following-rated"
+              title="Highly Rated By People You Follow"
+              subtitle="What the people you follow loved"
+              icon={Users}
+              accent="red"
+              movies={followingHighlyRatedMovies}
+              isLoading={false}
+              onMovieClick={onSelectMovie}
+              isSaved={(id) => watchlistIds.has(id)}
+              onToggleSave={onToggleSave}
+            />
+          )}
+
+          {/* ── POPULAR AMONG SIMILAR USERS ── */}
+          {similarTasteHighlyRatedMovies.length >= 4 && (
+            <MovieRail
+              id="dash-similar-taste-rated"
+              title="Popular Among Similar Users"
+              subtitle="Loved by people with taste like yours"
+              icon={Sparkles}
+              accent="indigo"
+              movies={similarTasteHighlyRatedMovies}
+              isLoading={false}
+              onMovieClick={onSelectMovie}
+              isSaved={(id) => watchlistIds.has(id)}
+              onToggleSave={onToggleSave}
+            />
+          )}
+
+          {/* ── COMMUNITY FAVORITES ── */}
+          {communityFavoriteMovies.length >= 4 && (
+            <MovieRail
+              id="dash-community-favorites"
+              title="Community Favorites"
+              subtitle="Highly rated across the whole community"
+              icon={Globe}
+              accent="amber"
+              movies={communityFavoriteMovies}
+              isLoading={false}
+              onMovieClick={onSelectMovie}
+              isSaved={(id) => watchlistIds.has(id)}
+              onToggleSave={onToggleSave}
+            />
           )}
 
           {/* ── ACHIEVEMENTS ── */}

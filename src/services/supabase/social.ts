@@ -598,3 +598,70 @@ export function computeBadges(stats: {
 
   return badges;
 }
+
+// ── Collaborative Discovery Signals ───────────────────────────────────────────
+// Lightweight aggregation over the existing `ratings` table — same pattern as
+// getReviewLeaderboard above: one capped SELECT, aggregate client-side, no RPC,
+// no per-user/per-movie loop (avoids N+1 entirely).
+
+export interface CollaborativeMovieSignal {
+  movie_id: string;
+  avgRating: number;
+  raterCount: number;
+}
+
+function aggregateRatings(rows: { movie_id: string; rating: number }[]): CollaborativeMovieSignal[] {
+  const agg: Record<string, { total: number; count: number }> = {};
+  for (const row of rows) {
+    if (!agg[row.movie_id]) agg[row.movie_id] = { total: 0, count: 0 };
+    agg[row.movie_id].total += row.rating;
+    agg[row.movie_id].count += 1;
+  }
+  return Object.entries(agg).map(([movie_id, v]) => ({
+    movie_id,
+    avgRating: v.total / v.count,
+    raterCount: v.count,
+  }));
+}
+
+// Highly-rated movies among a specific set of users (following, or similar-taste).
+export async function getRatingsFromUsers(
+  userIds: string[],
+  minRating = 8,
+  limit = 200
+): Promise<SupabaseResult<CollaborativeMovieSignal[]>> {
+  if (!isSupabaseConfigured || userIds.length === 0) return { data: [], error: null };
+  try {
+    const { data, error } = await supabase
+      .from("ratings")
+      .select("movie_id, rating")
+      .in("user_id", userIds)
+      .gte("rating", minRating)
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    const signals = aggregateRatings(data ?? [])
+      .sort((a, b) => b.avgRating - a.avgRating || b.raterCount - a.raterCount);
+    return { data: signals, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch ratings from users." };
+  }
+}
+
+// Community-wide favorites: movies rated highly by 2+ different people, regardless
+// of follow/taste relationship — the "everyone loves this" signal.
+export async function getCommunityFavoriteMovies(limit = 1000): Promise<SupabaseResult<CollaborativeMovieSignal[]>> {
+  if (!isSupabaseConfigured) return { data: [], error: null };
+  try {
+    const { data, error } = await supabase
+      .from("ratings")
+      .select("movie_id, rating")
+      .limit(limit);
+    if (error) return { data: null, error: error.message };
+    const signals = aggregateRatings(data ?? [])
+      .filter((s) => s.raterCount >= 2)
+      .sort((a, b) => b.avgRating - a.avgRating || b.raterCount - a.raterCount);
+    return { data: signals, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch community favorites." };
+  }
+}
