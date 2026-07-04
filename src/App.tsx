@@ -33,7 +33,8 @@ import UserDashboard from "./components/UserDashboard";
 import {
   Star, Film, Bookmark, SlidersHorizontal, Eye, HelpCircle, ArrowRight,
   TrendingUp, Flame, CalendarClock, Compass, PlayCircle, Gem, X as XIcon,
-  History, Heart, Sparkle, Clapperboard
+  History, Heart, Sparkle, Clapperboard, Loader2,
+  ChevronLeft, ChevronRight, Play, Pause, Clock3
 } from "lucide-react";
 
 // Seeded shuffle (mulberry32) — deterministic per session seed so re-renders
@@ -621,6 +622,36 @@ export default function App() {
     return claim(result);
   }, [combinedMoviePool, internationalCinema]);
 
+  // Premium collection highlights (Phase 17A) — reuse the same
+  // filter/sort/slice pattern and continue the existing sequential-dedup
+  // chain rather than introducing a new selection mechanism.
+  const staffPicks = useMemo(() => {
+    const result = combinedMoviePool
+      .filter((m) => m.voteAverage >= 8.2 && !usedInCollections.has(m.id))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+    return claim(result);
+  }, [combinedMoviePool, cultClassics]);
+
+  const editorsChoice = useMemo(() => {
+    // A slightly different cut than Staff Picks: rewards vote *count* alongside
+    // rating, surfacing well-established favorites rather than pure top-rated.
+    const result = combinedMoviePool
+      .filter((m) => m.voteAverage >= 7.6 && m.voteCount >= 500 && !usedInCollections.has(m.id))
+      .sort((a, b) => (b.voteAverage * Math.log10(b.voteCount + 1)) - (a.voteAverage * Math.log10(a.voteCount + 1)))
+      .slice(0, 16);
+    return claim(result);
+  }, [combinedMoviePool, staffPicks]);
+
+  const weekendMovies = useMemo(() => {
+    const weekendKeywords = ["adventure", "action", "comedy", "family"];
+    const result = combinedMoviePool
+      .filter((m) => m.genres?.some((g) => weekendKeywords.includes(g.toLowerCase())) && !usedInCollections.has(m.id))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 16);
+    return claim(result);
+  }, [combinedMoviePool, editorsChoice]);
+
   // Decade explore rails — not part of the collections dedup chain by design;
   // these are canonical "full browse of an era" rows.
   const decade1990s = useMemo(() => {
@@ -770,9 +801,32 @@ export default function App() {
     return { count: watchlistMovies.length, avgRating, topGenre };
   }, [watchlistMovies]);
 
-  // Featured billboard movie for top of home page
-  const featuredMovie = trendingMovies[0];
- 
+  // Enhanced Hero: rotates through the top N trending movies instead of a
+  // single static pick. `featuredMovie` is kept as the name every downstream
+  // consumer (CTA handlers, watchlist check, etc.) already reads, so nothing
+  // else in the billboard's action buttons needs to change.
+  const [heroIndex, setHeroIndex] = useState<number>(0);
+  const [heroPlaying, setHeroPlaying] = useState<boolean>(true);
+  const heroSlides = useMemo(() => trendingMovies.slice(0, 5), [trendingMovies]);
+  const safeHeroIndex = heroSlides.length > 0 ? heroIndex % heroSlides.length : 0;
+  const featuredMovie = heroSlides[safeHeroIndex] ?? trendingMovies[0];
+
+  const goToHeroSlide = (index: number) => {
+    if (heroSlides.length === 0) return;
+    setHeroIndex(((index % heroSlides.length) + heroSlides.length) % heroSlides.length);
+  };
+
+  // Auto-advance every 7s while playing and more than one slide exists.
+  // Paused entirely (no timer at all) when heroPlaying is false, rather than
+  // just visually frozen — avoids any background work while paused.
+  useEffect(() => {
+    if (!heroPlaying || heroSlides.length <= 1) return;
+    const id = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % heroSlides.length);
+    }, 7000);
+    return () => clearInterval(id);
+  }, [heroPlaying, heroSlides.length]);
+
  // Shared "open movie" flow: instant transition to the detail view using
   // whatever data we already have, then enrich in the background.
   const handleSelectMovie = React.useCallback(async (movie: Movie) => {
@@ -940,101 +994,191 @@ export default function App() {
                 <div
                   id="featured-board"
                   className="max-w-[1600px] mx-auto px-6 mt-4"
+                  onMouseEnter={() => setHeroPlaying(false)}
+                  onMouseLeave={() => setHeroPlaying(true)}
                 >
                   <div className="relative rounded-3xl overflow-hidden border border-neutral-800 bg-neutral-950 h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
-                    <motion.img
-                      key={featuredMovie.id}
-                      src={featuredMovie.backdropPath}
-                      alt=""
-                      role="presentation"
-                      referrerPolicy="no-referrer"
-                      initial={{ scale: 1.08, opacity: 0.6 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 1.4, ease: "easeOut" }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = featuredMovie.posterPath; }}
-                      className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
+                    {/* Soft ambient glow behind the featured art, cross-fades with the slide */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 opacity-60 blur-3xl scale-110 transition-opacity duration-700"
+                      style={{
+                        background: "radial-gradient(circle at 30% 40%, rgba(220,38,38,0.25), transparent 60%)",
+                      }}
                     />
+
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={featuredMovie.id}
+                        src={featuredMovie.backdropPath}
+                        alt=""
+                        role="presentation"
+                        referrerPolicy="no-referrer"
+                        initial={{ opacity: 0, scale: 1.06 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.9, ease: "easeInOut" }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = featuredMovie.posterPath; }}
+                        className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
+                      />
+                    </AnimatePresence>
                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/70 via-transparent to-transparent" />
 
-                    <motion.div
-                      initial="hidden"
-                      animate="show"
-                      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } }}
-                      className="relative z-10 p-8 md:p-12 text-left max-w-2xl"
-                    >
-                      <motion.div
-                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/20 px-3.5 py-1.5 text-xs font-bold text-amber-400 mb-4 uppercase tracking-wider"
-                      >
-                        <span className="relative flex h-2 w-2" aria-hidden="true">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
-                        </span>
-                        Featured Tonight
-                      </motion.div>
-
-                      <motion.h1
-                        variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
-                        className="text-3xl md:text-6xl font-black tracking-tight text-white leading-[1.05]"
-                      >
-                        {featuredMovie.title}
-                      </motion.h1>
-
-                      <motion.div
-                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                        className="flex items-center gap-3 mt-4 text-xs text-neutral-300"
-                      >
-                        <span className="flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/10">
-                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          {featuredMovie.voteAverage.toFixed(1)}
-                        </span>
-                        <span>{featuredMovie.releaseDate?.split("-")[0]}</span>
-                        {featuredMovie.genres?.slice(0, 3).map((g) => (
-                          <span key={g} className="hidden sm:inline text-neutral-500">&middot; {g}</span>
-                        ))}
-                      </motion.div>
-
-                      <motion.p
-                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                        className="text-neutral-400 text-xs sm:text-sm mt-3 line-clamp-3 leading-relaxed"
-                      >
-                        {featuredMovie.overview}
-                      </motion.p>
-
-                      <motion.div
-                        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                        className="mt-6 flex flex-wrap gap-3"
-                      >
+                    {/* Prev / Next manual controls */}
+                    {heroSlides.length > 1 && (
+                      <>
                         <button
-                          id="billboard-action-detail"
-                          onClick={() => handleSelectMovie(featuredMovie)}
-                          className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                          type="button"
+                          onClick={() => goToHeroSlide(safeHeroIndex - 1)}
+                          aria-label="Previous featured movie"
+                          className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full bg-neutral-950/60 border border-neutral-700/60 text-white hover:bg-neutral-900 backdrop-blur-md transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                         >
-                          {featuredMovie.trailerUrl ? <PlayCircle className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
-                          {featuredMovie.trailerUrl ? "Watch Trailer" : "View Details"}
+                          <ChevronLeft className="h-5 w-5" />
                         </button>
                         <button
-                          id="billboard-action-watchlist"
-                          onClick={() => handleQuickToggleWatchlist(featuredMovie)}
-                          aria-pressed={watchlistIds.has(featuredMovie.id)}
-                          className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          type="button"
+                          onClick={() => goToHeroSlide(safeHeroIndex + 1)}
+                          aria-label="Next featured movie"
+                          className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full bg-neutral-950/60 border border-neutral-700/60 text-white hover:bg-neutral-900 backdrop-blur-md transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                         >
-                          <Bookmark className={`h-4.5 w-4.5 ${watchlistIds.has(featuredMovie.id) ? "fill-red-400 text-red-400" : ""}`} />
-                          {watchlistIds.has(featuredMovie.id) ? "In Watchlist" : "Add to Watchlist"}
+                          <ChevronRight className="h-5 w-5" />
                         </button>
-                        <button
-                          id="billboard-action-search"
-                          onClick={() => {
-                            document.getElementById("navbar-search")?.focus();
-                          }}
-                          className="hidden sm:flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                      </>
+                    )}
+
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={featuredMovie.id}
+                        initial="hidden"
+                        animate="show"
+                        exit={{ opacity: 0, y: -8, transition: { duration: 0.25 } }}
+                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } }}
+                        className="relative z-10 p-8 md:p-12 text-left max-w-2xl"
+                      >
+                        <motion.div
+                          variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/20 px-3.5 py-1.5 text-xs font-bold text-amber-400 mb-4 uppercase tracking-wider"
                         >
-                          Search archives
-                          <ArrowRight className="h-4 w-4" />
-                        </button>
+                          <span className="relative flex h-2 w-2" aria-hidden="true">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                          </span>
+                          Featured Today
+                        </motion.div>
+
+                        <motion.h1
+                          variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
+                          className="text-3xl md:text-6xl font-black tracking-tight text-white leading-[1.05]"
+                        >
+                          {featuredMovie.title}
+                        </motion.h1>
+
+                        <motion.div
+                          variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                          className="flex flex-wrap items-center gap-2 mt-4 text-xs text-neutral-300"
+                        >
+                          <span className="flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/10">
+                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            {featuredMovie.voteAverage.toFixed(1)}
+                          </span>
+                          <span className="text-neutral-400">{featuredMovie.releaseDate?.split("-")[0]}</span>
+                          {featuredMovie.runtime ? (
+                            <span className="flex items-center gap-1 text-neutral-400">
+                              <Clock3 className="h-3 w-3" />
+                              {Math.floor(featuredMovie.runtime / 60)}h {featuredMovie.runtime % 60}m
+                            </span>
+                          ) : null}
+                          {featuredMovie.genres?.slice(0, 3).map((g) => (
+                            <span
+                              key={g}
+                              className="hidden sm:inline-flex rounded-full border border-neutral-700/60 bg-neutral-900/50 px-2.5 py-0.5 text-[11px] font-semibold text-neutral-300"
+                            >
+                              {g}
+                            </span>
+                          ))}
+                        </motion.div>
+
+                        <motion.p
+                          variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                          className="text-neutral-400 text-xs sm:text-sm mt-3 line-clamp-3 leading-relaxed"
+                        >
+                          {featuredMovie.overview}
+                        </motion.p>
+
+                        <motion.div
+                          variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                          className="mt-6 flex flex-wrap gap-3"
+                        >
+                          <motion.button
+                            id="billboard-action-detail"
+                            onClick={() => handleSelectMovie(featuredMovie)}
+                            whileHover={{ scale: 1.035 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                          >
+                            {featuredMovie.trailerUrl ? <PlayCircle className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                            {featuredMovie.trailerUrl ? "Watch Trailer" : "View Details"}
+                          </motion.button>
+                          <motion.button
+                            id="billboard-action-watchlist"
+                            onClick={() => handleQuickToggleWatchlist(featuredMovie)}
+                            aria-pressed={watchlistIds.has(featuredMovie.id)}
+                            whileHover={{ scale: 1.035 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          >
+                            <Bookmark className={`h-4.5 w-4.5 ${watchlistIds.has(featuredMovie.id) ? "fill-red-400 text-red-400" : ""}`} />
+                            {watchlistIds.has(featuredMovie.id) ? "In Watchlist" : "Add to Watchlist"}
+                          </motion.button>
+                          <button
+                            id="billboard-action-search"
+                            onClick={() => {
+                              document.getElementById("navbar-search")?.focus();
+                            }}
+                            className="hidden sm:flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          >
+                            Search archives
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
+                    </AnimatePresence>
+
+                    {/* Play/Pause + progress indicator, bottom-right */}
+                    {heroSlides.length > 1 && (
+                      <div className="absolute bottom-5 right-6 z-20 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setHeroPlaying((p) => !p)}
+                          aria-label={heroPlaying ? "Pause rotation" : "Play rotation"}
+                          aria-pressed={heroPlaying}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-950/60 border border-neutral-700/60 text-white hover:bg-neutral-900 backdrop-blur-md transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                        >
+                          {heroPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 ml-0.5" />}
+                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {heroSlides.map((slide, i) => (
+                            <button
+                              key={slide.id}
+                              type="button"
+                              onClick={() => goToHeroSlide(i)}
+                              aria-label={`Go to featured movie ${i + 1}: ${slide.title}`}
+                              aria-current={i === safeHeroIndex}
+                              className="relative h-1 w-8 rounded-full bg-neutral-700/50 overflow-hidden cursor-pointer"
+                            >
+                              {i === safeHeroIndex && (
+                                <span
+                                  key={`${featuredMovie.id}-${heroPlaying}`}
+                                  className={`absolute inset-y-0 left-0 bg-red-500 rounded-full ${heroPlaying ? "hero-progress-active" : "hero-progress-paused w-full"}`}
+                                />
+                              )}
+                              {i < safeHeroIndex && <span className="absolute inset-0 bg-neutral-400 rounded-full" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1222,6 +1366,48 @@ export default function App() {
                       icon={CalendarClock}
                       accent="indigo"
                       movies={cultClassics}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {staffPicks.length >= 4 && (
+                    <MovieRail
+                      id="rail-staff-picks"
+                      title="Staff Picks"
+                      subtitle="Our highest-rated favorites in the catalog"
+                      icon={Sparkle}
+                      accent="amber"
+                      movies={staffPicks}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {editorsChoice.length >= 4 && (
+                    <MovieRail
+                      id="rail-editors-choice"
+                      title="Editor's Choice"
+                      subtitle="Well-loved favorites, not just top-rated"
+                      icon={Star}
+                      accent="red"
+                      movies={editorsChoice}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
+                  {weekendMovies.length >= 4 && (
+                    <MovieRail
+                      id="rail-weekend-movies"
+                      title="Weekend Movies"
+                      subtitle="Easy, crowd-pleasing picks for a night in"
+                      icon={Flame}
+                      accent="teal"
+                      movies={weekendMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
                       isSaved={(id) => watchlistIds.has(id)}

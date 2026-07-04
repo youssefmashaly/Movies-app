@@ -93,6 +93,26 @@ body {
 }
 
 /* ---------------------------------------------------------- */
+/* Billboard hero auto-rotation progress bar                   */
+/* ---------------------------------------------------------- */
+@keyframes hero-progress-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.hero-progress-active {
+  animation: hero-progress-fill 7s linear forwards;
+}
+.hero-progress-paused {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-progress-active {
+    animation: none;
+    width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------- */
 /* Horizontal rail scroll-snap                                 */
 /* ---------------------------------------------------------- */
 .rail-track {
