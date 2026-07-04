@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 // firebase/firestore: no active writes remain after preferences moved to Supabase
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
+import { dedupedFetch } from "./lib/requestDedup";
 import { syncProfileFromFirebaseUser, saveFavoriteGenres, getProfileWithGenres } from "./services/supabase/profiles";
 import {
   getOrCreateDefaultWatchlist,
@@ -23,11 +24,12 @@ import Navbar from "./components/Navbar";
 import MovieCard from "./components/MovieCard";
 import MovieRail from "./components/MovieRail";
 import MovieDetail from "./components/MovieDetail";
-import AIMatchmaker from "./components/AIMatchmaker";
 import AuthModal from "./components/AuthModal";
 import UserProfile from "./components/UserProfile";
-import CommunityFeed from "./components/CommunityFeed";
-import UserDashboard from "./components/UserDashboard";
+
+const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
+const CommunityFeed = lazy(() => import("./components/CommunityFeed"));
+const UserDashboard = lazy(() => import("./components/UserDashboard"));
 
 // Icons
 import {
@@ -69,6 +71,14 @@ function readLocalJSON<T>(key: string, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+function TabLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <Loader2 className="h-7 w-7 text-red-500 animate-spin" aria-hidden="true" />
+    </div>
+  );
 }
 
 export default function App() {
@@ -144,7 +154,7 @@ export default function App() {
       try {
         setMoviesLoading(true);
         // Fetch trending
-        const trendRes = await fetch("/api/movies/trending");
+        const trendRes = await dedupedFetch("/api/movies/trending");
         if (trendRes.ok) {
           const trendData = await trendRes.json();
           setTrendingMovies(trendData);
@@ -152,7 +162,7 @@ export default function App() {
         }
 
         // Fetch latest
-        const latestRes = await fetch("/api/movies/latest");
+        const latestRes = await dedupedFetch("/api/movies/latest");
         if (latestRes.ok) {
           const latestData = await latestRes.json();
           setLatestMovies(latestData);
@@ -2121,14 +2131,16 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <AIMatchmaker
-                onSelectMovie={handleSelectMovie}
-                userId={user?.uid}
-                watchlistId={defaultWatchlistId}
-                favoriteGenres={favoriteGenres}
-                watchlistMovies={watchlistMovies}
-                recentlyViewedMovies={recentlyViewed}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <AIMatchmaker
+                  onSelectMovie={handleSelectMovie}
+                  userId={user?.uid}
+                  watchlistId={defaultWatchlistId}
+                  favoriteGenres={favoriteGenres}
+                  watchlistMovies={watchlistMovies}
+                  recentlyViewedMovies={recentlyViewed}
+                />
+              </Suspense>
             </motion.div>
           ) : activeTab === "profile" ? (
             /* 5. USER PROFILE */
@@ -2148,7 +2160,9 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <CommunityFeed />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <CommunityFeed />
+              </Suspense>
             </motion.div>
           ) : (
             /* 7. PERSONAL DASHBOARD */
@@ -2158,15 +2172,17 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <UserDashboard
-                recentlyViewed={recentlyViewed}
-                watchlistMovies={watchlistMovies}
-                favoriteGenres={favoriteGenres}
-                combinedMoviePool={combinedMoviePool}
-                onSelectMovie={handleSelectMovie}
-                onToggleSave={handleQuickToggleWatchlist}
-                watchlistIds={watchlistIds}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <UserDashboard
+                  recentlyViewed={recentlyViewed}
+                  watchlistMovies={watchlistMovies}
+                  favoriteGenres={favoriteGenres}
+                  combinedMoviePool={combinedMoviePool}
+                  onSelectMovie={handleSelectMovie}
+                  onToggleSave={handleQuickToggleWatchlist}
+                  watchlistIds={watchlistIds}
+                />
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>
