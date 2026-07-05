@@ -15,6 +15,7 @@ import {
   getCommunityFavoriteMovies,
   type CollaborativeMovieSignal,
 } from "../services/supabase/social";
+import { startTiming, endTiming } from "../lib/analytics";
 import MovieRail from "./MovieRail";
 import type { Movie } from "../types";
 import type { SupabaseRating, SupabaseReview } from "../types/supabase";
@@ -169,6 +170,7 @@ export default function UserDashboard({
   useEffect(() => {
     if (!userId) { setActivityLoading(false); return; }
     setActivityLoading(true);
+    startTiming(`dashboard-render-${userId}`);
     Promise.all([
       listUserRatings(userId, 50),
       listUserReviews(userId, 20),
@@ -177,6 +179,7 @@ export default function UserDashboard({
       setRatings(r.data ?? []);
       setReviews(rv.data ?? []);
       setActivityLoading(false);
+      endTiming(`dashboard-render-${userId}`);
 
       // Collaborative signals load separately/non-blocking — the core
       // dashboard (ratings/reviews) never waits on these extra queries.

@@ -71,17 +71,69 @@ const REQUIRED_ENV_VARS = [
   "VITE_FIREBASE_PROJECT_ID",
 ] as const;
 
+// ── Startup environment validation (dev-only) ─────────────────────────────
+// Warns loudly in the console when required env vars are missing, instead
+// of letting Supabase-backed features fail silently and confusingly later.
+const REQUIRED_ENV_VARS = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"] as const;
+
 export function validateEnv() {
   if (!import.meta.env.DEV) return;
   const missing = REQUIRED_ENV_VARS.filter((key) => !import.meta.env[key]);
   if (missing.length > 0) {
     console.warn(
       `%c⚠ Missing required environment variables: ${missing.join(", ")}\n` +
-      `Auth and Supabase-backed features will fail without these.\n` +
+      `Watchlists, ratings, reviews, and follows will fail without these.\n` +
       `Copy .env.example to .env and fill them in.`,
       "color: #f59e0b; font-weight: bold;"
     );
   } else {
     console.log("%c✓ Environment configuration OK", "color: #10b981; font-weight: bold;");
   }
+}
+
+// ── Dev-only timing instrumentation ───────────────────────────────────────
+// Generic start/end markers built on the native Performance API — no new
+// dependency, reused by movie-detail load time, recommendation generation,
+// dashboard render time, and search response time. Silently no-ops in
+// production (marks/measures are cheap, but we skip entirely to be safe).
+export function startTiming(label: string) {
+  if (!import.meta.env.DEV || typeof performance === "undefined") return;
+  performance.mark(`${label}-start`);
+}
+
+export function endTiming(label: string) {
+  if (!import.meta.env.DEV || typeof performance === "undefined") return;
+  try {
+    performance.mark(`${label}-end`);
+    performance.measure(label, `${label}-start`, `${label}-end`);
+    const [entry] = performance.getEntriesByName(label);
+    if (entry) {
+      console.log(`%c⏱ ${label}: ${entry.duration.toFixed(1)}ms`, "color: #22d3ee;");
+    }
+    performance.clearMarks(`${label}-start`);
+    performance.clearMarks(`${label}-end`);
+    performance.clearMeasures(label);
+  } catch {
+    // Missing start mark (e.g. HMR reload mid-timing) — never break the app over a metric.
+  }
+}
+
+export async function timeAsync<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  startTiming(label);
+  try {
+    return await fn();
+  } finally {
+    endTiming(label);
+  }
+}
+
+// Records app boot time once, in main.tsx, before React even mounts —
+// read later by the diagnostics utility.
+let appStartupMs: number | null = null;
+export function recordStartupTiming() {
+  if (typeof performance === "undefined") return;
+  appStartupMs = performance.now();
+}
+export function getStartupTiming() {
+  return appStartupMs;
 }

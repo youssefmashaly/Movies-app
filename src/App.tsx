@@ -11,6 +11,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
 import { dedupedFetch } from "./lib/requestDedup";
+import { seededShuffle } from "./lib/seededShuffle";
+import { preloadImage } from "./lib/imagePreload";
+import { timeAsync, startTiming, endTiming } from "./lib/analytics";
 import { syncProfileFromFirebaseUser, saveFavoriteGenres, getProfileWithGenres } from "./services/supabase/profiles";
 import {
   getOrCreateDefaultWatchlist,
@@ -159,6 +162,9 @@ export default function App() {
           const trendData = await trendRes.json();
           setTrendingMovies(trendData);
           setMovies(trendData); // Default
+          // First visible rail on load — preload its first few posters so
+          // they're warm by the time the fade-in animation reveals them.
+          trendData.slice(0, 4).forEach((m: Movie) => preloadImage(m.posterPath));
         }
 
         // Fetch latest
@@ -189,7 +195,9 @@ export default function App() {
     const delayDebounce = setTimeout(async () => {
       try {
         setSearchLoading(true);
-        const res = await fetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`);
+        const res = await timeAsync("search-suggestion-response", () =>
+          dedupedFetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`)
+        );
         if (res.ok) {
           const results = await res.json();
           setMovies(results);
@@ -405,8 +413,12 @@ export default function App() {
   // display count, then seeded-shuffle just that widened set — every shown
   // movie is still highly relevant, but which subset appears varies by session.
   const recommendedMovies = useMemo(() => {
+    if (import.meta.env.DEV) startTiming("recommendation-generation");
     const sourcePool = trendingMovies.length ? trendingMovies : latestMovies;
-    if (sourcePool.length === 0) return [];
+    if (sourcePool.length === 0) {
+      if (import.meta.env.DEV) endTiming("recommendation-generation");
+      return [];
+    }
 
     const DISPLAY_COUNT = 16;
 
@@ -418,7 +430,9 @@ export default function App() {
       if (matches.length >= 4) {
         const ranked = [...matches].sort((a, b) => b.voteAverage - a.voteAverage);
         const widened = ranked.slice(0, DISPLAY_COUNT * 2);
-        return seededShuffle(widened, sessionSeed).slice(0, DISPLAY_COUNT);
+        const result = seededShuffle(widened, sessionSeed).slice(0, DISPLAY_COUNT);
+        if (import.meta.env.DEV) endTiming("recommendation-generation");
+        return result;
       }
     }
 
@@ -428,7 +442,9 @@ export default function App() {
       .filter((m) => m.voteAverage >= 7)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     const widenedFallback = fallbackRanked.slice(4, 4 + DISPLAY_COUNT * 2);
-    return seededShuffle(widenedFallback, sessionSeed).slice(0, DISPLAY_COUNT);
+    const fallbackResult = seededShuffle(widenedFallback, sessionSeed).slice(0, DISPLAY_COUNT);
+    if (import.meta.env.DEV) endTiming("recommendation-generation");
+    return fallbackResult;
   }, [trendingMovies, latestMovies, topAffinityGenres, watchlistIds, sessionSeed]);
 
   // Surfaces *why* the Recommended row looks the way it does, so it reads as
@@ -818,6 +834,14 @@ export default function App() {
   const [heroIndex, setHeroIndex] = useState<number>(0);
   const [heroPlaying, setHeroPlaying] = useState<boolean>(true);
   const heroSlides = useMemo(() => trendingMovies.slice(0, 5), [trendingMovies]);
+
+  // Predictively preload the *next* hero slide's backdrop so the rotation
+  // (auto or manual) never shows a blank frame while the image loads.
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+    const nextIndex = (heroIndex + 1) % heroSlides.length;
+    preloadImage(heroSlides[nextIndex]?.backdropPath);
+  }, [heroIndex, heroSlides]);
   const safeHeroIndex = heroSlides.length > 0 ? heroIndex % heroSlides.length : 0;
   const featuredMovie = heroSlides[safeHeroIndex] ?? trendingMovies[0];
 
@@ -843,7 +867,9 @@ export default function App() {
     try {
       setSelectedMovie(movie); // Instant transition
       trackRecentlyViewed(movie);
-      const res = await fetch(`/api/movies/detail/${movie.id}`);
+      const res = await timeAsync(`movie-detail-load-${movie.id}`, () =>
+        dedupedFetch(`/api/movies/detail/${movie.id}`)
+      );
       if (res.ok) {
         const fullDetail = await res.json();
         setSelectedMovie(fullDetail); // Enrich with real cast or AI generated facts

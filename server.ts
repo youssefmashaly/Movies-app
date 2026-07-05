@@ -17,8 +17,48 @@ function getAI() {
   return aiClient;
 }
 
-// Memory cache for generated AI movies so they persist during the session
-const aiMoviesCache = new Map<string, Movie>();
+// Memory cache for generated AI movies, now with a configurable TTL,
+// automatic/lazy expiration on read, and dev-only hit/miss tracking.
+// Same get()/set() shape as the old plain Map, so every existing call site
+// below is unchanged.
+const AI_CACHE_TTL_MS = Number(process.env.AI_CACHE_TTL_MS) || 30 * 60 * 1000; // 30 min default
+
+class TTLCache<K, V> {
+  private store = new Map<K, { value: V; expiresAt: number }>();
+  private hits = 0;
+  private misses = 0;
+
+  get(key: K): V | undefined {
+    const entry = this.store.get(key);
+    if (!entry) {
+      this.misses++;
+      return undefined;
+    }
+    if (Date.now() > entry.expiresAt) {
+      // Lazy cleanup: an expired entry is only ever removed when it's
+      // actually looked up again, not via a background timer.
+      this.store.delete(key);
+      this.misses++;
+      return undefined;
+    }
+    this.hits++;
+    return entry.value;
+  }
+
+  set(key: K, value: V): void {
+    this.store.set(key, { value, expiresAt: Date.now() + AI_CACHE_TTL_MS });
+  }
+
+  get size(): number {
+    return this.store.size;
+  }
+
+  getStats() {
+    return { hits: this.hits, misses: this.misses, size: this.store.size, ttlMs: AI_CACHE_TTL_MS };
+  }
+}
+
+const aiMoviesCache = new TTLCache<string, Movie>();
 
 // Builds and returns a fully configured Express app WITHOUT starting a
 // listener — safe to import from serverless entry points (Vercel/Netlify)
@@ -28,6 +68,14 @@ export async function createApp() {
   const app = express();
 
   app.use(express.json());
+
+  // Dev-only diagnostics endpoint — never registered in production, so it
+  // can't leak cache internals or add any overhead to a deployed instance.
+  if (process.env.NODE_ENV !== "production") {
+    app.get("/api/_diagnostics/cache", (_req, res) => {
+      res.json(aiMoviesCache.getStats());
+    });
+  }
 
   // --- API ROUTES ---
 

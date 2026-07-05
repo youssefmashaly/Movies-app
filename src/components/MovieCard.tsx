@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Movie } from "../types";
 import { Calendar, Bookmark, BookmarkCheck } from "lucide-react";
+import { prefetchMovieDetail, cancelPrefetch } from "../lib/prefetch";
 
 interface MovieCardProps {
   key?: string | number;
@@ -93,6 +94,10 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
       transition={{ duration: 0.35, delay: Math.min(index, 10) * 0.04 }}
       onClick={onClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => prefetchMovieDetail(movie.id)}
+      onMouseLeave={() => cancelPrefetch(movie.id)}
+      onFocus={() => prefetchMovieDetail(movie.id)}
+      onBlur={() => cancelPrefetch(movie.id)}
       className="group relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl border border-neutral-800/80 bg-neutral-900 shadow-xl transition-shadow hover:shadow-2xl hover:shadow-red-950/20 focus-visible:shadow-2xl focus-visible:shadow-red-950/30"
     >
       {/* Background Poster Image */}
