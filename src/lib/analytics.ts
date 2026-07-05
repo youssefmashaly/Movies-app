@@ -64,17 +64,15 @@ export function initPerformanceMetrics() {
   }
 }
 
+// ── Startup environment validation (dev-only) ─────────────────────────────
+// Warns loudly in the console when required env vars are missing, instead
+// of letting Supabase-backed features fail silently and confusingly later.
 const REQUIRED_ENV_VARS = [
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_ANON_KEY",
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_PROJECT_ID",
 ] as const;
-
-// ── Startup environment validation (dev-only) ─────────────────────────────
-// Warns loudly in the console when required env vars are missing, instead
-// of letting Supabase-backed features fail silently and confusingly later.
-const REQUIRED_ENV_VARS = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"] as const;
 
 export function validateEnv() {
   if (!import.meta.env.DEV) return;

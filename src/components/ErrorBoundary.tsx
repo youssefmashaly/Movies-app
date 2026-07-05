@@ -1,7 +1,6 @@
 import React from "react";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import { reportError } from "../lib/analytics";
-import { reportError } from "../lib/analytics";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
