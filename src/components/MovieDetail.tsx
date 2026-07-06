@@ -40,6 +40,38 @@ function formatVoteCount(count?: number): string {
   return `${count.toLocaleString()} ratings`;
 }
 
+// Small count-up animation for the rating/stat numbers. Respects
+// prefers-reduced-motion by rendering the final value immediately instead
+// of animating — same pattern already used for the amber "ping" dot
+// elsewhere in the app (motion-reduce:animate-none).
+function AnimatedNumber({ value, decimals = 0, duration = 0.8 }: { value: number; decimals?: number; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+  const prefersReducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
+    []
+  );
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setDisplay(value);
+      return;
+    }
+    let raf: number;
+    const start = performance.now();
+    const from = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / (duration * 1000));
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setDisplay(from + (value - from) * eased);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, prefersReducedMotion]);
+
+  return <>{display.toFixed(decimals)}</>;
+}
+
 interface MovieDetailProps {
   key?: string | number;
   movie: Movie;
@@ -384,7 +416,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               )}
               <span className="flex items-center gap-1.5 font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/10 shadow-sm">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                {movie.voteAverage.toFixed(1)} <span className="text-neutral-500 font-normal">({formatVoteCount(movie.voteCount)})</span>
+                <AnimatedNumber value={movie.voteAverage} decimals={1} /> <span className="text-neutral-500 font-normal">({formatVoteCount(movie.voteCount)})</span>
               </span>
             </div>
           </div>
@@ -448,10 +480,14 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   Principal Cast
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {movie.cast.map((c) => (
-                    <div
+                  {movie.cast.map((c, castIdx) => (
+                    <motion.div
                       key={c.id}
-                      className="rounded-2xl border border-neutral-900 bg-neutral-900/30 p-3 text-center flex flex-col items-center"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: Math.min(castIdx, 8) * 0.05 }}
+                      whileHover={{ y: -4 }}
+                      className="rounded-2xl border border-neutral-900 bg-neutral-900/30 p-3 text-center flex flex-col items-center transition-colors hover:border-neutral-700 hover:bg-neutral-900/60"
                     >
                       <img
                         src={c.profilePath}
@@ -465,7 +501,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       <p className="text-xs text-neutral-400 mt-1 truncate w-full">
                         {c.character}
                       </p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -526,7 +562,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   <dt className="text-neutral-500">Critic Score</dt>
                   <dd className="font-semibold text-amber-400 flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-amber-400" aria-hidden="true" />
-                    {movie.voteAverage.toFixed(1)}
+                    <AnimatedNumber value={movie.voteAverage} decimals={1} />
                     <span className="text-neutral-600 font-normal">({formatVoteCount(movie.voteCount)})</span>
                   </dd>
                 </div>

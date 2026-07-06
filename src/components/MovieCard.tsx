@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Movie } from "../types";
-import { Calendar, Bookmark, BookmarkCheck } from "lucide-react";
+import { Calendar, Clock, PlayCircle, Info, Heart, Bookmark, BookmarkCheck } from "lucide-react";
 import { prefetchMovieDetail, cancelPrefetch } from "../lib/prefetch";
 
 interface MovieCardProps {
@@ -12,6 +12,18 @@ interface MovieCardProps {
   index?: number;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  // Optional — when provided, shows a favorite indicator if the movie
+  // matches one of the user's favorite genres. Omitting this prop preserves
+  // exactly the existing card appearance everywhere it's already used.
+  favoriteGenres?: string[];
+  onPlayTrailer?: (movie: Movie) => void;
+}
+
+function formatRuntimeShort(minutes?: number): string | null {
+  if (!minutes || minutes <= 0) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 // Score -> color, mirrors the "rating ring" pattern from Letterboxd/TMDB
@@ -51,7 +63,7 @@ function RatingRing({ score }: { score: number }) {
   );
 }
 
-function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave }: MovieCardProps) {
+function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave, favoriteGenres, onPlayTrailer }: MovieCardProps) {
   const [posterError, setPosterError] = useState(false);
 
   if (isLoading || !movie) {
@@ -68,6 +80,8 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
 
   // Extract release year
   const releaseYear = movie.releaseDate ? movie.releaseDate.split("-")[0] : "N/A";
+  const runtimeLabel = formatRuntimeShort(movie.runtime);
+  const isFavoriteGenre = !!favoriteGenres?.length && movie.genres?.some((g) => favoriteGenres.includes(g));
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -79,6 +93,11 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
   const handleToggleSave = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onToggleSave?.();
+  };
+
+  const handlePlayTrailer = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    onPlayTrailer?.(movie);
   };
 
   return (
@@ -128,6 +147,14 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
       {/* Top-right: rating ring + quick-action bookmark */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-2 z-10">
         <RatingRing score={movie.voteAverage} />
+        {isFavoriteGenre && (
+          <span
+            aria-label="Matches one of your favorite genres"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-950/70 border border-neutral-700/60 backdrop-blur-md text-red-400"
+          >
+            <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" aria-hidden="true" />
+          </span>
+        )}
         {onToggleSave && (
           <button
             type="button"
@@ -170,12 +197,55 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
           {movie.title}
         </h3>
 
-        {/* Year */}
-        <div className="mt-2 flex items-center text-xs text-neutral-400">
+        {/* Year + runtime — always visible, unchanged from before */}
+        <div className="mt-2 flex items-center gap-3 text-xs text-neutral-400">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3 text-neutral-500" />
             {releaseYear}
           </span>
+          {runtimeLabel && (
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-neutral-500" />
+              {runtimeLabel}
+            </span>
+          )}
+        </div>
+
+        {/* Rich preview: overview + quick actions, reveal on hover/focus only.
+            On touch devices this content simply never gets a persistent
+            hover state, so it degrades to "not shown" rather than broken. */}
+        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none">
+          <div className="overflow-hidden">
+            {movie.overview && (
+              <p className="mt-3 text-[11px] leading-relaxed text-neutral-300 line-clamp-3">
+                {movie.overview}
+              </p>
+            )}
+            <div className="mt-3 flex items-center gap-2">
+              {movie.trailerUrl && onPlayTrailer && (
+                <button
+                  type="button"
+                  onClick={handlePlayTrailer}
+                  aria-label={`Play trailer for ${movie.title}`}
+                  className="flex items-center gap-1.5 rounded-lg bg-red-650/90 hover:bg-red-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-colors"
+                >
+                  <PlayCircle className="h-3.5 w-3.5" />
+                  Trailer
+                </button>
+              )}
+              {onClick && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                  aria-label={`More info about ${movie.title}`}
+                  className="flex items-center gap-1.5 rounded-lg bg-neutral-800/90 hover:bg-neutral-700 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-colors"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                  More Info
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
