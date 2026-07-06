@@ -64,9 +64,6 @@ export function initPerformanceMetrics() {
   }
 }
 
-// ── Startup environment validation (dev-only) ─────────────────────────────
-// Warns loudly in the console when required env vars are missing, instead
-// of letting Supabase-backed features fail silently and confusingly later.
 const REQUIRED_ENV_VARS = [
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_ANON_KEY",
@@ -89,11 +86,6 @@ export function validateEnv() {
   }
 }
 
-// ── Dev-only timing instrumentation ───────────────────────────────────────
-// Generic start/end markers built on the native Performance API — no new
-// dependency, reused by movie-detail load time, recommendation generation,
-// dashboard render time, and search response time. Silently no-ops in
-// production (marks/measures are cheap, but we skip entirely to be safe).
 export function startTiming(label: string) {
   if (!import.meta.env.DEV || typeof performance === "undefined") return;
   performance.mark(`${label}-start`);
@@ -125,8 +117,6 @@ export async function timeAsync<T>(label: string, fn: () => Promise<T>): Promise
   }
 }
 
-// Records app boot time once, in main.tsx, before React even mounts —
-// read later by the diagnostics utility.
 let appStartupMs: number | null = null;
 export function recordStartupTiming() {
   if (typeof performance === "undefined") return;

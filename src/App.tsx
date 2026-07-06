@@ -29,6 +29,8 @@ import MovieRail from "./components/MovieRail";
 import MovieDetail from "./components/MovieDetail";
 import AuthModal from "./components/AuthModal";
 import UserProfile from "./components/UserProfile";
+import TrailerModal from "./components/TrailerModal";
+import { MovieCardPreferencesProvider } from "./context/MovieCardContext";
 
 const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
 const CommunityFeed = lazy(() => import("./components/CommunityFeed"));
@@ -864,7 +866,13 @@ export default function App() {
   // instead of creating a brand-new closure on every render.
   const isMovieSaved = React.useCallback((id: string) => watchlistIds.has(id), [watchlistIds]);
 
+  // Shared trailer modal state — one instance for the whole app, opened by
+  // any MovieCard via the MovieCardPreferencesProvider below.
+  const [trailerMovie, setTrailerMovie] = useState<Movie | null>(null);
+  const openTrailer = React.useCallback((movie: Movie) => setTrailerMovie(movie), []);
+
   return (
+    <MovieCardPreferencesProvider favoriteGenres={favoriteGenres} openTrailer={openTrailer}>
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased select-none pb-12">
       {/* Skip link: first focusable element for keyboard/screen-reader users */}
       <a href="#main-content" className="skip-link">Skip to content</a>
@@ -2193,6 +2201,9 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      <TrailerModal movie={trailerMovie} onClose={() => setTrailerMovie(null)} />
     </div>
+    </MovieCardPreferencesProvider>
   );
 }

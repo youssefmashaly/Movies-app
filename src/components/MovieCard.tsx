@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Movie } from "../types";
 import { Calendar, Clock, PlayCircle, Info, Heart, Bookmark, BookmarkCheck } from "lucide-react";
 import { prefetchMovieDetail, cancelPrefetch } from "../lib/prefetch";
+import { useMovieCardPreferences } from "../context/MovieCardContext";
 
 interface MovieCardProps {
   key?: string | number;
@@ -81,7 +82,11 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
   // Extract release year
   const releaseYear = movie.releaseDate ? movie.releaseDate.split("-")[0] : "N/A";
   const runtimeLabel = formatRuntimeShort(movie.runtime);
-  const isFavoriteGenre = !!favoriteGenres?.length && movie.genres?.some((g) => favoriteGenres.includes(g));
+  // Explicit props (if a caller ever passes them) win; otherwise fall back
+  // to the shared context so no per-rail wiring is needed anywhere.
+  const { favoriteGenres: contextFavoriteGenres, openTrailer } = useMovieCardPreferences();
+  const effectiveFavoriteGenres = favoriteGenres ?? contextFavoriteGenres;
+  const isFavoriteGenre = !!effectiveFavoriteGenres?.length && movie.genres?.some((g) => effectiveFavoriteGenres.includes(g));
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -97,7 +102,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
 
   const handlePlayTrailer = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
-    onPlayTrailer?.(movie);
+    (onPlayTrailer ?? openTrailer)?.(movie);
   };
 
   return (

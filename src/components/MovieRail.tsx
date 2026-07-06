@@ -4,6 +4,29 @@ import { Movie } from "../types";
 import { ChevronLeft, ChevronRight, LucideIcon } from "lucide-react";
 import MovieCard from "./MovieCard";
 
+// Session-scoped scroll memory, keyed by rail id. Explore-tab rails fully
+// unmount whenever a movie is selected (the ternary in App.tsx swaps the
+// whole tree for MovieDetail) and remount on "Back" — sessionStorage is what
+// survives that unmount/remount cycle; component state alone would not.
+const SCROLL_MEMORY_PREFIX = "movieapp:railScroll:";
+
+function readRailScroll(railId: string): number {
+  try {
+    const raw = sessionStorage.getItem(SCROLL_MEMORY_PREFIX + railId);
+    return raw ? Number(raw) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveRailScroll(railId: string, value: number) {
+  try {
+    sessionStorage.setItem(SCROLL_MEMORY_PREFIX + railId, String(value));
+  } catch {
+    // Private browsing / quota — losing scroll memory is never worth breaking the app over.
+  }
+}
+
 interface MovieRailProps {
   id: string;
   title: string;
@@ -49,23 +72,57 @@ function MovieRailComponent({
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
   };
 
+  // Restore scroll position once the rail actually has content to scroll to
+  // (restoring against an empty/skeleton track would just no-op at 0).
+  useEffect(() => {
+    if (isLoading || movies.length === 0) return;
+    const el = trackRef.current;
+    if (!el) return;
+    const saved = readRailScroll(id);
+    if (saved > 0) {
+      // No smooth-scroll here — this is a restore, not a user-initiated
+      // scroll, so it should never animate or visually "jump" into place.
+      el.scrollLeft = saved;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, movies.length, id]);
+
   useEffect(() => {
     updateScrollState();
     const el = trackRef.current;
     if (!el) return;
-    const onScroll = () => updateScrollState();
+    let saveTimeout: ReturnType<typeof setTimeout>;
+    const onScroll = () => {
+      updateScrollState();
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => saveRailScroll(id, el.scrollLeft), 200);
+    };
     el.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       el.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      clearTimeout(saveTimeout);
     };
-  }, [movies, isLoading]);
+  }, [movies, isLoading, id]);
 
   const scrollBy = (dir: 1 | -1) => {
     const el = trackRef.current;
     if (!el) return;
     el.scrollBy({ left: dir * Math.min(el.clientWidth * 0.85, 700), behavior: "smooth" });
+  };
+
+  // Left/Right arrow keys scroll the rail by one "page" when focus is
+  // anywhere inside it (the track itself or one of its cards) — Enter/Space
+  // on an individual card is already handled by MovieCard itself.
+  const handleTrackKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scrollBy(1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scrollBy(-1);
+    }
   };
 
   // Don't render an empty, finished section at all (clean discovery surface)
