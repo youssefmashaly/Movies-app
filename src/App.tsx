@@ -11,7 +11,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
 import { dedupedFetch } from "./lib/requestDedup";
-import { seededShuffle } from "./lib/seededShuffle";
+import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
 import { preloadImage } from "./lib/imagePreload";
 import { timeAsync, startTiming, endTiming } from "./lib/analytics";
 import { syncProfileFromFirebaseUser, saveFavoriteGenres, getProfileWithGenres } from "./services/supabase/profiles";
@@ -48,6 +48,16 @@ import {
 const FAVORITE_GENRES_KEY = "movieapp:favoriteGenres";
 const RECENTLY_VIEWED_KEY = "movieapp:recentlyViewed";
 const ONBOARDING_DISMISSED_KEY = "movieapp:onboardingDismissed";
+const RECENT_SEARCHES_KEY = "movieapp:recentSearches";
+
+// Phase 18A — shared confidence copy for personalized rails (Recommended,
+// Daily Picks). Mirrors the tiering already used by the AI Oracle
+// (services/recommendations.ts) so the language stays consistent app-wide.
+const CONFIDENCE_LABELS: Record<"high" | "medium" | "low", string> = {
+  high: "High match",
+  medium: "Good match",
+  low: "General pick"
+};
 
 function readLocalJSON<T>(key: string, fallback: T): T {
   try {
@@ -78,6 +88,10 @@ export default function App() {
   // Stable per-session shuffle seed — computed once on mount, unchanged across
   // re-renders (no flicker), differs between sessions (soft randomness).
   const [sessionSeed] = useState<number>(() => Math.floor(Math.random() * 2 ** 31));
+
+  // Phase 18A — Daily Picks: seed derived from today's date (not session), so
+  // the row is stable all day for a given user and refreshes tomorrow.
+  const dailySeed = useMemo(() => stringToSeed(new Date().toDateString()), []);
 
   // Movie lists state
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -116,6 +130,8 @@ export default function App() {
   const [favoriteGenres, setFavoriteGenres] = useState<string[]>(() => readLocalJSON(FAVORITE_GENRES_KEY, []));
   const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>(() => readLocalJSON(RECENTLY_VIEWED_KEY, []));
   const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => readLocalJSON(ONBOARDING_DISMISSED_KEY, false));
+  // Phase 18A — Recently Searched: device-local, capped, most-recent-first.
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => readLocalJSON(RECENT_SEARCHES_KEY, []));
   const [prefsExpanded, setPrefsExpanded] = useState<boolean>(false);
 
   // 1. Sync Authentication
@@ -183,6 +199,7 @@ export default function App() {
         if (res.ok) {
           const results = await res.json();
           setMovies(results);
+          recordRecentSearch(searchQuery);
         }
       } catch (err) {
         console.error("Search query server error:", err);
@@ -258,6 +275,11 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(FAVORITE_GENRES_KEY, JSON.stringify(favoriteGenres));
   }, [favoriteGenres]);
+
+  // Phase 18A — persist recently searched terms locally (guest-friendly, no backend call)
+  useEffect(() => {
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches));
+  }, [recentSearches]);
 
   useEffect(() => {
     localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
@@ -366,6 +388,19 @@ export default function App() {
     });
   };
 
+  // Phase 18A — Recently Searched: records a committed query, case-insensitive
+  // de-dup, most-recent-first, capped so the chip row stays scannable.
+  const recordRecentSearch = (query: string) => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) return;
+    setRecentSearches((prev) => {
+      const withoutCurrent = prev.filter((q) => q.toLowerCase() !== trimmed.toLowerCase());
+      return [trimmed, ...withoutCurrent].slice(0, 8);
+    });
+  };
+
+  const clearRecentSearches = () => setRecentSearches([]);
+
   // "Popular" rail: same catalog as Trending, re-cut by raw score so the row
   // tells a different story (acclaim vs. momentum) without a new backend route.
   const popularMovies = useMemo(() => {
@@ -433,6 +468,23 @@ export default function App() {
   // intentional curation rather than a random slice.
   const recommendationReason = topAffinityGenres[0] || null;
 
+  // Phase 18A — shared confidence signal for personalized rails (Recommended,
+  // Daily Picks). Mirrors the tiering already used by the AI Oracle
+  // (services/recommendations.ts) but computed synchronously from local state
+  // only, so it can drive plain rail subtitles with no extra network calls.
+  const discoveryConfidence: "high" | "medium" | "low" = useMemo(() => {
+    const signalCount =
+      (favoriteGenres.length > 0 ? 1 : 0) +
+      (watchlistMovies.length > 0 ? 1 : 0) +
+      (recentlyViewed.length > 0 ? 1 : 0) +
+      (topAffinityGenres.length >= 2 ? 1 : 0);
+    if (signalCount >= 3) return "high";
+    if (signalCount >= 1) return "medium";
+    return "low";
+  }, [favoriteGenres, watchlistMovies, recentlyViewed, topAffinityGenres]);
+
+  const recommendedMovieIds = useMemo(() => new Set(recommendedMovies.map((m) => m.id)), [recommendedMovies]);
+
   // "Expand Your Horizons" — controlled genre exploration OUTSIDE the user's
   // top genres. Separate, additive rail; does not alter Recommended's logic.
   const expandHorizonsMovies = useMemo(() => {
@@ -454,6 +506,33 @@ export default function App() {
     [...trendingMovies, ...latestMovies].forEach((m) => map.set(m.id, m));
     return Array.from(map.values());
   }, [trendingMovies, latestMovies]);
+
+  // Phase 18A — "Daily Picks For You": a second, date-seeded personalization
+  // row. Deliberately excludes anything already in Recommended so the two
+  // rows read as complementary rather than duplicated. Refreshes once every
+  // 24h because the shuffle seed is derived from the calendar date, not the
+  // session — reuses the same signals as Recommended, no new API calls.
+  const dailyPicksMovies = useMemo(() => {
+    if (combinedMoviePool.length === 0) return [];
+    const DISPLAY_COUNT = 12;
+    const base = combinedMoviePool.filter(
+      (m) => !watchlistIds.has(m.id) && !recommendedMovieIds.has(m.id)
+    );
+
+    if (topAffinityGenres.length > 0) {
+      const lowerTop = topAffinityGenres.map((g) => g.toLowerCase());
+      const matches = base.filter((m) => m.genres?.some((g) => lowerTop.includes(g.toLowerCase())));
+      if (matches.length >= 4) {
+        const ranked = [...matches].sort((a, b) => b.voteAverage - a.voteAverage);
+        return seededShuffle(ranked.slice(0, DISPLAY_COUNT * 2), dailySeed).slice(0, DISPLAY_COUNT);
+      }
+    }
+
+    const fallbackRanked = base
+      .filter((m) => m.voteAverage >= 6.5)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    return seededShuffle(fallbackRanked.slice(0, DISPLAY_COUNT * 2), dailySeed).slice(0, DISPLAY_COUNT);
+  }, [combinedMoviePool, watchlistIds, recommendedMovieIds, topAffinityGenres, dailySeed]);
 
   // Dynamic "Browse by Genre" rows: only genres with enough titles to feel like
   // a real row, capped so the homepage doesn't sprawl forever.
@@ -1211,6 +1290,31 @@ export default function App() {
                   from the filterable grid below. Hidden during search so results stay focused. */}
               {!searchQuery && (
                 <div className="space-y-10">
+                  {recentSearches.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider mr-1">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        Recent Searches
+                      </span>
+                      {recentSearches.map((q) => (
+                        <button
+                          key={q}
+                          type="button"
+                          onClick={() => setSearchQuery(q)}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-900/60 border border-neutral-700/60 text-neutral-300 hover:text-white hover:border-red-500/40 transition-colors cursor-pointer"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={clearRecentSearches}
+                        className="px-2 py-1.5 text-xs font-medium text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
                   {recentlyViewed.length > 0 && (
                     <MovieRail
                       id="rail-continue-watching"
@@ -1227,7 +1331,7 @@ export default function App() {
                   <MovieRail
                     id="rail-recommended"
                     title="Recommended For You"
-                    subtitle={recommendationReason ? `Because you like ${recommendationReason}` : user ? "Save a few favorites to personalize this row" : "Sign in to personalize this row"}
+                    subtitle={recommendationReason ? `Because you like ${recommendationReason} · ${CONFIDENCE_LABELS[discoveryConfidence]}` : user ? "Save a few favorites to personalize this row" : "Sign in to personalize this row"}
                     icon={Compass}
                     accent="indigo"
                     movies={recommendedMovies}
@@ -1236,6 +1340,20 @@ export default function App() {
                     isSaved={(id) => watchlistIds.has(id)}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
+                  {dailyPicksMovies.length > 0 && (
+                    <MovieRail
+                      id="rail-daily-picks"
+                      title="Daily Picks For You"
+                      subtitle={`${CONFIDENCE_LABELS[discoveryConfidence]} · ${recommendationReason ? `Fresh picks in ${recommendationReason}` : "Refreshes every day"}`}
+                      icon={CalendarClock}
+                      accent="amber"
+                      movies={dailyPicksMovies}
+                      isLoading={moviesLoading}
+                      onMovieClick={handleSelectMovie}
+                      isSaved={(id) => watchlistIds.has(id)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                    />
+                  )}
                   <MovieRail
                     id="rail-trending"
                     title="Trending Now"
