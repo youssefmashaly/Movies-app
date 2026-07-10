@@ -1,238 +1,501 @@
+#!/usr/bin/env node
 /**
- * Phase 7C — One-Time TMDB Artwork Migration Script
- * Run: node fetch-tmdb-artwork.mjs
- * Then paste the output patches into src/movies-data.ts
- * Delete this file after migration is complete.
+ * fetch-tmdb-artwork.mjs
+ *
+ * Repairs posterPath / backdropPath for every movie in src/movies-data.ts
+ * using REAL data from the TMDB API. Never fabricates hashes.
+ *
+ * USAGE:
+ *   TMDB_API_KEY=your_key_here node fetch-tmdb-artwork.mjs
+ *   node fetch-tmdb-artwork.mjs --key your_key_here
+ *   node fetch-tmdb-artwork.mjs --file ./src/movies-data.ts --key your_key_here
+ *
+ * Requires Node 18+ (uses global fetch). If you're on an older Node, run
+ * `npm install node-fetch` and uncomment the import fallback below.
+ *
+ * TMDB API docs: https://developer.themoviedb.org/reference/movie-details
+ * You need a (free) TMDB API key: https://www.themoviedb.org/settings/api
  */
 
-const API_KEY = process.env.VITE_TMDB_API_KEY;
-const BASE    = "https://image.tmdb.org/t/p";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-if (!API_KEY) {
-  console.error("Missing VITE_TMDB_API_KEY. Run with: node --env-file=.env fetch-tmdb-artwork.mjs");
+// ── Fallback for Node < 18 (uncomment if global fetch is unavailable) ──────
+// import fetch from "node-fetch";
+
+// ─────────────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────────────
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const out = { file: null, key: null };
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--file") out.file = args[++i];
+    else if (args[i] === "--key") out.key = args[++i];
+  }
+  return out;
+}
+
+const cliArgs = parseArgs();
+
+const CONFIG = {
+  filePath: cliArgs.file || path.join(__dirname, "src", "movies-data.ts"),
+  apiKey: cliArgs.key || process.env.TMDB_API_KEY || "",
+  tmdbBaseUrl: "https://api.themoviedb.org/3",
+  posterBaseUrl: "https://image.tmdb.org/t/p/w500",
+  backdropBaseUrl: "https://image.tmdb.org/t/p/original",
+  // Requests are throttled to stay well under TMDB's rate limit.
+  requestDelayMs: 260,
+  maxRetries: 4,
+  backoffBaseMs: 600,
+  // Below this similarity score (0..1), a title is considered "not matching"
+  // and the movie's artwork will NOT be touched — it will only be reported.
+  titleMatchThreshold: 0.55,
+  // Where to write the run report (JSON + human-readable text).
+  reportJsonPath: path.join(__dirname, "tmdb-repair-report.json"),
+  reportTextPath: path.join(__dirname, "tmdb-repair-report.txt"),
+  dryRun: process.argv.includes("--dry-run"),
+};
+
+if (!CONFIG.apiKey) {
+  console.error(
+    "\n❌ No TMDB API key provided.\n" +
+      "   Set it via: TMDB_API_KEY=xxxx node fetch-tmdb-artwork.mjs\n" +
+      "   or:         node fetch-tmdb-artwork.mjs --key xxxx\n"
+  );
   process.exit(1);
 }
 
-const MOVIES = [
-  { id: "1",  tmdbId: 693134,  title: "Dune: Part Two",
-    castIds: ["c1","c2","c3","c4"] },
-  { id: "2",  tmdbId: 872585,  title: "Oppenheimer",
-    castIds: ["c11","c12","c13","c14"] },
-  { id: "3",  tmdbId: 569094,  title: "Spider-Man: Across the Spider-Verse",
-    castIds: ["c21","c22","c23","c24"] },
-  { id: "4",  tmdbId: 414906,  title: "The Batman",
-    castIds: ["c31","c32","c33","c34"] },
-  { id: "5",  tmdbId: 157336,  title: "Interstellar",
-    castIds: ["c41","c42","c43","c44"] },
-  { id: "6",  tmdbId: 558449,  title: "Gladiator II",
-    castIds: ["c51","c52","c53","c54"] },
-  { id: "7",  tmdbId: 1022789, title: "Inside Out 2",
-    castIds: ["c61","c62","c63","c64"] },
-  { id: "8",  tmdbId: 545611,  title: "Everything Everywhere All at Once",
-    castIds: ["c71","c72","c73","c74"] },
-  { id: "9",  tmdbId: 1008409, title: "Nosferatu",
-    castIds: ["c81","c82","c83","c84"] },
-  { id: "10", tmdbId: 786892,  title: "Furiosa: A Mad Max Saga",
-    castIds: ["c91","c92","c93","c94"] },
-  { id: "11", tmdbId: 840430,  title: "The Holdovers",
-    castIds: ["c101","c102","c103","c104"] },
-  { id: "12", tmdbId: 466420,  title: "Past Lives",
-    castIds: ["c111","c112","c113","c114"] },
-  { id: "13", tmdbId: 724089,  title: "Killers of the Flower Moon",
-    castIds: ["c121","c122","c123","c124"] },
-  { id: "14", tmdbId: 1178685, title: "Wicked",
-    castIds: ["c131","c132","c133","c134"] },
-  { id: "15", tmdbId: 792307,  title: "Poor Things",
-    castIds: ["c141","c142","c143","c144"] },
-  { id: "16", tmdbId: 762441,  title: "A Quiet Place: Day One",
-    castIds: ["c151","c152","c153","c154"] },
-  { id: "17", tmdbId: 1087822, title: "Conclave",
-    castIds: ["c161","c162","c163","c164"] },
-  { id: "18", tmdbId: 822119,  title: "Moana 2",
-    castIds: ["c171","c172","c173","c174"] },
-  { id: "19", tmdbId: 718821,  title: "Alien: Romulus",
-    castIds: ["c181","c182","c183","c184"] },
-  { id: "20", tmdbId: 829799,  title: "Twisters",
-    castIds: ["c191","c192","c193","c194"] },
-  { id: "21", tmdbId: 155,     title: "The Dark Knight",
-    castIds: ["c211","c212","c213","c214"] },
-  { id: "22", tmdbId: 496243,  title: "Parasite",
-    castIds: ["c221","c222","c223","c224"] },
-  { id: "23", tmdbId: 27205,   title: "Inception",
-    castIds: ["c231","c232","c233","c234"] },
-  { id: "24", tmdbId: 278,     title: "The Shawshank Redemption",
-    castIds: ["c241","c242","c243","c244"] },
-  { id: "25", tmdbId: 8587,    title: "The Lion King",
-    castIds: ["c251","c252","c253","c254"] },
-  { id: "26", tmdbId: 680,     title: "Pulp Fiction",
-    castIds: ["c261","c262","c263","c264"] },
-  { id: "27", tmdbId: 424,     title: "Schindler's List",
-    castIds: ["c271","c272","c273","c274"] },
-  { id: "28", tmdbId: 13,      title: "Forrest Gump",
-    castIds: ["c281","c282","c283","c284"] },
-  { id: "29", tmdbId: 238,     title: "The Godfather",
-    castIds: ["c291","c292","c293","c294"] },
-  { id: "30", tmdbId: 120,     title: "The Lord of the Rings: The Fellowship of the Ring",
-    castIds: ["c301","c302","c303","c304"] },
-  { id: "31", tmdbId: 769,     title: "Goodfellas",
-    castIds: ["c311","c312","c313","c314"] },
-  { id: "32", tmdbId: 475557,  title: "Joker",
-    castIds: ["c321","c322","c323","c324"] },
-  { id: "33", tmdbId: 299534,  title: "Avengers: Endgame",
-    castIds: ["c331","c332","c333","c334"] },
-  { id: "34", tmdbId: 313369,  title: "La La Land",
-    castIds: ["c341","c342","c343","c344"] },
-  { id: "35", tmdbId: 419430,  title: "Get Out",
-    castIds: ["c351","c352","c353","c354"] },
-  { id: "36", tmdbId: 354912,  title: "Coco",
-    castIds: ["c361","c362","c363","c364"] },
-  { id: "37", tmdbId: 76341,   title: "Mad Max: Fury Road",
-    castIds: ["c371","c372","c373","c374"] },
-  { id: "38", tmdbId: 531428,  title: "Knives Out",
-    castIds: ["c381","c382","c383","c384"] },
-  { id: "39", tmdbId: 244786,  title: "Whiplash",
-    castIds: ["c391","c392","c393","c394"] },
-  { id: "40", tmdbId: 37799,   title: "The Social Network",
-    castIds: ["c401","c402","c403","c404"] },
-  { id: "41", tmdbId: 493922,  title: "Hereditary",
-    castIds: ["c411","c412","c413","c414"] },
-  { id: "42", tmdbId: 129,     title: "Spirited Away",
-    castIds: ["c421","c422","c423","c424"] },
-  { id: "43", tmdbId: 329865,  title: "Arrival",
-    castIds: ["c431","c432","c433","c434"] },
-  { id: "44", tmdbId: 396342,  title: "The Witch",
-    castIds: ["c441","c442","c443","c444"] },
-  { id: "45", tmdbId: 204717,  title: "About Time",
-    castIds: ["c451","c452","c453","c454"] },
-  { id: "46", tmdbId: 862,     title: "Toy Story",
-    castIds: ["c461","c462","c463","c464"] },
-  { id: "47", tmdbId: 6977,    title: "No Country for Old Men",
-    castIds: ["c471","c472","c473","c474"] },
-  { id: "48", tmdbId: 194,     title: "Amélie",
-    castIds: ["c481","c482","c483","c484"] },
-  { id: "49", tmdbId: 62,      title: "2001: A Space Odyssey",
-    castIds: ["c491","c492","c493","c494"] },
-  { id: "50", tmdbId: 101299,  title: "Silver Linings Playbook",
-    castIds: ["c501","c502","c503","c504"] },
-  { id: "51", tmdbId: 14160,   title: "Up",
-    castIds: ["c511","c512","c513","c514"] },
-  { id: "52", tmdbId: 209112,  title: "Gone Girl",
-    castIds: ["c521","c522","c523","c524"] },
-  { id: "53", tmdbId: 137113,  title: "The Grand Budapest Hotel",
-    castIds: ["c531","c532","c533","c534"] },
-  { id: "54", tmdbId: 281957,  title: "The Revenant",
-    castIds: ["c541","c542","c543","c544"] },
-  { id: "55", tmdbId: 38,      title: "Eternal Sunshine of the Spotless Mind",
-    castIds: ["c551","c552","c553","c554"] },
-  { id: "56", tmdbId: 530915,  title: "1917",
-    castIds: ["c561","c562","c563","c564"] },
-  { id: "57", tmdbId: 762,     title: "Monty Python and the Holy Grail",
-    castIds: ["c571","c572","c573","c574"] },
-];
+// ─────────────────────────────────────────────────────────────────────────
+// SMALL UTILITIES
+// ─────────────────────────────────────────────────────────────────────────
 
-function posterUrl(path)   { return path ? `${BASE}/w500${path}`  : null; }
-function backdropUrl(path) { return path ? `${BASE}/w1280${path}` : null; }
-function profileUrl(path)  { return path ? `${BASE}/w185${path}`  : null; }
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function fetchWithRetry(url, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url);
-      if (res.status === 429) {
-        await new Promise(r => setTimeout(r, 2000));
-        continue;
+/** Normalize a title for comparison: lowercase, strip accents/punctuation,
+ *  collapse whitespace, drop a leading "the"/"a"/"an". */
+function normalizeTitle(title) {
+  return title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip accents
+    .toLowerCase()
+    .replace(/[:\-–—'".,!?()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^(the|a|an)\s+/, "");
+}
+
+/** Dice coefficient over bigrams — cheap, dependency-free fuzzy match. */
+function diceCoefficient(a, b) {
+  if (a === b) return 1;
+  if (a.length < 2 || b.length < 2) return a === b ? 1 : 0;
+
+  const bigrams = (s) => {
+    const map = new Map();
+    for (let i = 0; i < s.length - 1; i++) {
+      const bg = s.substring(i, i + 2);
+      map.set(bg, (map.get(bg) || 0) + 1);
+    }
+    return map;
+  };
+
+  const mapA = bigrams(a);
+  const mapB = bigrams(b);
+  let intersection = 0;
+  for (const [bg, countA] of mapA) {
+    if (mapB.has(bg)) intersection += Math.min(countA, mapB.get(bg));
+  }
+  const totalBigrams = (a.length - 1) + (b.length - 1);
+  return totalBigrams === 0 ? 0 : (2 * intersection) / totalBigrams;
+}
+
+function titlesMatch(storedTitle, tmdbTitle, tmdbOriginalTitle) {
+  const norm = normalizeTitle(storedTitle);
+  const candidates = [tmdbTitle, tmdbOriginalTitle].filter(Boolean).map(normalizeTitle);
+
+  let best = 0;
+  for (const candidate of candidates) {
+    if (norm === candidate) return { match: true, score: 1, matchedAgainst: candidate };
+    if (norm.includes(candidate) || candidate.includes(norm)) {
+      best = Math.max(best, 0.85);
+    }
+    best = Math.max(best, diceCoefficient(norm, candidate));
+  }
+
+  return {
+    match: best >= CONFIG.titleMatchThreshold,
+    score: Number(best.toFixed(3)),
+    matchedAgainst: candidates[0] || "",
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// TMDB API CALL (with retry + exponential backoff)
+// ─────────────────────────────────────────────────────────────────────────
+
+async function fetchTmdbMovie(tmdbId, attempt = 1) {
+  const url = `${CONFIG.tmdbBaseUrl}/movie/${tmdbId}?api_key=${CONFIG.apiKey}&language=en-US`;
+
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (networkErr) {
+    if (attempt <= CONFIG.maxRetries) {
+      const backoff = CONFIG.backoffBaseMs * 2 ** (attempt - 1);
+      await sleep(backoff);
+      return fetchTmdbMovie(tmdbId, attempt + 1);
+    }
+    return { ok: false, reason: "network_error", detail: String(networkErr) };
+  }
+
+  if (response.status === 404) {
+    return { ok: false, reason: "invalid_tmdb_id", detail: "404 Not Found" };
+  }
+
+  if (response.status === 429) {
+    // Respect Retry-After if TMDB sends it, otherwise use backoff.
+    const retryAfter = Number(response.headers.get("retry-after")) || 1;
+    if (attempt <= CONFIG.maxRetries) {
+      await sleep(Math.max(retryAfter * 1000, CONFIG.backoffBaseMs * 2 ** (attempt - 1)));
+      return fetchTmdbMovie(tmdbId, attempt + 1);
+    }
+    return { ok: false, reason: "rate_limited", detail: "429 after max retries" };
+  }
+
+  if (!response.ok) {
+    if (attempt <= CONFIG.maxRetries) {
+      const backoff = CONFIG.backoffBaseMs * 2 ** (attempt - 1);
+      await sleep(backoff);
+      return fetchTmdbMovie(tmdbId, attempt + 1);
+    }
+    return { ok: false, reason: "http_error", detail: `${response.status} ${response.statusText}` };
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (parseErr) {
+    return { ok: false, reason: "parse_error", detail: String(parseErr) };
+  }
+
+  return { ok: true, data };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// MOVIE OBJECT EXTRACTION (bracket-counting, safe against nested `cast`)
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Finds each top-level `{ ... }` object literal inside the PRESET_MOVIES
+ * array and returns { start, end, text } spans (end is exclusive index
+ * just past the closing brace). This avoids fragile whole-array regexes
+ * and correctly skips over nested objects like `cast: [ { ... }, ... ]`.
+ */
+function extractMovieObjectSpans(source) {
+  const arrayStartMarker = "PRESET_MOVIES: Movie[] = [";
+  const arrayStart = source.indexOf(arrayStartMarker);
+  if (arrayStart === -1) {
+    throw new Error(
+      "Could not find 'PRESET_MOVIES: Movie[] = [' in the file. " +
+        "Check --file path or that the export name hasn't changed."
+    );
+  }
+
+  const arrayBodyStart = arrayStart + arrayStartMarker.length;
+
+  const spans = [];
+  let depth = 0;
+  let objectStart = -1;
+  let inString = false;
+  let stringChar = "";
+  let arrayDepth = 1; // we're already inside the outer [ ]
+
+  for (let i = arrayBodyStart; i < source.length; i++) {
+    const ch = source[i];
+    const prev = source[i - 1];
+
+    if (inString) {
+      if (ch === stringChar && prev !== "\\") inString = false;
+      continue;
+    }
+
+    if (ch === '"' || ch === "'" || ch === "`") {
+      inString = true;
+      stringChar = ch;
+      continue;
+    }
+
+    if (ch === "[") arrayDepth++;
+    if (ch === "]") {
+      arrayDepth--;
+      if (arrayDepth === 0) break; // reached the end of PRESET_MOVIES array
+    }
+
+    if (ch === "{") {
+      if (depth === 0) objectStart = i;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && objectStart !== -1) {
+        spans.push({ start: objectStart, end: i + 1, text: source.slice(objectStart, i + 1) });
+        objectStart = -1;
       }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      if (i === retries - 1) throw e;
-      await new Promise(r => setTimeout(r, 500));
     }
   }
+
+  return spans;
 }
 
-function q(str) { return str ? `"${str}"` : `null`; }
+function extractField(objText, fieldName) {
+  // Matches:  fieldName: "value"   or   fieldName: 12345
+  const stringMatch = objText.match(
+    new RegExp(`\\b${fieldName}\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`)
+  );
+  if (stringMatch) return { raw: stringMatch[0], value: stringMatch[1], isString: true };
 
-async function run() {
-  const TARGET_IDS = [1178685, 718821, 769, 396342, 204717, 14160, 530915];
-  const TARGET_MOVIES = MOVIES.filter(m => TARGET_IDS.includes(m.tmdbId));
+  const numberMatch = objText.match(new RegExp(`\\b${fieldName}\\s*:\\s*(-?\\d+(?:\\.\\d+)?)`));
+  if (numberMatch) return { raw: numberMatch[0], value: Number(numberMatch[1]), isString: false };
 
-  const results = [];
-  const failed  = [];
-
-  process.stderr.write(`Fetching ${TARGET_MOVIES.length} movies from TMDB...\n`);
-
-  for (const movie of TARGET_MOVIES) {
-    try {
-      const url = `https://api.themoviedb.org/3/movie/${movie.tmdbId}?api_key=${API_KEY}&append_to_response=credits`;
-      const data = await fetchWithRetry(url);
-
-      const poster   = posterUrl(data.poster_path);
-      const backdrop = backdropUrl(data.backdrop_path);
-      const cast     = (data.credits?.cast ?? []).slice(0, 4);
-
-      results.push({ movie, poster, backdrop, cast });
-      process.stderr.write(`  ✓ [${movie.id.padStart(2)}] ${movie.title}\n`);
-    } catch (e) {
-      failed.push({ movie, error: e.message });
-      process.stderr.write(`  ✗ [${movie.id.padStart(2)}] ${movie.title} — ${e.message}\n`);
-    }
-
-    // 4 req/s — well under TMDB's 40/s limit
-    await new Promise(r => setTimeout(r, 260));
-  }
-
-  // ── Output patches ─────────────────────────────────────────────────────────
-
-  console.log("// ============================================================");
-  console.log("// PHASE 7C — TMDB ARTWORK PATCHES");
-  console.log(`// Generated: ${new Date().toISOString()}`);
-  console.log(`// Successful: ${results.length}/${MOVIES.length}`);
-  if (failed.length) console.log(`// Failed: ${failed.map(f => f.movie.id).join(", ")}`);
-  console.log("// Apply each FIND / REPLACE WITH block to src/movies-data.ts");
-  console.log("// ============================================================\n");
-
-  for (const { movie, poster, backdrop, cast } of results) {
-    console.log(`// ── id: "${movie.id}" — ${movie.title} (tmdbId: ${movie.tmdbId}) ──`);
-
-    // poster + backdrop patch (find the unsplash lines, replace with TMDB)
-    console.log(`FIND (posterPath for id ${movie.id}):`);
-    console.log(`  Look for: posterPath: "https://images.unsplash.com/..."`);
-    console.log(`  Inside the movie block with: id: "${movie.id}",`);
-    console.log(`REPLACE WITH:`);
-    console.log(`  posterPath: ${q(poster)},`);
-    console.log();
-    console.log(`FIND (backdropPath for id ${movie.id}):`);
-    console.log(`  Look for: backdropPath: "https://images.unsplash.com/..."`);
-    console.log(`  Inside the movie block with: id: "${movie.id}",`);
-    console.log(`REPLACE WITH:`);
-    console.log(`  backdropPath: ${q(backdrop)},`);
-    console.log();
-
-    // cast profile patches
-    cast.forEach((member, i) => {
-      const cid = movie.castIds[i];
-      if (!cid) return;
-      console.log(`FIND (cast profilePath id ${cid} — ${member.name}):`);
-      console.log(`  Look for: { id: "${cid}", name: "${member.name}", character:`);
-      console.log(`  profilePath: "https://images.unsplash.com/..."`);
-      console.log(`REPLACE WITH:`);
-      console.log(`  profilePath: ${q(profileUrl(member.profile_path))},`);
-      console.log();
-    });
-
-    console.log("---\n");
-  }
-
-  if (failed.length) {
-    console.log("// ── FAILED MOVIES (keep existing Unsplash URLs) ──");
-    for (const { movie, error } of failed) {
-      console.log(`// id: "${movie.id}" — ${movie.title}: ${error}`);
-    }
-  }
-
-  process.stderr.write(`\nDone. ${results.length} patches written to stdout.\n`);
-  process.stderr.write("Redirect stdout to a file:  node fetch-tmdb-artwork.mjs > patches.txt\n");
+  return null;
 }
 
-run().catch(e => { console.error("Fatal:", e); process.exit(1); });
+// ─────────────────────────────────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  console.log(`\n📖 Reading ${CONFIG.filePath} ...`);
+  const source = fs.readFileSync(CONFIG.filePath, "utf8");
+
+  const spans = extractMovieObjectSpans(source);
+  console.log(`🎬 Found ${spans.length} movie objects.\n`);
+
+  if (spans.length === 0) {
+    console.error("❌ No movie objects found. Aborting without writing anything.");
+    process.exit(1);
+  }
+
+  const summary = {
+    processed: 0,
+    updated: 0,
+    skippedTitleMismatch: 0,
+    missingPoster: 0,
+    missingBackdrop: 0,
+    invalidTmdbId: 0,
+    networkFailures: 0,
+    unchangedAlreadyCorrect: 0,
+    warnings: [],
+    details: [],
+  };
+
+  // We build up a list of { start, end, newText } patches and apply them
+  // to the ORIGINAL source string from back to front, so earlier indices
+  // stay valid as we go.
+  const patches = [];
+
+  for (let i = 0; i < spans.length; i++) {
+    const span = spans[i];
+    const objText = span.text;
+
+    const idField = extractField(objText, "id");
+    const titleField = extractField(objText, "title");
+    const tmdbIdField = extractField(objText, "tmdbId");
+    const posterField = extractField(objText, "posterPath");
+    const backdropField = extractField(objText, "backdropPath");
+
+    const label = `id=${idField?.value ?? "?"} "${titleField?.value ?? "?"}"`;
+
+    if (!tmdbIdField) {
+      console.warn(`⚠️  ${label}: no tmdbId field found — skipping.`);
+      summary.invalidTmdbId++;
+      summary.details.push({ id: idField?.value, title: titleField?.value, status: "no_tmdb_id_field" });
+      continue;
+    }
+
+    summary.processed++;
+    process.stdout.write(`[${summary.processed}/${spans.length}] ${label} (tmdbId ${tmdbIdField.value}) ... `);
+
+    const result = await fetchTmdbMovie(tmdbIdField.value);
+    await sleep(CONFIG.requestDelayMs);
+
+    if (!result.ok) {
+      console.log(`❌ ${result.reason}`);
+      if (result.reason === "invalid_tmdb_id") summary.invalidTmdbId++;
+      else summary.networkFailures++;
+      summary.details.push({
+        id: idField?.value,
+        title: titleField?.value,
+        tmdbId: tmdbIdField.value,
+        status: result.reason,
+        detail: result.detail,
+      });
+      continue;
+    }
+
+    const tmdbMovie = result.data;
+    const { match, score, matchedAgainst } = titlesMatch(
+      titleField?.value ?? "",
+      tmdbMovie.title,
+      tmdbMovie.original_title
+    );
+
+    if (!match) {
+      console.log(
+        `⚠️  TITLE MISMATCH (score ${score}) — stored "${titleField?.value}" vs TMDB "${tmdbMovie.title}". Skipping artwork update.`
+      );
+      summary.skippedTitleMismatch++;
+      summary.details.push({
+        id: idField?.value,
+        title: titleField?.value,
+        tmdbId: tmdbIdField.value,
+        status: "title_mismatch",
+        tmdbTitle: tmdbMovie.title,
+        tmdbOriginalTitle: tmdbMovie.original_title,
+        similarityScore: score,
+        matchedAgainst,
+      });
+      continue;
+    }
+
+    const newPosterPath = tmdbMovie.poster_path
+      ? `${CONFIG.posterBaseUrl}${tmdbMovie.poster_path}`
+      : null;
+    const newBackdropPath = tmdbMovie.backdrop_path
+      ? `${CONFIG.backdropBaseUrl}${tmdbMovie.backdrop_path}`
+      : null;
+
+    if (!newPosterPath) summary.missingPoster++;
+    if (!newBackdropPath) summary.missingBackdrop++;
+
+    let updatedObjText = objText;
+    let changedPoster = false;
+    let changedBackdrop = false;
+
+    if (newPosterPath && posterField && posterField.value !== newPosterPath) {
+      const oldLine = posterField.raw;
+      const newLine = `posterPath: "${newPosterPath}"`;
+      updatedObjText = updatedObjText.replace(oldLine, newLine);
+      changedPoster = true;
+    }
+
+    if (newBackdropPath && backdropField && backdropField.value !== newBackdropPath) {
+      const oldLine = backdropField.raw;
+      const newLine = `backdropPath: "${newBackdropPath}"`;
+      updatedObjText = updatedObjText.replace(oldLine, newLine);
+      changedBackdrop = true;
+    }
+
+    if (changedPoster || changedBackdrop) {
+      patches.push({ start: span.start, end: span.end, newText: updatedObjText });
+      summary.updated++;
+      console.log(
+        `✅ updated${changedPoster ? " [poster]" : ""}${changedBackdrop ? " [backdrop]" : ""} (title match ${score})`
+      );
+      summary.details.push({
+        id: idField?.value,
+        title: titleField?.value,
+        tmdbId: tmdbIdField.value,
+        status: "updated",
+        changedPoster,
+        changedBackdrop,
+        similarityScore: score,
+      });
+    } else {
+      summary.unchangedAlreadyCorrect++;
+      console.log(`✓ already correct`);
+      summary.details.push({
+        id: idField?.value,
+        title: titleField?.value,
+        tmdbId: tmdbIdField.value,
+        status: "already_correct",
+        similarityScore: score,
+      });
+    }
+  }
+
+  // Apply patches back-to-front so earlier offsets remain valid.
+  let newSource = source;
+  const sortedPatches = [...patches].sort((a, b) => b.start - a.start);
+  for (const patch of sortedPatches) {
+    newSource = newSource.slice(0, patch.start) + patch.newText + newSource.slice(patch.end);
+  }
+
+  if (CONFIG.dryRun) {
+    console.log("\n🧪 --dry-run passed: no files were written.");
+  } else if (patches.length > 0) {
+    const backupPath = `${CONFIG.filePath}.bak-${Date.now()}`;
+    fs.writeFileSync(backupPath, source, "utf8");
+    fs.writeFileSync(CONFIG.filePath, newSource, "utf8");
+    console.log(`\n💾 Backup saved to: ${backupPath}`);
+    console.log(`✏️  ${CONFIG.filePath} updated with ${patches.length} movie(s) repaired.`);
+  } else {
+    console.log("\n✨ No changes needed — nothing to write.");
+  }
+
+  // ── Write reports ──
+  fs.writeFileSync(CONFIG.reportJsonPath, JSON.stringify(summary, null, 2), "utf8");
+
+  const textReport = buildTextReport(summary, spans.length);
+  fs.writeFileSync(CONFIG.reportTextPath, textReport, "utf8");
+
+  console.log("\n" + textReport);
+  console.log(`\n📄 Full JSON report: ${CONFIG.reportJsonPath}`);
+  console.log(`📄 Text report:      ${CONFIG.reportTextPath}\n`);
+}
+
+function buildTextReport(summary, totalSpans) {
+  const lines = [];
+  lines.push("═══════════════════════════════════════════════");
+  lines.push(" TMDB ARTWORK REPAIR — SUMMARY");
+  lines.push("═══════════════════════════════════════════════");
+  lines.push(`Movie objects found in file:     ${totalSpans}`);
+  lines.push(`Movies processed:                ${summary.processed}`);
+  lines.push(`Movies successfully updated:      ${summary.updated}`);
+  lines.push(`Already correct (no change):      ${summary.unchangedAlreadyCorrect}`);
+  lines.push(`Skipped — title mismatch:         ${summary.skippedTitleMismatch}`);
+  lines.push(`Missing poster on TMDB:           ${summary.missingPoster}`);
+  lines.push(`Missing backdrop on TMDB:         ${summary.missingBackdrop}`);
+  lines.push(`Invalid / not-found tmdbId:       ${summary.invalidTmdbId}`);
+  lines.push(`Network / API failures:           ${summary.networkFailures}`);
+  lines.push("───────────────────────────────────────────────");
+
+  const mismatches = summary.details.filter((d) => d.status === "title_mismatch");
+  if (mismatches.length > 0) {
+    lines.push("\n⚠️  TITLE MISMATCHES (artwork NOT changed — review manually):");
+    for (const m of mismatches) {
+      lines.push(
+        `  - id=${m.id} "${m.title}" (tmdbId ${m.tmdbId}) → TMDB says "${m.tmdbTitle}" (score ${m.similarityScore})`
+      );
+    }
+  }
+
+  const invalidIds = summary.details.filter((d) => d.status === "invalid_tmdb_id");
+  if (invalidIds.length > 0) {
+    lines.push("\n❌ INVALID tmdbId (404 from TMDB):");
+    for (const m of invalidIds) {
+      lines.push(`  - id=${m.id} "${m.title}" (tmdbId ${m.tmdbId})`);
+    }
+  }
+
+  const failures = summary.details.filter((d) =>
+    ["network_error", "rate_limited", "http_error", "parse_error"].includes(d.status)
+  );
+  if (failures.length > 0) {
+    lines.push("\n🔌 NETWORK / API FAILURES (re-run the script to retry these):");
+    for (const m of failures) {
+      lines.push(`  - id=${m.id} "${m.title}" (tmdbId ${m.tmdbId}) → ${m.status}: ${m.detail}`);
+    }
+  }
+
+  lines.push("\n═══════════════════════════════════════════════");
+  return lines.join("\n");
+}
+
+main().catch((err) => {
+  console.error("\n💥 Fatal error:", err);
+  process.exit(1);
+});
