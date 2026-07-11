@@ -10,6 +10,12 @@ import { onAuthStateChanged } from "firebase/auth";
 // firebase/firestore: no active writes remain after preferences moved to Supabase
 import { Movie } from "./types";
 import { ALL_GENRES } from "./movies-data";
+import {
+  migrateRecentlyViewedEntries,
+  addRecentlyViewedEntry,
+  resolveRecentlyViewedMovies,
+  RecentlyViewedEntry
+} from "./lib/recentlyViewed";
 import { dedupedFetch } from "./lib/requestDedup";
 import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
 import { preloadImage } from "./lib/imagePreload";
@@ -128,11 +134,37 @@ export default function App() {
   // Personalization state (device-local via localStorage; mirrored to Firestore
   // for signed-in users so preferences follow the account, not just the browser)
   const [favoriteGenres, setFavoriteGenres] = useState<string[]>(() => readLocalJSON(FAVORITE_GENRES_KEY, []));
-  const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>(() => readLocalJSON(RECENTLY_VIEWED_KEY, []));
+  // Phase 18D — Continue Browsing now caches only { id, viewedAt } pairs,
+  // never full Movie objects, so artwork always reflects the current
+  // catalog. migrateRecentlyViewedEntries transparently upgrades any
+  // legacy full-object cache the first time it's read (no user action,
+  // no lost history).
+  const [recentlyViewedEntries, setRecentlyViewedEntries] = useState<RecentlyViewedEntry[]>(() =>
+    migrateRecentlyViewedEntries(readLocalJSON<unknown>(RECENTLY_VIEWED_KEY, []))
+  );
   const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => readLocalJSON(ONBOARDING_DISMISSED_KEY, false));
   // Phase 18A — Recently Searched: device-local, capped, most-recent-first.
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readLocalJSON(RECENT_SEARCHES_KEY, []));
   const [prefsExpanded, setPrefsExpanded] = useState<boolean>(false);
+
+  // Phase 18D — live lookup map (current catalog data, current
+  // posterPath/backdropPath) used to resolve Continue Browsing's cached
+  // ids into up-to-date Movie objects at render time. Same source data
+  // combinedMoviePool already uses elsewhere, just built earlier here so
+  // it's available before genreAffinity/recentlyViewed need it.
+  const moviesById = useMemo(() => {
+    const map = new Map<string, Movie>();
+    [...trendingMovies, ...latestMovies].forEach((m) => map.set(m.id, m));
+    return map;
+  }, [trendingMovies, latestMovies]);
+
+  // Always-fresh Movie[] for Continue Browsing and everything that reads
+  // recentlyViewed (genre affinity, dashboard stats, the rail itself) —
+  // resolved from live data every time, never from a stored snapshot.
+  const recentlyViewed = useMemo(
+    () => resolveRecentlyViewedMovies(recentlyViewedEntries, moviesById),
+    [recentlyViewedEntries, moviesById]
+  );
 
   // 1. Sync Authentication
   useEffect(() => {
@@ -282,8 +314,8 @@ export default function App() {
   }, [recentSearches]);
 
   useEffect(() => {
-    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
-  }, [recentlyViewed]);
+    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewedEntries));
+  }, [recentlyViewedEntries]);
 
   useEffect(() => {
     localStorage.setItem(ONBOARDING_DISMISSED_KEY, JSON.stringify(onboardingDismissed));
@@ -382,10 +414,7 @@ export default function App() {
   // Track a movie as recently viewed (most-recent-first, deduped, capped) —
   // device-local only, no extra Firestore writes per view.
   const trackRecentlyViewed = (movie: Movie) => {
-    setRecentlyViewed((prev) => {
-      const withoutCurrent = prev.filter((m) => m.id !== movie.id);
-      return [movie, ...withoutCurrent].slice(0, 10);
-    });
+    setRecentlyViewedEntries((prev) => addRecentlyViewedEntry(prev, movie.id));
   };
 
   // Phase 18A — Recently Searched: records a committed query, case-insensitive
