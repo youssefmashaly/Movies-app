@@ -1,399 +1,324 @@
 {
   "processed": 500,
-  "updated": 248,
-  "skippedTitleMismatch": 229,
+  "updated": 256,
+  "skippedTitleMismatch": 0,
   "missingPoster": 0,
   "missingBackdrop": 0,
-  "invalidTmdbId": 23,
+  "invalidTmdbId": 0,
   "networkFailures": 0,
-  "unchangedAlreadyCorrect": 0,
+  "unchangedAlreadyCorrect": 244,
   "warnings": [],
   "details": [
     {
       "id": "1",
       "title": "Dune: Part Two",
       "tmdbId": 693134,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "2",
       "title": "Oppenheimer",
       "tmdbId": 872585,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "3",
       "title": "Spider-Man: Across the Spider-Verse",
       "tmdbId": 569094,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "4",
       "title": "The Batman",
       "tmdbId": 414906,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "5",
       "title": "Interstellar",
       "tmdbId": 157336,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "6",
       "title": "Gladiator II",
       "tmdbId": 558449,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "7",
       "title": "Inside Out 2",
       "tmdbId": 1022789,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "8",
       "title": "Everything Everywhere All at Once",
       "tmdbId": 545611,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "9",
+      "title": "Nosferatu",
+      "tmdbId": 426063,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "9",
-      "title": "Nosferatu",
-      "tmdbId": 1008409,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Bikeriders",
-      "tmdbOriginalTitle": "The Bikeriders",
-      "similarityScore": 0.118,
-      "matchedAgainst": "bikeriders"
-    },
-    {
       "id": "10",
       "title": "Furiosa: A Mad Max Saga",
       "tmdbId": 786892,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "11",
       "title": "The Holdovers",
       "tmdbId": 840430,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "12",
       "title": "Past Lives",
-      "tmdbId": 466420,
-      "status": "title_mismatch",
-      "tmdbTitle": "Killers of the Flower Moon",
-      "tmdbOriginalTitle": "Killers of the Flower Moon",
-      "similarityScore": 0,
-      "matchedAgainst": "killers of the flower moon"
-    },
-    {
-      "id": "13",
-      "title": "Killers of the Flower Moon",
-      "tmdbId": 724089,
-      "status": "title_mismatch",
-      "tmdbTitle": "Gabriel's Inferno: Part II",
-      "tmdbOriginalTitle": "Gabriel's Inferno: Part II",
-      "similarityScore": 0.082,
-      "matchedAgainst": "gabriel s inferno part ii"
-    },
-    {
-      "id": "14",
-      "title": "Wicked",
-      "tmdbId": 1178685,
-      "status": "title_mismatch",
-      "tmdbTitle": "Beautiful Evil",
-      "tmdbOriginalTitle": "Beautiful Evil",
-      "similarityScore": 0,
-      "matchedAgainst": "beautiful evil"
-    },
-    {
-      "id": "15",
-      "title": "Poor Things",
-      "tmdbId": 792307,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "16",
-      "title": "A Quiet Place: Day One",
-      "tmdbId": 762441,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "17",
-      "title": "Conclave",
-      "tmdbId": 1087822,
-      "status": "title_mismatch",
-      "tmdbTitle": "Hellboy: The Crooked Man",
-      "tmdbOriginalTitle": "Hellboy: The Crooked Man",
-      "similarityScore": 0,
-      "matchedAgainst": "hellboy the crooked man"
-    },
-    {
-      "id": "18",
-      "title": "Moana 2",
-      "tmdbId": 822119,
-      "status": "title_mismatch",
-      "tmdbTitle": "Captain America: Brave New World",
-      "tmdbOriginalTitle": "Captain America: Brave New World",
-      "similarityScore": 0.056,
-      "matchedAgainst": "captain america brave new world"
-    },
-    {
-      "id": "19",
-      "title": "Alien: Romulus",
-      "tmdbId": 718821,
-      "status": "title_mismatch",
-      "tmdbTitle": "Twisters",
-      "tmdbOriginalTitle": "Twisters",
-      "similarityScore": 0,
-      "matchedAgainst": "twisters"
-    },
-    {
-      "id": "20",
-      "title": "Twisters",
-      "tmdbId": 829799,
-      "status": "title_mismatch",
-      "tmdbTitle": "Paradise City",
-      "tmdbOriginalTitle": "Paradise City",
-      "similarityScore": 0.105,
-      "matchedAgainst": "paradise city"
-    },
-    {
-      "id": "21",
-      "title": "The Dark Knight",
-      "tmdbId": 155,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "22",
-      "title": "Parasite",
-      "tmdbId": 496243,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "23",
-      "title": "Inception",
-      "tmdbId": 27205,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "24",
-      "title": "The Shawshank Redemption",
-      "tmdbId": 278,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "25",
-      "title": "The Lion King",
-      "tmdbId": 8587,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "26",
-      "title": "Pulp Fiction",
-      "tmdbId": 680,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "27",
-      "title": "Schindler's List",
-      "tmdbId": 424,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "28",
-      "title": "Forrest Gump",
-      "tmdbId": 13,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "29",
-      "title": "The Godfather",
-      "tmdbId": 238,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "30",
-      "title": "The Lord of the Rings: The Fellowship of the Ring",
-      "tmdbId": 120,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "31",
-      "title": "Goodfellas",
-      "tmdbId": 769,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "32",
-      "title": "Joker",
-      "tmdbId": 475557,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "33",
-      "title": "Avengers: Endgame",
-      "tmdbId": 299534,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "34",
-      "title": "La La Land",
-      "tmdbId": 313369,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
-      "similarityScore": 1
-    },
-    {
-      "id": "35",
-      "title": "Get Out",
-      "tmdbId": 419430,
+      "tmdbId": 666277,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "13",
+      "title": "Killers of the Flower Moon",
+      "tmdbId": 466420,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "14",
+      "title": "Wicked",
+      "tmdbId": 402431,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "15",
+      "title": "Poor Things",
+      "tmdbId": 792307,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "16",
+      "title": "A Quiet Place: Day One",
+      "tmdbId": 762441,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "17",
+      "title": "Conclave",
+      "tmdbId": 974576,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "18",
+      "title": "Moana 2",
+      "tmdbId": 1241982,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "19",
+      "title": "Alien: Romulus",
+      "tmdbId": 945961,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "20",
+      "title": "Twisters",
+      "tmdbId": 718821,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "21",
+      "title": "The Dark Knight",
+      "tmdbId": 155,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "22",
+      "title": "Parasite",
+      "tmdbId": 496243,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "23",
+      "title": "Inception",
+      "tmdbId": 27205,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "24",
+      "title": "The Shawshank Redemption",
+      "tmdbId": 278,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "25",
+      "title": "The Lion King",
+      "tmdbId": 8587,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "26",
+      "title": "Pulp Fiction",
+      "tmdbId": 680,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "27",
+      "title": "Schindler's List",
+      "tmdbId": 424,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "28",
+      "title": "Forrest Gump",
+      "tmdbId": 13,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "29",
+      "title": "The Godfather",
+      "tmdbId": 238,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "30",
+      "title": "The Lord of the Rings: The Fellowship of the Ring",
+      "tmdbId": 120,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "31",
+      "title": "Goodfellas",
+      "tmdbId": 769,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "32",
+      "title": "Joker",
+      "tmdbId": 475557,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "33",
+      "title": "Avengers: Endgame",
+      "tmdbId": 299534,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "34",
+      "title": "La La Land",
+      "tmdbId": 313369,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "35",
+      "title": "Get Out",
+      "tmdbId": 419430,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "36",
       "title": "Coco",
       "tmdbId": 354912,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "37",
       "title": "Mad Max: Fury Road",
       "tmdbId": 76341,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "38",
       "title": "Knives Out",
-      "tmdbId": 531428,
-      "status": "title_mismatch",
-      "tmdbTitle": "Portrait of a Lady on Fire",
-      "tmdbOriginalTitle": "Portrait de la jeune fille en feu",
-      "similarityScore": 0.059,
-      "matchedAgainst": "portrait of a lady on fire"
+      "tmdbId": 546554,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "39",
       "title": "Whiplash",
       "tmdbId": 244786,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "40",
       "title": "The Social Network",
       "tmdbId": 37799,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "41",
       "title": "Hereditary",
       "tmdbId": 493922,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "42",
       "title": "Spirited Away",
       "tmdbId": 129,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
@@ -402,783 +327,624 @@
       "tmdbId": 329865,
       "status": "updated",
       "changedPoster": true,
-      "changedBackdrop": true,
+      "changedBackdrop": false,
       "similarityScore": 1
     },
     {
       "id": "44",
       "title": "The Witch",
-      "tmdbId": 396342,
-      "status": "title_mismatch",
-      "tmdbTitle": "Nitōhei monogatari: Aa senyū no maki",
-      "tmdbOriginalTitle": "二等兵物語　あゝ戦友の巻",
-      "similarityScore": 0.053,
-      "matchedAgainst": "nitohei monogatari aa senyu no maki"
+      "tmdbId": 310131,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "45",
       "title": "About Time",
       "tmdbId": 122906,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "46",
       "title": "Toy Story",
       "tmdbId": 862,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "47",
       "title": "No Country for Old Men",
       "tmdbId": 6977,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "48",
       "title": "Amélie",
       "tmdbId": 194,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "49",
       "title": "2001: A Space Odyssey",
       "tmdbId": 62,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "50",
       "title": "Silver Linings Playbook",
-      "tmdbId": 101299,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Hunger Games: Catching Fire",
-      "tmdbOriginalTitle": "The Hunger Games: Catching Fire",
-      "similarityScore": 0.213,
-      "matchedAgainst": "hunger games catching fire"
+      "tmdbId": 82693,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "51",
       "title": "Up",
       "tmdbId": 14160,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "52",
       "title": "Gone Girl",
-      "tmdbId": 209112,
-      "status": "title_mismatch",
-      "tmdbTitle": "Batman v Superman: Dawn of Justice",
-      "tmdbOriginalTitle": "Batman v Superman: Dawn of Justice",
-      "similarityScore": 0,
-      "matchedAgainst": "batman v superman dawn of justice"
+      "tmdbId": 210577,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "53",
       "title": "The Grand Budapest Hotel",
-      "tmdbId": 137113,
-      "status": "title_mismatch",
-      "tmdbTitle": "Edge of Tomorrow",
-      "tmdbOriginalTitle": "Edge of Tomorrow",
-      "similarityScore": 0,
-      "matchedAgainst": "edge of tomorrow"
+      "tmdbId": 120467,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "54",
       "title": "The Revenant",
       "tmdbId": 281957,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "55",
       "title": "Eternal Sunshine of the Spotless Mind",
       "tmdbId": 38,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "56",
       "title": "1917",
       "tmdbId": 530915,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "57",
       "title": "Monty Python and the Holy Grail",
       "tmdbId": 762,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "58",
       "title": "Blade Runner 2049",
       "tmdbId": 335984,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "59",
       "title": "The Prestige",
       "tmdbId": 1124,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "60",
       "title": "Prisoners",
       "tmdbId": 146233,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "61",
       "title": "The Departed",
       "tmdbId": 1422,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "62",
       "title": "Django Unchained",
       "tmdbId": 68718,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "63",
       "title": "Saving Private Ryan",
       "tmdbId": 857,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "64",
       "title": "The Green Mile",
       "tmdbId": 497,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "65",
       "title": "The Truman Show",
       "tmdbId": 37165,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "66",
       "title": "Se7en",
       "tmdbId": 807,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "67",
       "title": "The Matrix",
       "tmdbId": 603,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "68",
       "title": "WALL-E",
       "tmdbId": 10681,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 0.6
     },
     {
       "id": "69",
       "title": "Ratatouille",
       "tmdbId": 2062,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "70",
       "title": "How to Train Your Dragon",
       "tmdbId": 10191,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "71",
       "title": "Ford v Ferrari",
       "tmdbId": 359724,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "72",
       "title": "The Silence of the Lambs",
       "tmdbId": 274,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "73",
       "title": "Gladiator",
       "tmdbId": 98,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "74",
       "title": "Fight Club",
       "tmdbId": 550,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "75",
       "title": "Good Will Hunting",
       "tmdbId": 489,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "76",
       "title": "A Beautiful Mind",
       "tmdbId": 453,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "77",
       "title": "The Wolf of Wall Street",
       "tmdbId": 106646,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "78",
       "title": "Catch Me If You Can",
       "tmdbId": 640,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "79",
       "title": "The Curious Case of Benjamin Button",
       "tmdbId": 4922,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "80",
       "title": "127 Hours",
       "tmdbId": 44115,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "81",
       "title": "Bohemian Rhapsody",
       "tmdbId": 424694,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "82",
       "title": "The Pianist",
-      "tmdbId": 379,
-      "status": "title_mismatch",
-      "tmdbTitle": "Miller's Crossing",
-      "tmdbOriginalTitle": "Miller's Crossing",
-      "similarityScore": 0,
-      "matchedAgainst": "miller s crossing"
+      "tmdbId": 423,
+      "status": "updated",
+      "changedPoster": false,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "83",
       "title": "Cinema Paradiso",
       "tmdbId": 11216,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "84",
       "title": "Life Is Beautiful",
       "tmdbId": 637,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "85",
       "title": "Inglourious Basterds",
       "tmdbId": 16869,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "86",
       "title": "The Big Short",
       "tmdbId": 318846,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "87",
       "title": "Moonlight",
       "tmdbId": 376867,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "88",
       "title": "Three Billboards Outside Ebbing, Missouri",
       "tmdbId": 359940,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "89",
       "title": "Marriage Story",
       "tmdbId": 492188,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "90",
+      "title": "Roma",
+      "tmdbId": 426426,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "90",
-      "title": "Roma",
-      "tmdbId": 547016,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Old Guard",
-      "tmdbOriginalTitle": "The Old Guard",
-      "similarityScore": 0,
-      "matchedAgainst": "old guard"
-    },
-    {
       "id": "91",
       "title": "Uncut Gems",
       "tmdbId": 473033,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "92",
       "title": "Midsommar",
       "tmdbId": 530385,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "93",
       "title": "The Lighthouse",
       "tmdbId": 503919,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "94",
       "title": "Nightcrawler",
       "tmdbId": 242582,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "95",
+      "title": "Room",
+      "tmdbId": 264644,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "95",
-      "title": "Room",
-      "tmdbId": 305516,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mrs. John Bull Prepared",
-      "tmdbOriginalTitle": "Mrs. John Bull Prepared",
-      "similarityScore": 0,
-      "matchedAgainst": "mrs john bull prepared"
-    },
-    {
       "id": "96",
       "title": "Lion",
       "tmdbId": 334543,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "97",
       "title": "Hacksaw Ridge",
       "tmdbId": 324786,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "98",
       "title": "Dunkirk",
       "tmdbId": 374720,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "99",
       "title": "Once Upon a Time in Hollywood",
       "tmdbId": 466272,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "100",
       "title": "Jojo Rabbit",
       "tmdbId": 515001,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "101",
+      "title": "Rear Window",
+      "tmdbId": 567,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "101",
-      "title": "Rear Window",
-      "tmdbId": 967,
-      "status": "title_mismatch",
-      "tmdbTitle": "Spartacus",
-      "tmdbOriginalTitle": "Spartacus",
-      "similarityScore": 0.111,
-      "matchedAgainst": "spartacus"
-    },
-    {
       "id": "102",
       "title": "12 Angry Men",
       "tmdbId": 389,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "103",
       "title": "Seven Samurai",
       "tmdbId": 346,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "104",
       "title": "Singin' in the Rain",
       "tmdbId": 872,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "105",
+      "title": "The Bridge on the River Kwai",
+      "tmdbId": 826,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "105",
-      "title": "The Bridge on the River Kwai",
-      "tmdbId": 780,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Passion of Joan of Arc",
-      "tmdbOriginalTitle": "La Passion de Jeanne d'Arc",
-      "similarityScore": 0.167,
-      "matchedAgainst": "passion of joan of arc"
-    },
-    {
       "id": "106",
       "title": "Some Like It Hot",
       "tmdbId": 239,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "107",
       "title": "Psycho",
       "tmdbId": 539,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "108",
       "title": "Lawrence of Arabia",
       "tmdbId": 947,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "109",
       "title": "Dr. Strangelove",
       "tmdbId": 935,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 0.85
     },
     {
       "id": "110",
       "title": "The Good, the Bad and the Ugly",
       "tmdbId": 429,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "111",
       "title": "Bonnie and Clyde",
-      "tmdbId": 3084,
-      "status": "title_mismatch",
-      "tmdbTitle": "Wuthering Heights",
-      "tmdbOriginalTitle": "Wuthering Heights",
-      "similarityScore": 0,
-      "matchedAgainst": "wuthering heights"
+      "tmdbId": 475,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "112",
       "title": "The Graduate",
-      "tmdbId": 2118,
-      "status": "title_mismatch",
-      "tmdbTitle": "L.A. Confidential",
-      "tmdbOriginalTitle": "L.A. Confidential",
-      "similarityScore": 0,
-      "matchedAgainst": "l a confidential"
+      "tmdbId": 37247,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "113",
       "title": "Night of the Living Dead",
       "tmdbId": 10331,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "114",
       "title": "The Exorcist",
       "tmdbId": 9552,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "115",
       "title": "The Godfather Part II",
       "tmdbId": 240,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "116",
       "title": "Chinatown",
       "tmdbId": 829,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "117",
       "title": "Jaws",
       "tmdbId": 578,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "118",
       "title": "Taxi Driver",
       "tmdbId": 103,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "119",
       "title": "Rocky",
       "tmdbId": 1366,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "120",
       "title": "Star Wars: A New Hope",
       "tmdbId": 11,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 0.85
     },
     {
       "id": "121",
       "title": "Halloween",
       "tmdbId": 948,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "122",
       "title": "Apocalypse Now",
       "tmdbId": 28,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "123",
       "title": "Alien",
       "tmdbId": 348,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "124",
       "title": "Raiders of the Lost Ark",
       "tmdbId": 85,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "125",
       "title": "Blade Runner",
       "tmdbId": 78,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "126",
       "title": "E.T. the Extra-Terrestrial",
       "tmdbId": 601,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "127",
       "title": "The Thing",
       "tmdbId": 1091,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "128",
       "title": "Scarface",
       "tmdbId": 111,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
@@ -1187,2851 +953,2470 @@
       "tmdbId": 694,
       "status": "updated",
       "changedPoster": true,
-      "changedBackdrop": true,
+      "changedBackdrop": false,
       "similarityScore": 1
     },
     {
       "id": "130",
       "title": "Back to the Future",
       "tmdbId": 105,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "131",
       "title": "Aliens",
       "tmdbId": 679,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "132",
       "title": "Platoon",
       "tmdbId": 792,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "133",
       "title": "Full Metal Jacket",
       "tmdbId": 600,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "134",
       "title": "Die Hard",
       "tmdbId": 562,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "135",
       "title": "Terminator 2: Judgment Day",
       "tmdbId": 280,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "136",
       "title": "Unforgiven",
-      "tmdbId": 26,
-      "status": "title_mismatch",
-      "tmdbTitle": "Walk on Water",
-      "tmdbOriginalTitle": "ללכת על המים",
-      "similarityScore": 0,
-      "matchedAgainst": "walk on water"
-    },
-    {
-      "id": "137",
-      "title": "Reservoir Dogs",
-      "tmdbId": 500,
+      "tmdbId": 33,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "137",
+      "title": "Reservoir Dogs",
+      "tmdbId": 500,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "138",
       "title": "Bram Stoker's Dracula",
-      "tmdbId": 972,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 6114,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "139",
       "title": "Jurassic Park",
       "tmdbId": 329,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "140",
       "title": "Léon: The Professional",
       "tmdbId": 101,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "141",
       "title": "Braveheart",
       "tmdbId": 197,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "142",
       "title": "Heat",
       "tmdbId": 949,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "143",
       "title": "Fargo",
       "tmdbId": 275,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "144",
       "title": "Titanic",
       "tmdbId": 597,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "145",
       "title": "L.A. Confidential",
       "tmdbId": 2118,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "146",
       "title": "The Big Lebowski",
       "tmdbId": 115,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "147",
       "title": "American Beauty",
       "tmdbId": 14,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "148",
       "title": "The Sixth Sense",
       "tmdbId": 745,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "149",
+      "title": "Being John Malkovich",
+      "tmdbId": 492,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "149",
-      "title": "Being John Malkovich",
-      "tmdbId": 605,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Matrix Revolutions",
-      "tmdbOriginalTitle": "The Matrix Revolutions",
-      "similarityScore": 0.056,
-      "matchedAgainst": "matrix revolutions"
-    },
-    {
       "id": "150",
       "title": "Memento",
       "tmdbId": 77,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "151",
       "title": "In the Mood for Love",
       "tmdbId": 843,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "152",
+      "title": "Y Tu Mamá También",
+      "tmdbId": 1391,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "152",
-      "title": "Y Tu Mamá También",
-      "tmdbId": 792307,
-      "status": "title_mismatch",
-      "tmdbTitle": "Poor Things",
-      "tmdbOriginalTitle": "Poor Things",
-      "similarityScore": 0.077,
-      "matchedAgainst": "poor things"
-    },
-    {
       "id": "153",
       "title": "City of God",
       "tmdbId": 598,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "154",
       "title": "Oldboy",
       "tmdbId": 670,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "155",
       "title": "Kill Bill: Vol. 1",
       "tmdbId": 24,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "156",
       "title": "Million Dollar Baby",
       "tmdbId": 70,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "157",
       "title": "Brokeback Mountain",
-      "tmdbId": 37173,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ah, Vaudeville, Vaudeville...",
-      "tmdbOriginalTitle": "Ах, водевиль, водевиль...",
-      "similarityScore": 0,
-      "matchedAgainst": "ah vaudeville vaudeville"
-    },
-    {
-      "id": "158",
-      "title": "Pan's Labyrinth",
-      "tmdbId": 1417,
+      "tmdbId": 142,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "158",
+      "title": "Pan's Labyrinth",
+      "tmdbId": 1417,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "159",
       "title": "The Lives of Others",
-      "tmdbId": 207,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dead Poets Society",
-      "tmdbOriginalTitle": "Dead Poets Society",
-      "similarityScore": 0.065,
-      "matchedAgainst": "dead poets society"
+      "tmdbId": 582,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "160",
       "title": "Children of Men",
       "tmdbId": 9693,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "161",
       "title": "There Will Be Blood",
       "tmdbId": 7345,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "162",
       "title": "Slumdog Millionaire",
       "tmdbId": 12405,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "163",
       "title": "District 9",
-      "tmdbId": 12122,
-      "status": "title_mismatch",
-      "tmdbTitle": "Village of the Damned",
-      "tmdbOriginalTitle": "Village of the Damned",
-      "similarityScore": 0,
-      "matchedAgainst": "village of the damned"
-    },
-    {
-      "id": "164",
-      "title": "Black Swan",
-      "tmdbId": 44214,
+      "tmdbId": 17654,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "164",
+      "title": "Black Swan",
+      "tmdbId": 44214,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "165",
       "title": "True Grit",
-      "tmdbId": 27022,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Sorcerer's Apprentice",
-      "tmdbOriginalTitle": "The Sorcerer's Apprentice",
-      "similarityScore": 0,
-      "matchedAgainst": "sorcerer s apprentice"
+      "tmdbId": 44264,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "166",
       "title": "Drive",
-      "tmdbId": 51540,
-      "status": "title_mismatch",
-      "tmdbTitle": "Horrible Bosses",
-      "tmdbOriginalTitle": "Horrible Bosses",
-      "similarityScore": 0.111,
-      "matchedAgainst": "horrible bosses"
+      "tmdbId": 64690,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "167",
       "title": "A Separation",
-      "tmdbId": 74451,
-      "status": "title_mismatch",
-      "tmdbTitle": "Conjugal Warfare",
-      "tmdbOriginalTitle": "Guerra Conjugal",
-      "similarityScore": 0.174,
-      "matchedAgainst": "conjugal warfare"
+      "tmdbId": 60243,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "168",
       "title": "Her",
       "tmdbId": 152601,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "169",
       "title": "12 Years a Slave",
       "tmdbId": 76203,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "170",
       "title": "The Conjuring",
       "tmdbId": 138843,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "171",
       "title": "It Follows",
-      "tmdbId": 260346,
-      "status": "title_mismatch",
-      "tmdbTitle": "Taken 3",
-      "tmdbOriginalTitle": "Taken 3",
-      "similarityScore": 0,
-      "matchedAgainst": "taken 3"
-    },
-    {
-      "id": "172",
-      "title": "Amy",
-      "tmdbId": 274854,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Last Witch Hunter",
-      "tmdbOriginalTitle": "The Last Witch Hunter",
-      "similarityScore": 0,
-      "matchedAgainst": "last witch hunter"
-    },
-    {
-      "id": "173",
-      "title": "Manchester by the Sea",
-      "tmdbId": 334541,
+      "tmdbId": 270303,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "172",
+      "title": "Amy",
+      "tmdbId": 331781,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "173",
+      "title": "Manchester by the Sea",
+      "tmdbId": 334541,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "174",
       "title": "13th",
-      "tmdbId": 376851,
-      "status": "title_mismatch",
-      "tmdbTitle": "Tee Productions: Private Tapes",
-      "tmdbOriginalTitle": "Tee Productions: Private Tapes",
-      "similarityScore": 0,
-      "matchedAgainst": "tee productions private tapes"
+      "tmdbId": 407806,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "175",
       "title": "Lady Bird",
       "tmdbId": 391713,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "176",
       "title": "The Shape of Water",
       "tmdbId": 399055,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "177",
       "title": "A Star Is Born",
       "tmdbId": 332562,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "178",
       "title": "Green Book",
       "tmdbId": 490132,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "179",
       "title": "Shoplifters",
-      "tmdbId": 496243,
-      "status": "title_mismatch",
-      "tmdbTitle": "Parasite",
-      "tmdbOriginalTitle": "기생충",
-      "similarityScore": 0.118,
-      "matchedAgainst": "parasite"
-    },
-    {
-      "id": "180",
-      "title": "Free Solo",
-      "tmdbId": 515042,
+      "tmdbId": 505192,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "180",
+      "title": "Free Solo",
+      "tmdbId": 515042,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "181",
       "title": "Won't You Be My Neighbor?",
-      "tmdbId": 476669,
-      "status": "title_mismatch",
-      "tmdbTitle": "The King's Man",
-      "tmdbOriginalTitle": "The King's Man",
-      "similarityScore": 0.063,
-      "matchedAgainst": "king s man"
+      "tmdbId": 490003,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "182",
       "title": "Portrait of a Lady on Fire",
-      "tmdbId": 494470,
-      "status": "title_mismatch",
-      "tmdbTitle": "American Nightmare - Reunion Documentary",
-      "tmdbOriginalTitle": "American Nightmare - Reunion Documentary",
-      "similarityScore": 0.097,
-      "matchedAgainst": "american nightmare reunion documentary"
+      "tmdbId": 531428,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "183",
       "title": "Nomadland",
       "tmdbId": 581734,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "184",
       "title": "Soul",
       "tmdbId": 508442,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "185",
+      "title": "Minari",
+      "tmdbId": 615643,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "185",
-      "title": "Minari",
-      "tmdbId": 615777,
-      "status": "title_mismatch",
-      "tmdbTitle": "Babylon",
-      "tmdbOriginalTitle": "Babylon",
-      "similarityScore": 0,
-      "matchedAgainst": "babylon"
-    },
-    {
       "id": "186",
       "title": "The Father",
-      "tmdbId": 630566,
-      "status": "title_mismatch",
-      "tmdbTitle": "Clouds",
-      "tmdbOriginalTitle": "Clouds",
-      "similarityScore": 0,
-      "matchedAgainst": "clouds"
+      "tmdbId": 600354,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "187",
       "title": "CODA",
       "tmdbId": 776503,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "188",
       "title": "Dune",
       "tmdbId": 438631,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "189",
       "title": "No Time to Die",
       "tmdbId": 370172,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "190",
       "title": "The Power of the Dog",
-      "tmdbId": 649652,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 600583,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "191",
       "title": "Belfast",
-      "tmdbId": 656663,
-      "status": "title_mismatch",
-      "tmdbTitle": "Jackass Forever",
-      "tmdbOriginalTitle": "Jackass Forever",
-      "similarityScore": 0.1,
-      "matchedAgainst": "jackass forever"
+      "tmdbId": 777270,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "192",
       "title": "Drive My Car",
-      "tmdbId": 736732,
-      "status": "title_mismatch",
-      "tmdbTitle": "Broker",
-      "tmdbOriginalTitle": "브로커",
-      "similarityScore": 0,
-      "matchedAgainst": "broker"
+      "tmdbId": 758866,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "193",
       "title": "Top Gun: Maverick",
       "tmdbId": 361743,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "194",
       "title": "The Whale",
       "tmdbId": 785084,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "195",
       "title": "Women Talking",
-      "tmdbId": 843425,
-      "status": "title_mismatch",
-      "tmdbTitle": "Whores Inc. 2",
-      "tmdbOriginalTitle": "Whores Inc. 2",
-      "similarityScore": 0.087,
-      "matchedAgainst": "whores inc 2"
-    },
-    {
-      "id": "196",
-      "title": "Anatomy of a Fall",
-      "tmdbId": 915935,
+      "tmdbId": 777245,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "196",
+      "title": "Anatomy of a Fall",
+      "tmdbId": 915935,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "197",
       "title": "American Fiction",
-      "tmdbId": 1029280,
-      "status": "title_mismatch",
-      "tmdbTitle": "Haroun Tazieff: The Poet of Fire",
-      "tmdbOriginalTitle": "Haroun Tazieff, le poète du feu",
-      "similarityScore": 0.133,
-      "matchedAgainst": "haroun tazieff the poet of fire"
+      "tmdbId": 1056360,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "198",
       "title": "The Zone of Interest",
       "tmdbId": 467244,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "199",
       "title": "Barbie",
       "tmdbId": 346698,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "200",
       "title": "Das Boot",
-      "tmdbId": 673,
-      "status": "title_mismatch",
-      "tmdbTitle": "Harry Potter and the Prisoner of Azkaban",
-      "tmdbOriginalTitle": "Harry Potter and the Prisoner of Azkaban",
-      "similarityScore": 0.043,
-      "matchedAgainst": "harry potter and the prisoner of azkaban"
+      "tmdbId": 387,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "201",
       "title": "The Terminator",
       "tmdbId": 218,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "202",
       "title": "RoboCop",
       "tmdbId": 5548,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "203",
       "title": "Predator",
       "tmdbId": 106,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "204",
+      "title": "The Fugitive",
+      "tmdbId": 5503,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "204",
-      "title": "The Fugitive",
-      "tmdbId": 8358,
-      "status": "title_mismatch",
-      "tmdbTitle": "Cast Away",
-      "tmdbOriginalTitle": "Cast Away",
-      "similarityScore": 0,
-      "matchedAgainst": "cast away"
-    },
-    {
       "id": "205",
       "title": "Speed",
       "tmdbId": 1637,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "206",
       "title": "Independence Day",
       "tmdbId": 602,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "207",
       "title": "Men in Black",
       "tmdbId": 607,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "208",
       "title": "The Fifth Element",
       "tmdbId": 18,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "209",
       "title": "Minority Report",
       "tmdbId": 180,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "210",
+      "title": "War of the Worlds",
+      "tmdbId": 74,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "210",
-      "title": "War of the Worlds",
-      "tmdbId": 168,
-      "status": "title_mismatch",
-      "tmdbTitle": "Star Trek IV: The Voyage Home",
-      "tmdbOriginalTitle": "Star Trek IV: The Voyage Home",
-      "similarityScore": 0.279,
-      "matchedAgainst": "star trek iv the voyage home"
-    },
-    {
       "id": "211",
       "title": "Iron Man",
       "tmdbId": 1726,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "212",
       "title": "Guardians of the Galaxy",
       "tmdbId": 118340,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "213",
       "title": "Edge of Tomorrow",
       "tmdbId": 137113,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "214",
+      "title": "Mad Max",
+      "tmdbId": 9659,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "214",
-      "title": "Mad Max",
-      "tmdbId": 8810,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
-      "similarityScore": 0.857
-    },
-    {
       "id": "215",
       "title": "Star Trek II: The Wrath of Khan",
       "tmdbId": 154,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "216",
       "title": "Total Recall",
       "tmdbId": 861,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "217",
       "title": "My Neighbor Totoro",
       "tmdbId": 8392,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "218",
       "title": "Princess Mononoke",
       "tmdbId": 128,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "219",
       "title": "Akira",
       "tmdbId": 149,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "220",
       "title": "Grave of the Fireflies",
       "tmdbId": 12477,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "221",
       "title": "Your Name.",
       "tmdbId": 372058,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "222",
       "title": "The Wind Rises",
       "tmdbId": 149870,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "223",
       "title": "Howl's Moving Castle",
       "tmdbId": 4935,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "224",
       "title": "Perfect Blue",
       "tmdbId": 10494,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "225",
       "title": "Ghost in the Shell",
       "tmdbId": 9323,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "226",
       "title": "Shrek",
       "tmdbId": 808,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "227",
       "title": "Finding Nemo",
       "tmdbId": 12,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "228",
       "title": "The Incredibles",
       "tmdbId": 9806,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "229",
       "title": "Inside Out",
       "tmdbId": 150540,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "230",
       "title": "Zootopia",
       "tmdbId": 269149,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "231",
       "title": "The Iron Giant",
       "tmdbId": 10386,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "232",
       "title": "Raging Bull",
       "tmdbId": 1578,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "233",
       "title": "Chariots of Fire",
-      "tmdbId": 12102,
-      "status": "title_mismatch",
-      "tmdbTitle": "Kramer vs. Kramer",
-      "tmdbOriginalTitle": "Kramer vs. Kramer",
-      "similarityScore": 0.067,
-      "matchedAgainst": "kramer vs kramer"
+      "tmdbId": 9443,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "234",
       "title": "Hoosiers",
-      "tmdbId": 11710,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Enigma of Kaspar Hauser",
-      "tmdbOriginalTitle": "Jeder für sich und Gott gegen alle",
-      "similarityScore": 0.1,
-      "matchedAgainst": "enigma of kaspar hauser"
+      "tmdbId": 5693,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "235",
       "title": "Field of Dreams",
-      "tmdbId": 11007,
-      "status": "title_mismatch",
-      "tmdbTitle": "Cheaper by the Dozen",
-      "tmdbOriginalTitle": "Cheaper by the Dozen",
-      "similarityScore": 0.121,
-      "matchedAgainst": "cheaper by the dozen"
+      "tmdbId": 2323,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "236",
       "title": "Rudy",
-      "tmdbId": 11202,
-      "status": "title_mismatch",
-      "tmdbTitle": "Patton",
-      "tmdbOriginalTitle": "Patton",
-      "similarityScore": 0,
-      "matchedAgainst": "patton"
+      "tmdbId": 14534,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "237",
       "title": "Remember the Titans",
-      "tmdbId": 738,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 10637,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "238",
       "title": "Miracle",
-      "tmdbId": 10425,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Death and Life of Bobby Z",
-      "tmdbOriginalTitle": "The Death and Life of Bobby Z",
-      "similarityScore": 0,
-      "matchedAgainst": "death and life of bobby z"
+      "tmdbId": 14292,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "239",
       "title": "The Blind Side",
-      "tmdbId": 21683,
-      "status": "title_mismatch",
-      "tmdbTitle": "Batman: Mystery of the Batwoman",
-      "tmdbOriginalTitle": "Batman: Mystery of the Batwoman",
-      "similarityScore": 0,
-      "matchedAgainst": "batman mystery of the batwoman"
+      "tmdbId": 22881,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "240",
       "title": "Moneyball",
       "tmdbId": 60308,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "241",
       "title": "Creed",
-      "tmdbId": 273248,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Hateful Eight",
-      "tmdbOriginalTitle": "The Hateful Eight",
-      "similarityScore": 0,
-      "matchedAgainst": "hateful eight"
-    },
-    {
-      "id": "242",
-      "title": "I, Tonya",
-      "tmdbId": 425622,
-      "status": "title_mismatch",
-      "tmdbTitle": "Red Clay Heroes",
-      "tmdbOriginalTitle": "Hijos Del Polvo de Ladrillo",
-      "similarityScore": 0,
-      "matchedAgainst": "red clay heroes"
-    },
-    {
-      "id": "243",
-      "title": "Amadeus",
-      "tmdbId": 900,
-      "status": "title_mismatch",
-      "tmdbTitle": "Bringing Up Baby",
-      "tmdbOriginalTitle": "Bringing Up Baby",
-      "similarityScore": 0,
-      "matchedAgainst": "bringing up baby"
-    },
-    {
-      "id": "244",
-      "title": "Almost Famous",
-      "tmdbId": 786,
+      "tmdbId": 312221,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "242",
+      "title": "I, Tonya",
+      "tmdbId": 389015,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "243",
+      "title": "Amadeus",
+      "tmdbId": 279,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "244",
+      "title": "Almost Famous",
+      "tmdbId": 786,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "245",
       "title": "Walk the Line",
-      "tmdbId": 9034,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Banger Sisters",
-      "tmdbOriginalTitle": "The Banger Sisters",
-      "similarityScore": 0,
-      "matchedAgainst": "banger sisters"
+      "tmdbId": 69,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "246",
       "title": "Once",
-      "tmdbId": 8005,
-      "status": "title_mismatch",
-      "tmdbTitle": "Robin Hood: Men in Tights",
-      "tmdbOriginalTitle": "Robin Hood: Men in Tights",
-      "similarityScore": 0,
-      "matchedAgainst": "robin hood men in tights"
+      "tmdbId": 5723,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "247",
       "title": "Straight Outta Compton",
-      "tmdbId": 260346,
-      "status": "title_mismatch",
-      "tmdbTitle": "Taken 3",
-      "tmdbOriginalTitle": "Taken 3",
-      "similarityScore": 0.074,
-      "matchedAgainst": "taken 3"
+      "tmdbId": 277216,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "248",
       "title": "Rocketman",
-      "tmdbId": 447362,
-      "status": "title_mismatch",
-      "tmdbTitle": "Life in a Year",
-      "tmdbOriginalTitle": "Life in a Year",
-      "similarityScore": 0,
-      "matchedAgainst": "life in a year"
+      "tmdbId": 504608,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "249",
       "title": "Sing Street",
-      "tmdbId": 331482,
-      "status": "title_mismatch",
-      "tmdbTitle": "Little Women",
-      "tmdbOriginalTitle": "Little Women",
-      "similarityScore": 0,
-      "matchedAgainst": "little women"
+      "tmdbId": 369557,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "250",
       "title": "High Noon",
-      "tmdbId": 1092,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Third Man",
-      "tmdbOriginalTitle": "The Third Man",
-      "similarityScore": 0.125,
-      "matchedAgainst": "third man"
+      "tmdbId": 288,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "251",
       "title": "Shane",
-      "tmdbId": 15069,
-      "status": "title_mismatch",
-      "tmdbTitle": "WΔZ",
-      "tmdbOriginalTitle": "WΔZ",
-      "similarityScore": 0,
-      "matchedAgainst": "wδz"
+      "tmdbId": 3110,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "252",
       "title": "The Searchers",
       "tmdbId": 3114,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "253",
       "title": "Once Upon a Time in the West",
       "tmdbId": 335,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "254",
       "title": "Butch Cassidy and the Sundance Kid",
-      "tmdbId": 4494,
-      "status": "title_mismatch",
-      "tmdbTitle": "Rapture",
-      "tmdbOriginalTitle": "Arrebato",
-      "similarityScore": 0,
-      "matchedAgainst": "rapture"
-    },
-    {
-      "id": "255",
-      "title": "Dances with Wolves",
-      "tmdbId": 872,
-      "status": "title_mismatch",
-      "tmdbTitle": "Singin' in the Rain",
-      "tmdbOriginalTitle": "Singin' in the Rain",
-      "similarityScore": 0.059,
-      "matchedAgainst": "singin in the rain"
-    },
-    {
-      "id": "256",
-      "title": "Tombstone",
-      "tmdbId": 8846,
-      "status": "title_mismatch",
-      "tmdbTitle": "Alone",
-      "tmdbOriginalTitle": "Allein",
-      "similarityScore": 0.333,
-      "matchedAgainst": "alone"
-    },
-    {
-      "id": "257",
-      "title": "3:10 to Yuma",
-      "tmdbId": 8228,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
-    },
-    {
-      "id": "258",
-      "title": "The Hateful Eight",
-      "tmdbId": 273248,
+      "tmdbId": 642,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "255",
+      "title": "Dances with Wolves",
+      "tmdbId": 581,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "256",
+      "title": "Tombstone",
+      "tmdbId": 11969,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "257",
+      "title": "3:10 to Yuma",
+      "tmdbId": 5176,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "258",
+      "title": "The Hateful Eight",
+      "tmdbId": 273248,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "259",
       "title": "Rosemary's Baby",
-      "tmdbId": 968,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dog Day Afternoon",
-      "tmdbOriginalTitle": "Dog Day Afternoon",
-      "similarityScore": 0.067,
-      "matchedAgainst": "dog day afternoon"
+      "tmdbId": 805,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "260",
       "title": "The Omen",
-      "tmdbId": 950,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ice Age: The Meltdown",
-      "tmdbOriginalTitle": "Ice Age: The Meltdown",
-      "similarityScore": 0.091,
-      "matchedAgainst": "ice age the meltdown"
+      "tmdbId": 794,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "261",
       "title": "Carrie",
-      "tmdbId": 10583,
-      "status": "title_mismatch",
-      "tmdbTitle": "Private Popsicle",
-      "tmdbOriginalTitle": "אסקימו לימון 4: ספיחס",
-      "similarityScore": 0.1,
-      "matchedAgainst": "private popsicle"
+      "tmdbId": 7340,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "262",
       "title": "An American Werewolf in London",
-      "tmdbId": 665,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ben-Hur",
-      "tmdbOriginalTitle": "Ben-Hur",
-      "similarityScore": 0.063,
-      "matchedAgainst": "ben hur"
+      "tmdbId": 814,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "263",
       "title": "Poltergeist",
-      "tmdbId": 11663,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Commitments",
-      "tmdbOriginalTitle": "The Commitments",
-      "similarityScore": 0,
-      "matchedAgainst": "commitments"
+      "tmdbId": 609,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "264",
       "title": "A Nightmare on Elm Street",
       "tmdbId": 377,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "265",
       "title": "The Fly",
       "tmdbId": 9426,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "266",
       "title": "Scream",
       "tmdbId": 4232,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "267",
       "title": "The Blair Witch Project",
       "tmdbId": 2667,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "268",
       "title": "28 Days Later",
       "tmdbId": 170,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "269",
       "title": "Saw",
       "tmdbId": 176,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "270",
       "title": "The Babadook",
       "tmdbId": 242224,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "271",
       "title": "A Quiet Place",
       "tmdbId": 447332,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "272",
       "title": "Us",
-      "tmdbId": 476669,
-      "status": "title_mismatch",
-      "tmdbTitle": "The King's Man",
-      "tmdbOriginalTitle": "The King's Man",
-      "similarityScore": 0,
-      "matchedAgainst": "king s man"
+      "tmdbId": 458723,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "273",
       "title": "Bowling for Columbine",
-      "tmdbId": 922,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dead Man",
-      "tmdbOriginalTitle": "Dead Man",
-      "similarityScore": 0,
-      "matchedAgainst": "dead man"
+      "tmdbId": 1430,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "274",
       "title": "March of the Penguins",
-      "tmdbId": 11673,
-      "status": "title_mismatch",
-      "tmdbTitle": "Cyrano de Bergerac",
-      "tmdbOriginalTitle": "Cyrano de Bergerac",
-      "similarityScore": 0.054,
-      "matchedAgainst": "cyrano de bergerac"
+      "tmdbId": 1667,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "275",
       "title": "Man on Wire",
-      "tmdbId": 936,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Pink Panther",
-      "tmdbOriginalTitle": "The Pink Panther",
-      "similarityScore": 0.095,
-      "matchedAgainst": "pink panther"
+      "tmdbId": 14048,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "276",
       "title": "The Cove",
-      "tmdbId": 19404,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dilwale Dulhania Le Jayenge",
-      "tmdbOriginalTitle": "दिलवाले दुल्हनिया ले जायेंगे",
-      "similarityScore": 0,
-      "matchedAgainst": "dilwale dulhania le jayenge"
+      "tmdbId": 23128,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "277",
       "title": "Searching for Sugar Man",
-      "tmdbId": 100196,
-      "status": "title_mismatch",
-      "tmdbTitle": "Julian Po",
-      "tmdbOriginalTitle": "Julian Po",
-      "similarityScore": 0.067,
-      "matchedAgainst": "julian po"
+      "tmdbId": 84334,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "278",
       "title": "Icarus",
-      "tmdbId": 460216,
-      "status": "title_mismatch",
-      "tmdbTitle": "Humor Me",
-      "tmdbOriginalTitle": "Humor Me",
-      "similarityScore": 0,
-      "matchedAgainst": "humor me"
+      "tmdbId": 432976,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "279",
       "title": "American Factory",
-      "tmdbId": 613247,
-      "status": "title_mismatch",
-      "tmdbTitle": "Get Lucky",
-      "tmdbOriginalTitle": "Get Lucky - Sex verändert alles",
-      "similarityScore": 0.093,
-      "matchedAgainst": "get lucky"
+      "tmdbId": 565716,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "280",
       "title": "Gandhi",
       "tmdbId": 783,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "281",
       "title": "The Last Emperor",
-      "tmdbId": 908,
-      "status": "title_mismatch",
-      "tmdbTitle": "Schnitzel Paradise",
-      "tmdbOriginalTitle": "Het Schnitzelparadijs",
-      "similarityScore": 0.065,
-      "matchedAgainst": "schnitzel paradise"
+      "tmdbId": 746,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "282",
       "title": "Malcolm X",
-      "tmdbId": 11365,
-      "status": "title_mismatch",
-      "tmdbTitle": "Wilde",
-      "tmdbOriginalTitle": "Wilde",
-      "similarityScore": 0,
-      "matchedAgainst": "wilde"
+      "tmdbId": 1883,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "283",
       "title": "Erin Brockovich",
-      "tmdbId": 1620,
-      "status": "title_mismatch",
-      "tmdbTitle": "Hitman",
-      "tmdbOriginalTitle": "Hitman",
-      "similarityScore": 0,
-      "matchedAgainst": "hitman"
+      "tmdbId": 462,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "284",
       "title": "The Aviator",
-      "tmdbId": 44,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 2567,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "285",
       "title": "Milk",
-      "tmdbId": 10635,
-      "status": "title_mismatch",
-      "tmdbTitle": "Threesome",
-      "tmdbOriginalTitle": "Threesome",
-      "similarityScore": 0,
-      "matchedAgainst": "threesome"
+      "tmdbId": 10139,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "286",
       "title": "The King's Speech",
       "tmdbId": 45269,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "287",
       "title": "Lincoln",
-      "tmdbId": 87826,
-      "status": "title_mismatch",
-      "tmdbTitle": "Here Comes the Boom",
-      "tmdbOriginalTitle": "Here Comes the Boom",
-      "similarityScore": 0.083,
-      "matchedAgainst": "here comes the boom"
-    },
-    {
-      "id": "288",
-      "title": "Selma",
-      "tmdbId": 210860,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mortdecai",
-      "tmdbOriginalTitle": "Mortdecai",
-      "similarityScore": 0,
-      "matchedAgainst": "mortdecai"
-    },
-    {
-      "id": "289",
-      "title": "The Imitation Game",
-      "tmdbId": 205596,
+      "tmdbId": 72976,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "288",
+      "title": "Selma",
+      "tmdbId": 273895,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "289",
+      "title": "The Imitation Game",
+      "tmdbId": 205596,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "290",
       "title": "Bridge of Spies",
-      "tmdbId": 274870,
-      "status": "title_mismatch",
-      "tmdbTitle": "Passengers",
-      "tmdbOriginalTitle": "Passengers",
-      "similarityScore": 0.087,
-      "matchedAgainst": "passengers"
+      "tmdbId": 296098,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "291",
       "title": "Darkest Hour",
-      "tmdbId": 407448,
-      "status": "title_mismatch",
-      "tmdbTitle": "Detroit",
-      "tmdbOriginalTitle": "Detroit",
-      "similarityScore": 0,
-      "matchedAgainst": "detroit"
+      "tmdbId": 399404,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "292",
       "title": "First Man",
-      "tmdbId": 359724,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ford v Ferrari",
-      "tmdbOriginalTitle": "Ford v Ferrari",
-      "similarityScore": 0,
-      "matchedAgainst": "ford v ferrari"
+      "tmdbId": 369972,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "293",
       "title": "Judas and the Black Messiah",
-      "tmdbId": 636720,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Cherry Blossoms",
-      "tmdbOriginalTitle": "Cireșarii",
-      "similarityScore": 0.2,
-      "matchedAgainst": "cherry blossoms"
+      "tmdbId": 583406,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "294",
       "title": "Roman Holiday",
-      "tmdbId": 15400,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mickey's Once Upon a Christmas",
-      "tmdbOriginalTitle": "Mickey's Once Upon a Christmas",
-      "similarityScore": 0.098,
-      "matchedAgainst": "mickey s once upon a christmas"
+      "tmdbId": 804,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "295",
       "title": "Breakfast at Tiffany's",
-      "tmdbId": 163,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ocean's Twelve",
-      "tmdbOriginalTitle": "Ocean's Twelve",
-      "similarityScore": 0.235,
-      "matchedAgainst": "ocean s twelve"
+      "tmdbId": 164,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "296",
       "title": "Annie Hall",
       "tmdbId": 703,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "297",
       "title": "When Harry Met Sally...",
       "tmdbId": 639,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "298",
       "title": "Groundhog Day",
       "tmdbId": 137,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "299",
       "title": "Notting Hill",
-      "tmdbId": 785,
-      "status": "title_mismatch",
-      "tmdbTitle": "Kuhle Wampe or Who Owns the World?",
-      "tmdbOriginalTitle": "Kuhle Wampe oder: Wem gehört die Welt?",
-      "similarityScore": 0,
-      "matchedAgainst": "kuhle wampe or who owns the world"
-    },
-    {
-      "id": "300",
-      "title": "Rashomon",
-      "tmdbId": 5966,
-      "status": "title_mismatch",
-      "tmdbTitle": "Along Came Polly",
-      "tmdbOriginalTitle": "Along Came Polly",
-      "similarityScore": 0.091,
-      "matchedAgainst": "along came polly"
-    },
-    {
-      "id": "301",
-      "title": "West Side Story",
-      "tmdbId": 5548,
-      "status": "title_mismatch",
-      "tmdbTitle": "RoboCop",
-      "tmdbOriginalTitle": "RoboCop",
-      "similarityScore": 0,
-      "matchedAgainst": "robocop"
-    },
-    {
-      "id": "302",
-      "title": "My Fair Lady",
-      "tmdbId": 2764,
-      "status": "title_mismatch",
-      "tmdbTitle": "All Stars",
-      "tmdbOriginalTitle": "All Stars",
-      "similarityScore": 0,
-      "matchedAgainst": "all stars"
-    },
-    {
-      "id": "303",
-      "title": "The Sound of Music",
-      "tmdbId": 15121,
+      "tmdbId": 509,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "300",
+      "title": "Rashomon",
+      "tmdbId": 548,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "301",
+      "title": "West Side Story",
+      "tmdbId": 1725,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "302",
+      "title": "My Fair Lady",
+      "tmdbId": 11113,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "303",
+      "title": "The Sound of Music",
+      "tmdbId": 15121,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "304",
       "title": "Cabaret",
-      "tmdbId": 8206,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 10784,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "305",
       "title": "Grease",
-      "tmdbId": 15121,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Sound of Music",
-      "tmdbOriginalTitle": "The Sound of Music",
-      "similarityScore": 0,
-      "matchedAgainst": "sound of music"
+      "tmdbId": 621,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "306",
       "title": "Fame",
-      "tmdbId": 14337,
-      "status": "title_mismatch",
-      "tmdbTitle": "Primer",
-      "tmdbOriginalTitle": "Primer",
-      "similarityScore": 0.25,
-      "matchedAgainst": "primer"
+      "tmdbId": 3537,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "307",
       "title": "Dirty Dancing",
-      "tmdbId": 10537,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Doors",
-      "tmdbOriginalTitle": "The Doors",
-      "similarityScore": 0,
-      "matchedAgainst": "doors"
+      "tmdbId": 88,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "308",
       "title": "Moulin Rouge!",
-      "tmdbId": 173,
-      "status": "title_mismatch",
-      "tmdbTitle": "20,000 Leagues Under the Sea",
-      "tmdbOriginalTitle": "20,000 Leagues Under the Sea",
-      "similarityScore": 0,
-      "matchedAgainst": "20 000 leagues under the sea"
+      "tmdbId": 824,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "309",
       "title": "Chicago",
-      "tmdbId": 872,
-      "status": "title_mismatch",
-      "tmdbTitle": "Singin' in the Rain",
-      "tmdbOriginalTitle": "Singin' in the Rain",
-      "similarityScore": 0,
-      "matchedAgainst": "singin in the rain"
+      "tmdbId": 1574,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "310",
       "title": "The Greatest Showman",
       "tmdbId": 316029,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "311",
       "title": "Beauty and the Beast",
       "tmdbId": 10020,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "312",
       "title": "Aladdin",
       "tmdbId": 812,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "313",
       "title": "The Nightmare Before Christmas",
       "tmdbId": 9479,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "314",
       "title": "Toy Story 2",
       "tmdbId": 863,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "315",
       "title": "Monsters, Inc.",
       "tmdbId": 585,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
+      "id": "316",
+      "title": "Lilo & Stitch",
+      "tmdbId": 11544,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
-      "id": "316",
-      "title": "Lilo & Stitch",
-      "tmdbId": 12599,
-      "status": "title_mismatch",
-      "tmdbTitle": "Pokémon the Movie 2000",
-      "tmdbOriginalTitle": "劇場版ポケットモンスター 幻のポケモン ルギア爆誕",
-      "similarityScore": 0,
-      "matchedAgainst": "pokemon the movie 2000"
-    },
-    {
       "id": "317",
       "title": "Kung Fu Panda",
       "tmdbId": 9502,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "318",
       "title": "Despicable Me",
       "tmdbId": 20352,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "319",
       "title": "Paddington",
-      "tmdbId": 216015,
-      "status": "title_mismatch",
-      "tmdbTitle": "Fifty Shades of Grey",
-      "tmdbOriginalTitle": "Fifty Shades of Grey",
-      "similarityScore": 0.071,
-      "matchedAgainst": "fifty shades of grey"
+      "tmdbId": 116149,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "320",
       "title": "Klaus",
       "tmdbId": 508965,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "321",
       "title": "Patton",
-      "tmdbId": 8281,
-      "status": "title_mismatch",
-      "tmdbTitle": "I Always Wanted to Be a Gangster",
-      "tmdbOriginalTitle": "J'ai toujours rêvé d'être un gangster",
-      "similarityScore": 0.056,
-      "matchedAgainst": "i always wanted to be a gangster"
-    },
-    {
-      "id": "322",
-      "title": "The Deer Hunter",
-      "tmdbId": 11778,
+      "tmdbId": 11202,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "322",
+      "title": "The Deer Hunter",
+      "tmdbId": 11778,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "323",
       "title": "A Bridge Too Far",
-      "tmdbId": 11202,
-      "status": "title_mismatch",
-      "tmdbTitle": "Patton",
-      "tmdbOriginalTitle": "Patton",
-      "similarityScore": 0.111,
-      "matchedAgainst": "patton"
+      "tmdbId": 5902,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "324",
       "title": "Come and See",
-      "tmdbId": 12405,
-      "status": "title_mismatch",
-      "tmdbTitle": "Slumdog Millionaire",
-      "tmdbOriginalTitle": "Slumdog Millionaire",
-      "similarityScore": 0,
-      "matchedAgainst": "slumdog millionaire"
+      "tmdbId": 25237,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "325",
       "title": "Black Hawk Down",
-      "tmdbId": 751,
-      "status": "title_mismatch",
-      "tmdbTitle": "Murder at the Gallop",
-      "tmdbOriginalTitle": "Murder at the Gallop",
-      "similarityScore": 0,
-      "matchedAgainst": "murder at the gallop"
+      "tmdbId": 855,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "326",
       "title": "Letters from Iwo Jima",
-      "tmdbId": 1928,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 1251,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "327",
       "title": "Fury",
       "tmdbId": 228150,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "328",
       "title": "American Sniper",
       "tmdbId": 190859,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "329",
       "title": "Spartacus",
-      "tmdbId": 883,
-      "status": "title_mismatch",
-      "tmdbTitle": "Coffee and Cigarettes",
-      "tmdbOriginalTitle": "Coffee and Cigarettes",
-      "similarityScore": 0.071,
-      "matchedAgainst": "coffee and cigarettes"
-    },
-    {
-      "id": "330",
-      "title": "The Elephant Man",
-      "tmdbId": 943,
-      "status": "title_mismatch",
-      "tmdbTitle": "Lethal Weapon 3",
-      "tmdbOriginalTitle": "Lethal Weapon 3",
-      "similarityScore": 0.16,
-      "matchedAgainst": "lethal weapon 3"
-    },
-    {
-      "id": "331",
-      "title": "Out of Africa",
-      "tmdbId": 11114,
-      "status": "title_mismatch",
-      "tmdbTitle": "Pete's Dragon",
-      "tmdbOriginalTitle": "Pete's Dragon",
-      "similarityScore": 0,
-      "matchedAgainst": "pete s dragon"
-    },
-    {
-      "id": "332",
-      "title": "JFK",
-      "tmdbId": 800,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Young and the Damned",
-      "tmdbOriginalTitle": "Los olvidados",
-      "similarityScore": 0,
-      "matchedAgainst": "young and the damned"
-    },
-    {
-      "id": "333",
-      "title": "Apollo 13",
-      "tmdbId": 568,
+      "tmdbId": 967,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "330",
+      "title": "The Elephant Man",
+      "tmdbId": 1955,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "331",
+      "title": "Out of Africa",
+      "tmdbId": 606,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "332",
+      "title": "JFK",
+      "tmdbId": 820,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "333",
+      "title": "Apollo 13",
+      "tmdbId": 568,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "334",
       "title": "Amistad",
-      "tmdbId": 11113,
-      "status": "title_mismatch",
-      "tmdbTitle": "My Fair Lady",
-      "tmdbOriginalTitle": "My Fair Lady",
-      "similarityScore": 0.118,
-      "matchedAgainst": "my fair lady"
+      "tmdbId": 11831,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "335",
       "title": "Frost/Nixon",
-      "tmdbId": 12102,
-      "status": "title_mismatch",
-      "tmdbTitle": "Kramer vs. Kramer",
-      "tmdbOriginalTitle": "Kramer vs. Kramer",
-      "similarityScore": 0,
-      "matchedAgainst": "kramer vs kramer"
+      "tmdbId": 11499,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "336",
       "title": "Invictus",
-      "tmdbId": 22881,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Blind Side",
-      "tmdbOriginalTitle": "The Blind Side",
-      "similarityScore": 0.125,
-      "matchedAgainst": "blind side"
+      "tmdbId": 22954,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "337",
       "title": "42",
-      "tmdbId": 84329,
-      "status": "title_mismatch",
-      "tmdbTitle": "Robot & Frank",
-      "tmdbOriginalTitle": "Robot & Frank",
-      "similarityScore": 0,
-      "matchedAgainst": "robot & frank"
+      "tmdbId": 109410,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "338",
       "title": "Planet of the Apes",
-      "tmdbId": 837,
-      "status": "title_mismatch",
-      "tmdbTitle": "Videodrome",
-      "tmdbOriginalTitle": "Videodrome",
-      "similarityScore": 0,
-      "matchedAgainst": "videodrome"
+      "tmdbId": 871,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "339",
       "title": "Close Encounters of the Third Kind",
       "tmdbId": 840,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "340",
       "title": "Tron",
       "tmdbId": 97,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "341",
       "title": "The NeverEnding Story",
-      "tmdbId": 12142,
-      "status": "title_mismatch",
-      "tmdbTitle": "Alone in the Dark",
-      "tmdbOriginalTitle": "Alone in the Dark",
-      "similarityScore": 0.125,
-      "matchedAgainst": "alone in the dark"
+      "tmdbId": 34584,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "342",
       "title": "Big Trouble in Little China",
-      "tmdbId": 10340,
-      "status": "title_mismatch",
-      "tmdbTitle": "Lady and the Tramp",
-      "tmdbOriginalTitle": "Lady and the Tramp",
-      "similarityScore": 0.14,
-      "matchedAgainst": "lady and the tramp"
+      "tmdbId": 6978,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "343",
       "title": "Jacob's Ladder",
-      "tmdbId": 11448,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mighty Aphrodite",
-      "tmdbOriginalTitle": "Mighty Aphrodite",
-      "similarityScore": 0,
-      "matchedAgainst": "mighty aphrodite"
+      "tmdbId": 2291,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "344",
       "title": "Gattaca",
       "tmdbId": 782,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "345",
       "title": "Pacific Rim",
-      "tmdbId": 68721,
-      "status": "title_mismatch",
-      "tmdbTitle": "Iron Man 3",
-      "tmdbOriginalTitle": "Iron Man 3",
-      "similarityScore": 0,
-      "matchedAgainst": "iron man 3"
+      "tmdbId": 68726,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "346",
       "title": "Ex Machina",
       "tmdbId": 264660,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "347",
       "title": "Annihilation",
-      "tmdbId": 435577,
-      "status": "title_mismatch",
-      "tmdbTitle": "The 12th Man",
-      "tmdbOriginalTitle": "Den 12. mann",
-      "similarityScore": 0.19,
-      "matchedAgainst": "12th man"
+      "tmdbId": 300668,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "348",
       "title": "Tenet",
       "tmdbId": 577922,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "349",
       "title": "Doctor Zhivago",
-      "tmdbId": 76,
-      "status": "title_mismatch",
-      "tmdbTitle": "Before Sunrise",
-      "tmdbOriginalTitle": "Before Sunrise",
-      "similarityScore": 0.077,
-      "matchedAgainst": "before sunrise"
+      "tmdbId": 907,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "350",
       "title": "Love Story",
-      "tmdbId": 12758,
-      "status": "title_mismatch",
-      "tmdbTitle": "Beyond the Law",
-      "tmdbOriginalTitle": "Al di là della legge",
-      "similarityScore": 0.091,
-      "matchedAgainst": "beyond the law"
+      "tmdbId": 9062,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "351",
       "title": "An Officer and a Gentleman",
-      "tmdbId": 11072,
-      "status": "title_mismatch",
-      "tmdbTitle": "Blazing Saddles",
-      "tmdbOriginalTitle": "Blazing Saddles",
-      "similarityScore": 0.056,
-      "matchedAgainst": "blazing saddles"
+      "tmdbId": 2623,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "352",
       "title": "Ghost",
-      "tmdbId": 14884,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 251,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "353",
       "title": "The Bridges of Madison County",
-      "tmdbId": 11202,
-      "status": "title_mismatch",
-      "tmdbTitle": "Patton",
-      "tmdbOriginalTitle": "Patton",
-      "similarityScore": 0.069,
-      "matchedAgainst": "patton"
+      "tmdbId": 688,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "354",
       "title": "The Notebook",
       "tmdbId": 11036,
-      "status": "updated",
-      "changedPoster": false,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "355",
       "title": "Blue Valentine",
-      "tmdbId": 45772,
-      "status": "title_mismatch",
-      "tmdbTitle": "Gnomeo & Juliet",
-      "tmdbOriginalTitle": "Gnomeo & Juliet",
-      "similarityScore": 0,
-      "matchedAgainst": "gnomeo & juliet"
-    },
-    {
-      "id": "356",
-      "title": "Call Me by Your Name",
-      "tmdbId": 398818,
+      "tmdbId": 46705,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "356",
+      "title": "Call Me by Your Name",
+      "tmdbId": 398818,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "357",
       "title": "The Big Sick",
-      "tmdbId": 359724,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ford v Ferrari",
-      "tmdbOriginalTitle": "Ford v Ferrari",
-      "similarityScore": 0,
-      "matchedAgainst": "ford v ferrari"
+      "tmdbId": 416477,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "358",
       "title": "Airplane!",
       "tmdbId": 813,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "359",
       "title": "Ghostbusters",
       "tmdbId": 620,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "360",
       "title": "National Lampoon's Vacation",
-      "tmdbId": 8452,
-      "status": "title_mismatch",
-      "tmdbTitle": "The 6th Day",
-      "tmdbOriginalTitle": "The 6th Day",
-      "similarityScore": 0,
-      "matchedAgainst": "6th day"
+      "tmdbId": 11153,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "361",
       "title": "Dumb and Dumber",
       "tmdbId": 8467,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "362",
       "title": "There's Something About Mary",
-      "tmdbId": 9318,
-      "status": "title_mismatch",
-      "tmdbTitle": "Asterix in Britain",
-      "tmdbOriginalTitle": "Astérix chez les Bretons",
-      "similarityScore": 0.2,
-      "matchedAgainst": "asterix in britain"
+      "tmdbId": 544,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "363",
       "title": "Superbad",
       "tmdbId": 8363,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "364",
       "title": "Bridesmaids",
-      "tmdbId": 51497,
-      "status": "title_mismatch",
-      "tmdbTitle": "Fast Five",
-      "tmdbOriginalTitle": "Fast Five",
-      "similarityScore": 0,
-      "matchedAgainst": "fast five"
+      "tmdbId": 55721,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "365",
       "title": "Deadpool",
       "tmdbId": 293660,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "366",
       "title": "The Sting",
-      "tmdbId": 12106,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Quick and the Dead",
-      "tmdbOriginalTitle": "The Quick and the Dead",
-      "similarityScore": 0,
-      "matchedAgainst": "quick and the dead"
+      "tmdbId": 9277,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "367",
       "title": "Serpico",
-      "tmdbId": 11008,
-      "status": "title_mismatch",
-      "tmdbTitle": "Major Payne",
-      "tmdbOriginalTitle": "Major Payne",
-      "similarityScore": 0,
-      "matchedAgainst": "major payne"
+      "tmdbId": 9040,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "368",
       "title": "The French Connection",
-      "tmdbId": 292,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dave Chappelle's Block Party",
-      "tmdbOriginalTitle": "Dave Chappelle's Block Party",
-      "similarityScore": 0.093,
-      "matchedAgainst": "dave chappelle s block party"
+      "tmdbId": 1051,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "369",
       "title": "Dog Day Afternoon",
-      "tmdbId": 873,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Color Purple",
-      "tmdbOriginalTitle": "The Color Purple",
-      "similarityScore": 0,
-      "matchedAgainst": "color purple"
+      "tmdbId": 968,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "370",
       "title": "Body Heat",
-      "tmdbId": 11072,
-      "status": "title_mismatch",
-      "tmdbTitle": "Blazing Saddles",
-      "tmdbOriginalTitle": "Blazing Saddles",
-      "similarityScore": 0,
-      "matchedAgainst": "blazing saddles"
+      "tmdbId": 14412,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "371",
       "title": "The Untouchables",
-      "tmdbId": 10331,
-      "status": "title_mismatch",
-      "tmdbTitle": "Night of the Living Dead",
-      "tmdbOriginalTitle": "Night of the Living Dead",
-      "similarityScore": 0,
-      "matchedAgainst": "night of the living dead"
+      "tmdbId": 117,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "372",
       "title": "The Wild Bunch",
-      "tmdbId": 813,
-      "status": "title_mismatch",
-      "tmdbTitle": "Airplane!",
-      "tmdbOriginalTitle": "Airplane!",
-      "similarityScore": 0,
-      "matchedAgainst": "airplane"
+      "tmdbId": 576,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "373",
       "title": "Pale Rider",
-      "tmdbId": 9384,
-      "status": "title_mismatch",
-      "tmdbTitle": "Starsky & Hutch",
-      "tmdbOriginalTitle": "Starsky & Hutch",
-      "similarityScore": 0,
-      "matchedAgainst": "starsky & hutch"
+      "tmdbId": 8879,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "374",
       "title": "Open Range",
-      "tmdbId": 9339,
-      "status": "title_mismatch",
-      "tmdbTitle": "Click",
-      "tmdbOriginalTitle": "Click",
-      "similarityScore": 0,
-      "matchedAgainst": "click"
+      "tmdbId": 2055,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "375",
       "title": "News of the World",
-      "tmdbId": 526462,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 581032,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "376",
       "title": "The Iron Lady",
-      "tmdbId": 65759,
-      "status": "title_mismatch",
-      "tmdbTitle": "Happy Feet Two",
-      "tmdbOriginalTitle": "Happy Feet Two",
-      "similarityScore": 0,
-      "matchedAgainst": "happy feet two"
+      "tmdbId": 71688,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "377",
       "title": "Capote",
-      "tmdbId": 593,
-      "status": "title_mismatch",
-      "tmdbTitle": "Solaris",
-      "tmdbOriginalTitle": "Солярис",
-      "similarityScore": 0,
-      "matchedAgainst": "solaris"
+      "tmdbId": 398,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "378",
       "title": "Spotlight",
       "tmdbId": 314365,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "379",
       "title": "Argo",
-      "tmdbId": 68306,
-      "status": "title_mismatch",
-      "tmdbTitle": "Zombie Cop",
-      "tmdbOriginalTitle": "Zombie Cop",
-      "similarityScore": 0,
-      "matchedAgainst": "zombie cop"
+      "tmdbId": 68734,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "380",
       "title": "Munich",
-      "tmdbId": 615,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Passion of the Christ",
-      "tmdbOriginalTitle": "The Passion of the Christ",
-      "similarityScore": 0.08,
-      "matchedAgainst": "passion of the christ"
+      "tmdbId": 612,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "381",
       "title": "Vice",
-      "tmdbId": 401446,
-      "status": "title_mismatch",
-      "tmdbTitle": "Big Boob Orgy",
-      "tmdbOriginalTitle": "Big Boob Orgy",
-      "similarityScore": 0,
-      "matchedAgainst": "big boob orgy"
+      "tmdbId": 429197,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "382",
       "title": "We Were Soldiers",
-      "tmdbId": 9333,
-      "status": "title_mismatch",
-      "tmdbTitle": "Last Man Standing",
-      "tmdbOriginalTitle": "Last Man Standing",
-      "similarityScore": 0.129,
-      "matchedAgainst": "last man standing"
+      "tmdbId": 10590,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "383",
       "title": "Flags of Our Fathers",
-      "tmdbId": 1928,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 3683,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "384",
       "title": "The Hurt Locker",
-      "tmdbId": 21299,
-      "status": "title_mismatch",
-      "tmdbTitle": "Benji the Hunted",
-      "tmdbOriginalTitle": "Benji the Hunted",
-      "similarityScore": 0.08,
-      "matchedAgainst": "benji the hunted"
+      "tmdbId": 12162,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "385",
       "title": "Zero Dark Thirty",
-      "tmdbId": 76163,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Expendables 2",
-      "tmdbOriginalTitle": "The Expendables 2",
-      "similarityScore": 0.074,
-      "matchedAgainst": "expendables 2"
+      "tmdbId": 97630,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "386",
       "title": "Master and Commander: The Far Side of the World",
-      "tmdbId": 615,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Passion of the Christ",
-      "tmdbOriginalTitle": "The Passion of the Christ",
-      "similarityScore": 0.338,
-      "matchedAgainst": "passion of the christ"
+      "tmdbId": 8619,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "387",
       "title": "The Princess Bride",
       "tmdbId": 2493,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "388",
       "title": "Willow",
-      "tmdbId": 12094,
-      "status": "title_mismatch",
-      "tmdbTitle": "Jackass Number Two",
-      "tmdbOriginalTitle": "Jackass Number Two",
-      "similarityScore": 0,
-      "matchedAgainst": "jackass number two"
+      "tmdbId": 847,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "389",
       "title": "Big Fish",
-      "tmdbId": 578,
-      "status": "title_mismatch",
-      "tmdbTitle": "Jaws",
-      "tmdbOriginalTitle": "Jaws",
-      "similarityScore": 0,
-      "matchedAgainst": "jaws"
+      "tmdbId": 587,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "390",
       "title": "Stardust",
-      "tmdbId": 4922,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Curious Case of Benjamin Button",
-      "tmdbOriginalTitle": "The Curious Case of Benjamin Button",
-      "similarityScore": 0.054,
-      "matchedAgainst": "curious case of benjamin button"
+      "tmdbId": 2270,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "391",
       "title": "Life of Pi",
       "tmdbId": 87827,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "392",
       "title": "Hugo",
-      "tmdbId": 44115,
-      "status": "title_mismatch",
-      "tmdbTitle": "127 Hours",
-      "tmdbOriginalTitle": "127 Hours",
-      "similarityScore": 0,
-      "matchedAgainst": "127 hours"
+      "tmdbId": 44826,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "393",
       "title": "Paper Moon",
-      "tmdbId": 11365,
-      "status": "title_mismatch",
-      "tmdbTitle": "Wilde",
-      "tmdbOriginalTitle": "Wilde",
-      "similarityScore": 0,
-      "matchedAgainst": "wilde"
+      "tmdbId": 11293,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "394",
       "title": "Charade",
-      "tmdbId": 966,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Magnificent Seven",
-      "tmdbOriginalTitle": "The Magnificent Seven",
-      "similarityScore": 0,
-      "matchedAgainst": "magnificent seven"
+      "tmdbId": 4808,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "395",
       "title": "North by Northwest",
       "tmdbId": 213,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "396",
       "title": "The Man Who Shot Liberty Valance",
-      "tmdbId": 47901,
-      "status": "title_mismatch",
-      "tmdbTitle": "The One and Only",
-      "tmdbOriginalTitle": "The One and Only",
-      "similarityScore": 0.053,
-      "matchedAgainst": "one and only"
+      "tmdbId": 11697,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "397",
       "title": "The Assassination of Jesse James by the Coward Robert Ford",
-      "tmdbId": 8009,
-      "status": "title_mismatch",
-      "tmdbTitle": "Highlander",
-      "tmdbOriginalTitle": "Highlander",
-      "similarityScore": 0.032,
-      "matchedAgainst": "highlander"
+      "tmdbId": 4512,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "398",
       "title": "Hell or High Water",
-      "tmdbId": 340666,
-      "status": "title_mismatch",
-      "tmdbTitle": "Nocturnal Animals",
-      "tmdbOriginalTitle": "Nocturnal Animals",
-      "similarityScore": 0.061,
-      "matchedAgainst": "nocturnal animals"
+      "tmdbId": 338766,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "399",
       "title": "Won't Back Down",
-      "tmdbId": 84892,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Perks of Being a Wallflower",
-      "tmdbOriginalTitle": "The Perks of Being a Wallflower",
-      "similarityScore": 0.1,
-      "matchedAgainst": "perks of being a wallflower"
+      "tmdbId": 82631,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "400",
       "title": "Little Miss Sunshine",
       "tmdbId": 773,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "401",
       "title": "Tokyo Story",
-      "tmdbId": 15150,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 18148,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "402",
       "title": "Ikiru",
-      "tmdbId": 15391,
-      "status": "title_mismatch",
-      "tmdbTitle": "Obsession: Radical Islam's War Against the West",
-      "tmdbOriginalTitle": "Obsession: Radical Islam's War Against the West",
-      "similarityScore": 0,
-      "matchedAgainst": "obsession radical islam s war against the west"
+      "tmdbId": 3782,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "403",
       "title": "The Seventh Seal",
       "tmdbId": 490,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "404",
       "title": "Wild Strawberries",
-      "tmdbId": 954,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mission: Impossible",
-      "tmdbOriginalTitle": "Mission: Impossible",
-      "similarityScore": 0,
-      "matchedAgainst": "mission impossible"
-    },
-    {
-      "id": "405",
-      "title": "8½",
-      "tmdbId": 361,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
-    },
-    {
-      "id": "406",
-      "title": "La Dolce Vita",
-      "tmdbId": 435,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Day After Tomorrow",
-      "tmdbOriginalTitle": "The Day After Tomorrow",
-      "similarityScore": 0,
-      "matchedAgainst": "day after tomorrow"
-    },
-    {
-      "id": "407",
-      "title": "Persona",
-      "tmdbId": 1859,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ninotchka",
-      "tmdbOriginalTitle": "Ninotchka",
-      "similarityScore": 0,
-      "matchedAgainst": "ninotchka"
-    },
-    {
-      "id": "408",
-      "title": "Playtime",
-      "tmdbId": 40096,
-      "status": "title_mismatch",
-      "tmdbTitle": "A Dog's Will",
-      "tmdbOriginalTitle": "O Auto da Compadecida",
-      "similarityScore": 0,
-      "matchedAgainst": "dog s will"
-    },
-    {
-      "id": "409",
-      "title": "Solaris",
-      "tmdbId": 593,
+      "tmdbId": 614,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "405",
+      "title": "8½",
+      "tmdbId": 422,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "406",
+      "title": "La Dolce Vita",
+      "tmdbId": 439,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "407",
+      "title": "Persona",
+      "tmdbId": 797,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "408",
+      "title": "Playtime",
+      "tmdbId": 10227,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "409",
+      "title": "Solaris",
+      "tmdbId": 593,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "410",
       "title": "Stalker",
-      "tmdbId": 763,
-      "status": "title_mismatch",
-      "tmdbTitle": "Braindead",
-      "tmdbOriginalTitle": "Braindead",
-      "similarityScore": 0,
-      "matchedAgainst": "braindead"
+      "tmdbId": 1398,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "411",
       "title": "The Battle of Algiers",
-      "tmdbId": 843,
-      "status": "title_mismatch",
-      "tmdbTitle": "In the Mood for Love",
-      "tmdbOriginalTitle": "花樣年華",
-      "similarityScore": 0.057,
-      "matchedAgainst": "in the mood for love"
+      "tmdbId": 17295,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "412",
       "title": "Cries and Whispers",
-      "tmdbId": 15139,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Pagemaster",
-      "tmdbOriginalTitle": "The Pagemaster",
-      "similarityScore": 0.077,
-      "matchedAgainst": "pagemaster"
+      "tmdbId": 10238,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "413",
       "title": "Fanny and Alexander",
-      "tmdbId": 663,
-      "status": "title_mismatch",
-      "tmdbTitle": "Saw IV",
-      "tmdbOriginalTitle": "Saw IV",
-      "similarityScore": 0,
-      "matchedAgainst": "saw iv"
+      "tmdbId": 5961,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "414",
       "title": "The Discreet Charm of the Bourgeoisie",
-      "tmdbId": 850,
-      "status": "title_mismatch",
-      "tmdbTitle": "A Christmas Story",
-      "tmdbOriginalTitle": "A Christmas Story",
-      "similarityScore": 0.087,
-      "matchedAgainst": "christmas story"
+      "tmdbId": 4593,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "415",
       "title": "Belle de Jour",
-      "tmdbId": 402,
-      "status": "title_mismatch",
-      "tmdbTitle": "Basic Instinct",
-      "tmdbOriginalTitle": "Basic Instinct",
-      "similarityScore": 0,
-      "matchedAgainst": "basic instinct"
+      "tmdbId": 649,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "416",
       "title": "Jules and Jim",
-      "tmdbId": 328,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 1628,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "417",
       "title": "The 400 Blows",
-      "tmdbId": 566,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 147,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "418",
       "title": "Breathless",
-      "tmdbId": 12634,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Big Bounce",
-      "tmdbOriginalTitle": "The Big Bounce",
-      "similarityScore": 0,
-      "matchedAgainst": "big bounce"
+      "tmdbId": 269,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "419",
       "title": "Andrei Rublev",
-      "tmdbId": 8452,
-      "status": "title_mismatch",
-      "tmdbTitle": "The 6th Day",
-      "tmdbOriginalTitle": "The 6th Day",
-      "similarityScore": 0,
-      "matchedAgainst": "6th day"
+      "tmdbId": 895,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "420",
       "title": "Ordet",
-      "tmdbId": 15571,
-      "status": "title_mismatch",
-      "tmdbTitle": "Deep Winter",
-      "tmdbOriginalTitle": "Deep Winter",
-      "similarityScore": 0.143,
-      "matchedAgainst": "deep winter"
+      "tmdbId": 48035,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "421",
       "title": "Diabolique",
-      "tmdbId": 8006,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 827,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "422",
       "title": "The Umbrellas of Cherbourg",
-      "tmdbId": 10651,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Dead Pool",
-      "tmdbOriginalTitle": "The Dead Pool",
-      "similarityScore": 0,
-      "matchedAgainst": "dead pool"
+      "tmdbId": 5967,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "423",
       "title": "Contempt",
-      "tmdbId": 1441,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Contract",
-      "tmdbOriginalTitle": "The Contract",
-      "similarityScore": 0.429,
-      "matchedAgainst": "contract"
+      "tmdbId": 266,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "424",
       "title": "Yojimbo",
-      "tmdbId": 11406,
-      "status": "title_mismatch",
-      "tmdbTitle": "Out of Bounds",
-      "tmdbOriginalTitle": "Goldene Zeiten",
-      "similarityScore": 0.111,
-      "matchedAgainst": "out of bounds"
+      "tmdbId": 11878,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "425",
       "title": "Sanjuro",
-      "tmdbId": 11405,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Red Cockatoo",
-      "tmdbOriginalTitle": "Der Rote Kakadu",
-      "similarityScore": 0.1,
-      "matchedAgainst": "red cockatoo"
+      "tmdbId": 11712,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "426",
       "title": "Harakiri",
-      "tmdbId": 15140,
-      "status": "title_mismatch",
-      "tmdbTitle": "Fool Moon",
-      "tmdbOriginalTitle": "Fool Moon",
-      "similarityScore": 0,
-      "matchedAgainst": "fool moon"
+      "tmdbId": 14537,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "427",
       "title": "The Human Condition: No Greater Love",
-      "tmdbId": 45298,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dr. Quinn, Medicine Woman: The Heart Within",
-      "tmdbOriginalTitle": "Dr. Quinn, Medicine Woman: The Heart Within",
-      "similarityScore": 0.232,
-      "matchedAgainst": "dr quinn medicine woman the heart within"
+      "tmdbId": 31217,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 0.968
     },
     {
       "id": "428",
       "title": "Woman in the Dunes",
-      "tmdbId": 39914,
-      "status": "title_mismatch",
-      "tmdbTitle": "Chaos",
-      "tmdbOriginalTitle": "Chaos",
-      "similarityScore": 0,
-      "matchedAgainst": "chaos"
+      "tmdbId": 16672,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "429",
       "title": "Black Orpheus",
-      "tmdbId": 15385,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 40423,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "430",
       "title": "The Wages of Fear",
-      "tmdbId": 435,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Day After Tomorrow",
-      "tmdbOriginalTitle": "The Day After Tomorrow",
-      "similarityScore": 0,
-      "matchedAgainst": "day after tomorrow"
+      "tmdbId": 204,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "431",
       "title": "All Quiet on the Western Front",
-      "tmdbId": 799876,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Outfit",
-      "tmdbOriginalTitle": "The Outfit",
-      "similarityScore": 0,
-      "matchedAgainst": "outfit"
+      "tmdbId": 49046,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "432",
@@ -4045,652 +3430,596 @@
     {
       "id": "433",
       "title": "Gallipoli",
-      "tmdbId": 11071,
-      "status": "title_mismatch",
-      "tmdbTitle": "Them!",
-      "tmdbOriginalTitle": "Them!",
-      "similarityScore": 0,
-      "matchedAgainst": "them"
+      "tmdbId": 11646,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "434",
       "title": "Cross of Iron",
-      "tmdbId": 11976,
-      "status": "title_mismatch",
-      "tmdbTitle": "Legend",
-      "tmdbOriginalTitle": "Legend",
-      "similarityScore": 0,
-      "matchedAgainst": "legend"
+      "tmdbId": 10839,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "435",
       "title": "Empire of the Sun",
-      "tmdbId": 11072,
-      "status": "title_mismatch",
-      "tmdbTitle": "Blazing Saddles",
-      "tmdbOriginalTitle": "Blazing Saddles",
-      "similarityScore": 0.067,
-      "matchedAgainst": "blazing saddles"
+      "tmdbId": 10110,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "436",
       "title": "The Thin Red Line",
-      "tmdbId": 1913,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Sea Inside",
-      "tmdbOriginalTitle": "Mar adentro",
-      "similarityScore": 0.095,
-      "matchedAgainst": "sea inside"
+      "tmdbId": 8741,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "437",
       "title": "Enemy at the Gates",
-      "tmdbId": 1573,
-      "status": "title_mismatch",
-      "tmdbTitle": "Die Hard 2",
-      "tmdbOriginalTitle": "Die Hard 2",
-      "similarityScore": 0.077,
-      "matchedAgainst": "die hard 2"
+      "tmdbId": 853,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "438",
       "title": "Downfall",
       "tmdbId": 613,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "439",
       "title": "The Monuments Men",
-      "tmdbId": 138103,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Expendables 3",
-      "tmdbOriginalTitle": "The Expendables 3",
-      "similarityScore": 0.167,
-      "matchedAgainst": "expendables 3"
-    },
-    {
-      "id": "440",
-      "title": "Hotel Rwanda",
-      "tmdbId": 758,
-      "status": "title_mismatch",
-      "tmdbTitle": "Murder Ahoy",
-      "tmdbOriginalTitle": "Murder Ahoy",
-      "similarityScore": 0.095,
-      "matchedAgainst": "murder ahoy"
-    },
-    {
-      "id": "441",
-      "title": "Seabiscuit",
-      "tmdbId": 872,
-      "status": "title_mismatch",
-      "tmdbTitle": "Singin' in the Rain",
-      "tmdbOriginalTitle": "Singin' in the Rain",
-      "similarityScore": 0,
-      "matchedAgainst": "singin in the rain"
-    },
-    {
-      "id": "442",
-      "title": "The Fighter",
-      "tmdbId": 45317,
+      "tmdbId": 152760,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "440",
+      "title": "Hotel Rwanda",
+      "tmdbId": 205,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "441",
+      "title": "Seabiscuit",
+      "tmdbId": 4464,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "442",
+      "title": "The Fighter",
+      "tmdbId": 45317,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "443",
       "title": "Warrior",
-      "tmdbId": 47964,
-      "status": "title_mismatch",
-      "tmdbTitle": "A Good Day to Die Hard",
-      "tmdbOriginalTitle": "A Good Day to Die Hard",
-      "similarityScore": 0.08,
-      "matchedAgainst": "good day to die hard"
+      "tmdbId": 59440,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "444",
       "title": "Foxcatcher",
-      "tmdbId": 209519,
-      "status": "title_mismatch",
-      "tmdbTitle": "Today's Hero",
-      "tmdbOriginalTitle": "志在出位",
-      "similarityScore": 0.2,
-      "matchedAgainst": "today s hero"
+      "tmdbId": 87492,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "445",
       "title": "Race",
-      "tmdbId": 314386,
-      "status": "title_mismatch",
-      "tmdbTitle": "Santarellina",
-      "tmdbOriginalTitle": "Santarellina",
-      "similarityScore": 0,
-      "matchedAgainst": "santarellina"
+      "tmdbId": 323677,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "446",
       "title": "Coach Carter",
-      "tmdbId": 9542,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Hitcher",
-      "tmdbOriginalTitle": "The Hitcher",
-      "similarityScore": 0.235,
-      "matchedAgainst": "hitcher"
+      "tmdbId": 7214,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "447",
       "title": "Bend It Like Beckham",
-      "tmdbId": 10471,
-      "status": "title_mismatch",
-      "tmdbTitle": "Next Friday",
-      "tmdbOriginalTitle": "Next Friday",
-      "similarityScore": 0.069,
-      "matchedAgainst": "next friday"
+      "tmdbId": 455,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "448",
       "title": "Ray",
-      "tmdbId": 70,
-      "status": "title_mismatch",
-      "tmdbTitle": "Million Dollar Baby",
-      "tmdbOriginalTitle": "Million Dollar Baby",
-      "similarityScore": 0,
-      "matchedAgainst": "million dollar baby"
+      "tmdbId": 1677,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "449",
       "title": "Get on Up",
-      "tmdbId": 210860,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mortdecai",
-      "tmdbOriginalTitle": "Mortdecai",
-      "similarityScore": 0,
-      "matchedAgainst": "mortdecai"
+      "tmdbId": 239566,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "450",
       "title": "Love & Mercy",
-      "tmdbId": 300671,
-      "status": "title_mismatch",
-      "tmdbTitle": "13 Hours: The Secret Soldiers of Benghazi",
-      "tmdbOriginalTitle": "13 Hours: The Secret Soldiers of Benghazi",
-      "similarityScore": 0.08,
-      "matchedAgainst": "13 hours the secret soldiers of benghazi"
+      "tmdbId": 271714,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "451",
       "title": "8 Mile",
-      "tmdbId": 168,
-      "status": "title_mismatch",
-      "tmdbTitle": "Star Trek IV: The Voyage Home",
-      "tmdbOriginalTitle": "Star Trek IV: The Voyage Home",
-      "similarityScore": 0,
-      "matchedAgainst": "star trek iv the voyage home"
+      "tmdbId": 65,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "452",
       "title": "School of Rock",
-      "tmdbId": 425,
-      "status": "title_mismatch",
-      "tmdbTitle": "Ice Age",
-      "tmdbOriginalTitle": "Ice Age",
-      "similarityScore": 0,
-      "matchedAgainst": "ice age"
+      "tmdbId": 1584,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "453",
       "title": "The Blues Brothers",
-      "tmdbId": 493,
-      "status": "title_mismatch",
-      "tmdbTitle": "Shaft's Big Score!",
-      "tmdbOriginalTitle": "Shaft's Big Score!",
-      "similarityScore": 0.138,
-      "matchedAgainst": "shaft s big score"
+      "tmdbId": 525,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "454",
       "title": "Purple Rain",
-      "tmdbId": 11692,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Adventures of Pluto Nash",
-      "tmdbOriginalTitle": "The Adventures of Pluto Nash",
-      "similarityScore": 0.121,
-      "matchedAgainst": "adventures of pluto nash"
+      "tmdbId": 13763,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "455",
       "title": "Yesterday",
-      "tmdbId": 496450,
-      "status": "title_mismatch",
-      "tmdbTitle": "Miraculous: Ladybug & Cat Noir, The Movie",
-      "tmdbOriginalTitle": "Miraculous - le film",
-      "similarityScore": 0,
-      "matchedAgainst": "miraculous ladybug & cat noir the movie"
+      "tmdbId": 515195,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "456",
       "title": "Grizzly Man",
-      "tmdbId": 246,
-      "status": "title_mismatch",
-      "tmdbTitle": "Zatoichi",
-      "tmdbOriginalTitle": "座頭市",
-      "similarityScore": 0,
-      "matchedAgainst": "zatoichi"
+      "tmdbId": 501,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "457",
       "title": "The Thin Blue Line",
-      "tmdbId": 11695,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 14285,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "458",
       "title": "Hoop Dreams",
-      "tmdbId": 39408,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Creature Walks Among Us",
-      "tmdbOriginalTitle": "The Creature Walks Among Us",
-      "similarityScore": 0.188,
-      "matchedAgainst": "creature walks among us"
+      "tmdbId": 14275,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "459",
       "title": "Exit Through the Gift Shop",
-      "tmdbId": 24096,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 39452,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "460",
       "title": "The Act of Killing",
-      "tmdbId": 132363,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Butler",
-      "tmdbOriginalTitle": "The Butler",
-      "similarityScore": 0,
-      "matchedAgainst": "butler"
+      "tmdbId": 123678,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "461",
       "title": "Jiro Dreams of Sushi",
-      "tmdbId": 90429,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 80767,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "462",
       "title": "20 Feet from Stardom",
-      "tmdbId": 152532,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dallas Buyers Club",
-      "tmdbOriginalTitle": "Dallas Buyers Club",
-      "similarityScore": 0,
-      "matchedAgainst": "dallas buyers club"
+      "tmdbId": 159014,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "463",
       "title": "The Cabin in the Woods",
       "tmdbId": 22970,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "464",
       "title": "Sinister",
       "tmdbId": 82507,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "465",
       "title": "The Ring",
-      "tmdbId": 9880,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Princess Diaries",
-      "tmdbOriginalTitle": "The Princess Diaries",
-      "similarityScore": 0.222,
-      "matchedAgainst": "princess diaries"
+      "tmdbId": 565,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "466",
       "title": "Insidious",
       "tmdbId": 49018,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "467",
       "title": "Trick 'r Treat",
-      "tmdbId": 13567,
-      "status": "title_mismatch",
-      "tmdbTitle": "Sleepaway Camp",
-      "tmdbOriginalTitle": "Sleepaway Camp",
-      "similarityScore": 0,
-      "matchedAgainst": "sleepaway camp"
+      "tmdbId": 23202,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "468",
       "title": "The Descent",
-      "tmdbId": 9788,
-      "status": "title_mismatch",
-      "tmdbTitle": "Accepted",
-      "tmdbOriginalTitle": "Accepted",
-      "similarityScore": 0.154,
-      "matchedAgainst": "accepted"
+      "tmdbId": 9392,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "469",
       "title": "Let the Right One In",
-      "tmdbId": 13380,
-      "status": "title_mismatch",
-      "tmdbTitle": "One Magic Christmas",
-      "tmdbOriginalTitle": "One Magic Christmas",
-      "similarityScore": 0.216,
-      "matchedAgainst": "one magic christmas"
+      "tmdbId": 13310,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "470",
       "title": "Suspiria",
-      "tmdbId": 12837,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Secret Life of Bees",
-      "tmdbOriginalTitle": "The Secret Life of Bees",
-      "similarityScore": 0,
-      "matchedAgainst": "secret life of bees"
+      "tmdbId": 11906,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "471",
       "title": "The Wicker Man",
-      "tmdbId": 11631,
-      "status": "title_mismatch",
-      "tmdbTitle": "Mamma Mia!",
-      "tmdbOriginalTitle": "Mamma Mia!",
-      "similarityScore": 0.235,
-      "matchedAgainst": "mamma mia"
+      "tmdbId": 16307,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "472",
       "title": "Vertigo",
       "tmdbId": 426,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "473",
       "title": "Witness for the Prosecution",
-      "tmdbId": 942,
-      "status": "title_mismatch",
-      "tmdbTitle": "Lethal Weapon 2",
-      "tmdbOriginalTitle": "Lethal Weapon 2",
-      "similarityScore": 0.1,
-      "matchedAgainst": "lethal weapon 2"
+      "tmdbId": 37257,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "474",
       "title": "The Manchurian Candidate",
-      "tmdbId": 924,
-      "status": "title_mismatch",
-      "tmdbTitle": "Dawn of the Dead",
-      "tmdbOriginalTitle": "Dawn of the Dead",
-      "similarityScore": 0.118,
-      "matchedAgainst": "dawn of the dead"
+      "tmdbId": 982,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "475",
       "title": "In Cold Blood",
-      "tmdbId": 20560,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 18900,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "476",
       "title": "Wait Until Dark",
-      "tmdbId": 11694,
-      "status": "title_mismatch",
-      "tmdbTitle": "Cat Ballou",
-      "tmdbOriginalTitle": "Cat Ballou",
-      "similarityScore": 0.087,
-      "matchedAgainst": "cat ballou"
+      "tmdbId": 11206,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "477",
       "title": "The Conversation",
       "tmdbId": 592,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "478",
       "title": "Three Days of the Condor",
-      "tmdbId": 11072,
-      "status": "title_mismatch",
-      "tmdbTitle": "Blazing Saddles",
-      "tmdbOriginalTitle": "Blazing Saddles",
-      "similarityScore": 0,
-      "matchedAgainst": "blazing saddles"
+      "tmdbId": 11963,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "479",
       "title": "All the President's Men",
       "tmdbId": 891,
-      "status": "updated",
-      "changedPoster": true,
-      "changedBackdrop": true,
+      "status": "already_correct",
       "similarityScore": 1
     },
     {
       "id": "480",
       "title": "Marathon Man",
-      "tmdbId": 11073,
-      "status": "title_mismatch",
-      "tmdbTitle": "Pura Vida Ibiza",
-      "tmdbOriginalTitle": "Pura Vida Ibiza",
-      "similarityScore": 0.08,
-      "matchedAgainst": "pura vida ibiza"
-    },
-    {
-      "id": "481",
-      "title": "The Parallax View",
-      "tmdbId": 11855,
-      "status": "title_mismatch",
-      "tmdbTitle": "Pecker",
-      "tmdbOriginalTitle": "Pecker",
-      "similarityScore": 0,
-      "matchedAgainst": "pecker"
-    },
-    {
-      "id": "482",
-      "title": "Don't Look Now",
-      "tmdbId": 11071,
-      "status": "title_mismatch",
-      "tmdbTitle": "Them!",
-      "tmdbOriginalTitle": "Them!",
-      "similarityScore": 0,
-      "matchedAgainst": "them"
-    },
-    {
-      "id": "483",
-      "title": "Deliverance",
-      "tmdbId": 10614,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
-    },
-    {
-      "id": "484",
-      "title": "Straw Dogs",
-      "tmdbId": 11976,
-      "status": "title_mismatch",
-      "tmdbTitle": "Legend",
-      "tmdbOriginalTitle": "Legend",
-      "similarityScore": 0,
-      "matchedAgainst": "legend"
-    },
-    {
-      "id": "485",
-      "title": "Marnie",
-      "tmdbId": 1701,
-      "status": "title_mismatch",
-      "tmdbTitle": "Con Air",
-      "tmdbOriginalTitle": "Con Air",
-      "similarityScore": 0,
-      "matchedAgainst": "con air"
-    },
-    {
-      "id": "486",
-      "title": "Frenzy",
-      "tmdbId": 359,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
-    },
-    {
-      "id": "487",
-      "title": "The Birds",
-      "tmdbId": 258,
-      "status": "title_mismatch",
-      "tmdbTitle": "Bed and Board",
-      "tmdbOriginalTitle": "Domicile conjugal",
-      "similarityScore": 0.125,
-      "matchedAgainst": "bed and board"
-    },
-    {
-      "id": "488",
-      "title": "Dial M for Murder",
-      "tmdbId": 289,
-      "status": "title_mismatch",
-      "tmdbTitle": "Casablanca",
-      "tmdbOriginalTitle": "Casablanca",
-      "similarityScore": 0,
-      "matchedAgainst": "casablanca"
-    },
-    {
-      "id": "489",
-      "title": "To Catch a Thief",
-      "tmdbId": 617,
-      "status": "title_mismatch",
-      "tmdbTitle": "Wild Things",
-      "tmdbOriginalTitle": "Wild Things",
-      "similarityScore": 0.24,
-      "matchedAgainst": "wild things"
-    },
-    {
-      "id": "490",
-      "title": "Witness",
-      "tmdbId": 11071,
-      "status": "title_mismatch",
-      "tmdbTitle": "Them!",
-      "tmdbOriginalTitle": "Them!",
-      "similarityScore": 0,
-      "matchedAgainst": "them"
-    },
-    {
-      "id": "491",
-      "title": "Basic Instinct",
-      "tmdbId": 1999,
-      "status": "title_mismatch",
-      "tmdbTitle": "In the Bedroom",
-      "tmdbOriginalTitle": "In the Bedroom",
-      "similarityScore": 0.077,
-      "matchedAgainst": "in the bedroom"
-    },
-    {
-      "id": "492",
-      "title": "Gone Baby Gone",
-      "tmdbId": 4327,
-      "status": "title_mismatch",
-      "tmdbTitle": "Charlie's Angels",
-      "tmdbOriginalTitle": "Charlie's Angels",
-      "similarityScore": 0.071,
-      "matchedAgainst": "charlie s angels"
-    },
-    {
-      "id": "493",
-      "title": "Mystic River",
-      "tmdbId": 1583,
-      "status": "title_mismatch",
-      "tmdbTitle": "Lammbock",
-      "tmdbOriginalTitle": "Lammbock",
-      "similarityScore": 0,
-      "matchedAgainst": "lammbock"
-    },
-    {
-      "id": "494",
-      "title": "A History of Violence",
-      "tmdbId": 1444,
-      "status": "title_mismatch",
-      "tmdbTitle": "Junebug",
-      "tmdbOriginalTitle": "Junebug",
-      "similarityScore": 0,
-      "matchedAgainst": "junebug"
-    },
-    {
-      "id": "495",
-      "title": "Shutter Island",
-      "tmdbId": 11324,
+      "tmdbId": 10518,
       "status": "updated",
       "changedPoster": true,
       "changedBackdrop": true,
       "similarityScore": 1
     },
     {
+      "id": "481",
+      "title": "The Parallax View",
+      "tmdbId": 17365,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "482",
+      "title": "Don't Look Now",
+      "tmdbId": 931,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "483",
+      "title": "Deliverance",
+      "tmdbId": 10669,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "484",
+      "title": "Straw Dogs",
+      "tmdbId": 994,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "485",
+      "title": "Marnie",
+      "tmdbId": 506,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "486",
+      "title": "Frenzy",
+      "tmdbId": 573,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "487",
+      "title": "The Birds",
+      "tmdbId": 571,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "488",
+      "title": "Dial M for Murder",
+      "tmdbId": 521,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "489",
+      "title": "To Catch a Thief",
+      "tmdbId": 381,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "490",
+      "title": "Witness",
+      "tmdbId": 9281,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "491",
+      "title": "Basic Instinct",
+      "tmdbId": 402,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "492",
+      "title": "Gone Baby Gone",
+      "tmdbId": 4771,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "493",
+      "title": "Mystic River",
+      "tmdbId": 322,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "494",
+      "title": "A History of Violence",
+      "tmdbId": 59,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
+    },
+    {
+      "id": "495",
+      "title": "Shutter Island",
+      "tmdbId": 11324,
+      "status": "already_correct",
+      "similarityScore": 1
+    },
+    {
       "id": "496",
       "title": "Klute",
-      "tmdbId": 11856,
-      "status": "title_mismatch",
-      "tmdbTitle": "Air America",
-      "tmdbOriginalTitle": "Air America",
-      "similarityScore": 0,
-      "matchedAgainst": "air america"
+      "tmdbId": 466,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "497",
       "title": "The Vanishing",
-      "tmdbId": 11562,
-      "status": "title_mismatch",
-      "tmdbTitle": "Crimes and Misdemeanors",
-      "tmdbOriginalTitle": "Crimes and Misdemeanors",
-      "similarityScore": 0.133,
-      "matchedAgainst": "crimes and misdemeanors"
+      "tmdbId": 8740,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "498",
       "title": "Memories of Murder",
-      "tmdbId": 12194,
-      "status": "invalid_tmdb_id",
-      "detail": "404 Not Found"
+      "tmdbId": 11423,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "499",
       "title": "The Chaser",
-      "tmdbId": 13363,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Man from Earth",
-      "tmdbOriginalTitle": "The Man from Earth",
-      "similarityScore": 0,
-      "matchedAgainst": "man from earth"
+      "tmdbId": 13855,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     },
     {
       "id": "500",
       "title": "Wind River",
-      "tmdbId": 375262,
-      "status": "title_mismatch",
-      "tmdbTitle": "The Favourite",
-      "tmdbOriginalTitle": "The Favourite",
-      "similarityScore": 0.118,
-      "matchedAgainst": "favourite"
+      "tmdbId": 395834,
+      "status": "updated",
+      "changedPoster": true,
+      "changedBackdrop": true,
+      "similarityScore": 1
     }
   ]
 }
