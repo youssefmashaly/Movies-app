@@ -83,7 +83,15 @@ function TabLoadingFallback() {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>("explore"); // explore, watchlist, oracle
+  // Phase 19 — shareable public profile URLs (?profile=<uid>). No router
+  // dependency added — plain History API, consistent with this app's
+  // existing tab-based navigation (activeTab already drives everything).
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    new URLSearchParams(window.location.search).get("profile") ? "profile" : "explore"
+  ); // explore, watchlist, oracle, profile, ...
+  const [viewedProfileUserId, setViewedProfileUserId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("profile")
+  );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [authOpen, setAuthOpen] = useState<boolean>(false);
@@ -316,6 +324,19 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewedEntries));
   }, [recentlyViewedEntries]);
+
+  // Phase 19 — keep ?profile=<uid> in the URL in sync with whichever
+  // profile is currently being viewed, so the link stays shareable and
+  // survives a refresh.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeTab === "profile" && viewedProfileUserId) {
+      url.searchParams.set("profile", viewedProfileUserId);
+    } else {
+      url.searchParams.delete("profile");
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [activeTab, viewedProfileUserId]);
 
   useEffect(() => {
     localStorage.setItem(ONBOARDING_DISMISSED_KEY, JSON.stringify(onboardingDismissed));
@@ -994,6 +1015,7 @@ export default function App() {
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setSelectedMovie(null); // Return to list
+          setViewedProfileUserId(null); // Phase 19 — Profile nav click always means "my profile"
         }}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -2311,7 +2333,11 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <UserProfile />
+              <UserProfile
+                viewedUserId={viewedProfileUserId ?? undefined}
+                onBack={viewedProfileUserId ? () => setViewedProfileUserId(null) : undefined}
+                onViewProfile={(userId) => setViewedProfileUserId(userId)}
+              />
             </motion.div>
           ) : activeTab === "community" ? (
             /* 6. COMMUNITY FEED */
