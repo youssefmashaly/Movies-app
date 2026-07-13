@@ -5,6 +5,12 @@ import { GoogleGenAI } from "@google/genai";
 import { PRESET_MOVIES } from "./src/movies-data.js";
 import { Movie } from "./src/types.js";
 
+// Phase 20 — Universal Movie Resolution. Built once at module load (the
+// catalog is static for the process lifetime) and reused by the new
+// /api/movies/batch endpoint below, so a batch request is O(requested ids)
+// instead of O(catalog size) per lookup.
+const PRESET_MOVIES_BY_ID = new Map<string, Movie>(PRESET_MOVIES.map((m) => [m.id, m]));
+
 // Lazy-loaded Gemini client to prevent crash on boot
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
@@ -100,6 +106,67 @@ export async function createApp() {
         return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
       });
       res.json(sorted);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+
+  // Batch-resolve movies by id — Phase 20 (Universal Movie Resolution).
+  // GET /api/movies/batch?ids=1,15,27,83
+  // - returns movies in the same order the ids were requested in
+  // - silently ignores ids that aren't in the catalog (never 404s/errors
+  //   for a partially-invalid list — callers just get back what resolved)
+  // - never returns duplicates, even if the same id was requested twice
+  // - reads only from the existing static catalog — no DB/schema involved
+  app.get("/api/movies/batch", (req, res) => {
+    try {
+      const idsParam = typeof req.query.ids === "string" ? req.query.ids : "";
+      const requestedIds = idsParam
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      const seen = new Set<string>();
+      const resolved: Movie[] = [];
+      for (const id of requestedIds) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const movie = PRESET_MOVIES_BY_ID.get(id);
+        if (movie) resolved.push(movie);
+      }
+
+      res.json(resolved);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+    // Batch-resolve movies by id — Phase 20 (Universal Movie Resolution).
+  // GET /api/movies/batch?ids=1,15,27,83
+  // - returns movies in the same order the ids were requested in
+  // - silently ignores ids that aren't in the catalog (never 404s/errors
+  //   for a partially-invalid list — callers just get back what resolved)
+  // - never returns duplicates, even if the same id was requested twice
+  // - reads only from the existing static catalog — no DB/schema involved
+  app.get("/api/movies/batch", (req, res) => {
+    try {
+      const idsParam = typeof req.query.ids === "string" ? req.query.ids : "";
+      const requestedIds = idsParam
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      const seen = new Set<string>();
+      const resolved: Movie[] = [];
+      for (const id of requestedIds) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const movie = PRESET_MOVIES_BY_ID.get(id);
+        if (movie) resolved.push(movie);
+      }
+
+      res.json(resolved);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

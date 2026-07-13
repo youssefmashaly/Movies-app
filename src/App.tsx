@@ -13,10 +13,10 @@ import { ALL_GENRES } from "./movies-data";
 import {
   migrateRecentlyViewedEntries,
   addRecentlyViewedEntry,
-  resolveRecentlyViewedMovies,
   RecentlyViewedEntry
 } from "./lib/recentlyViewed";
 import { dedupedFetch } from "./lib/requestDedup";
+import { primeMovieCache, resolveMovies } from "./lib/movieResolver";
 import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
 import { preloadImage } from "./lib/imagePreload";
 import { timeAsync, startTiming, endTiming } from "./lib/analytics";
@@ -155,24 +155,33 @@ export default function App() {
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readLocalJSON(RECENT_SEARCHES_KEY, []));
   const [prefsExpanded, setPrefsExpanded] = useState<boolean>(false);
 
-  // Phase 18D — live lookup map (current catalog data, current
-  // posterPath/backdropPath) used to resolve Continue Browsing's cached
-  // ids into up-to-date Movie objects at render time. Same source data
-  // combinedMoviePool already uses elsewhere, just built earlier here so
-  // it's available before genreAffinity/recentlyViewed need it.
-  const moviesById = useMemo(() => {
-    const map = new Map<string, Movie>();
-    [...trendingMovies, ...latestMovies].forEach((m) => map.set(m.id, m));
-    return map;
-  }, [trendingMovies, latestMovies]);
-
-  // Always-fresh Movie[] for Continue Browsing and everything that reads
-  // recentlyViewed (genre affinity, dashboard stats, the rail itself) —
-  // resolved from live data every time, never from a stored snapshot.
-  const recentlyViewed = useMemo(
-    () => resolveRecentlyViewedMovies(recentlyViewedEntries, moviesById),
-    [recentlyViewedEntries, moviesById]
-  );
+   // Phase 20 — Continue Browsing's cached { id, viewedAt } entries are
+  // resolved into up-to-date Movie objects via the universal movie
+  // resolver (src/lib/movieResolver.ts) instead of a map built only from
+  // whatever trending/latest happen to contain. The resolver's own cache
+  // is primed from trending/latest as soon as they load (see the fetch
+  // effect below), so in the common case this resolves instantly from
+  // memory; any id that isn't already cached is fetched in one batched
+  // request to GET /api/movies/batch. Always-fresh Movie[] for everything
+  // that reads recentlyViewed (genre affinity, dashboard stats, the rail
+  // itself) — same shape and same downstream usage as before.
+  const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>([]);
+  useEffect(() => {
+    const ids = recentlyViewedEntries.map((e) => e.id);
+    if (ids.length === 0) {
+      setRecentlyViewed([]);
+      return;
+    }
+    const controller = new AbortController();
+    resolveMovies(ids, { signal: controller.signal })
+      .then((resolved) => {
+        if (!controller.signal.aborted) setRecentlyViewed(resolved);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) console.error("Failed to resolve recently viewed movies:", err);
+      });
+    return () => controller.abort();
+  }, [recentlyViewedEntries]);
 
   // 1. Sync Authentication
   useEffect(() => {
@@ -200,6 +209,9 @@ export default function App() {
           const trendData = await trendRes.json();
           setTrendingMovies(trendData);
           setMovies(trendData); // Default
+          // Phase 20 — seed the universal movie resolver so ids covered by
+          // this payload never trigger a redundant /api/movies/batch call.
+          primeMovieCache(trendData);
           // First visible rail on load — preload its first few posters so
           // they're warm by the time the fade-in animation reveals them.
           trendData.slice(0, 4).forEach((m: Movie) => preloadImage(m.posterPath));
@@ -210,6 +222,8 @@ export default function App() {
         if (latestRes.ok) {
           const latestData = await latestRes.json();
           setLatestMovies(latestData);
+          // Phase 20 — same priming as trending, above.
+          primeMovieCache(latestData);
         }
       } catch (err) {
         console.error("Failed fetching movies from server:", err);
