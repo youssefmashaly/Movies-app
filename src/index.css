@@ -36,6 +36,32 @@ body {
   background: #dc2626;
 }
 
+/* Phase 21 — Theme Toggle foundation.
+   This app's component styling is hardcoded dark (bg-neutral-900, etc.)
+   with no `dark:`/`light:` Tailwind variants anywhere, so a full light
+   re-skin of every component is out of scope for this phase (see the
+   Phase 21 audit notes). This covers the document-level chrome so the
+   toggle in the account menu is real and visible, not a no-op, while
+   leaving room for a future pass to extend per-component theming on top
+   of the same [data-theme="light"] hook. */
+:root[data-theme="light"] body {
+  background-color: #f5f5f4;
+  color: #171717;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-color: #f5f5f4;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #b91c1c;
+}
+
 /* Hide webkit/firefox scrollbars for category selectors */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

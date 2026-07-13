@@ -1,9 +1,25 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { Film, Search, Bookmark, Sparkles, User, LogOut, LogIn, Menu, X, Loader2, UserCircle, LayoutDashboard, Clock, TrendingUp } from "lucide-react";
+import {
+  Film,
+  Search,
+  Bookmark,
+  Sparkles,
+  LogIn,
+  Menu,
+  X,
+  Loader2,
+  Clock,
+  TrendingUp,
+  Trash2,
+  SearchX
+} from "lucide-react";
 import type { Movie } from "../types";
+import { searchMovies, highlightMatch, MovieSearchResult } from "../lib/movieSearch";
+import { useDebouncedValue } from "../lib/useDebouncedValue";
+import UserMenu from "./UserMenu";
 
 // ── Search history (localStorage, guest-friendly, same pattern as App.tsx) ──
 const SEARCH_HISTORY_KEY = "movieapp:searchHistory";
@@ -31,19 +47,51 @@ function pushSearchHistory(query: string): string[] {
   return updated;
 }
 
-// Splits a title around the matched query so the match can be visually
-// highlighted without altering the surrounding text or losing casing.
-function highlightMatch(text: string, query: string): React.ReactNode {
-  if (!query.trim()) return text;
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
-  if (idx === -1) return text;
+function clearSearchHistory(): void {
+  try {
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
+  } catch {
+    // ignore storage failures (private browsing, quota, etc.)
+  }
+}
+
+// Renders a highlightMatch() span as JSX, falling back to the plain string
+// when there's no direct substring match (e.g. a typo-tolerant result).
+function renderHighlighted(text: string, query: string): React.ReactNode {
+  const span = highlightMatch(text, query);
+  if (!span) return text;
   return (
     <>
-      {text.slice(0, idx)}
-      <mark className="bg-red-500/25 text-red-300 rounded-sm px-0.5">{text.slice(idx, idx + query.length)}</mark>
-      {text.slice(idx + query.length)}
+      {span.before}
+      <mark className="bg-red-500/25 text-red-300 rounded-sm px-0.5">{span.match}</mark>
+      {span.after}
     </>
   );
+}
+
+// A short, human-readable subtitle for a search result explaining *why* it
+// matched when the reason isn't the title itself (director/cast/genre/fuzzy).
+function matchSubtitle(result: MovieSearchResult, query: string): string | null {
+  const { movie, matchedField } = result;
+  const q = query.trim().toLowerCase();
+  switch (matchedField) {
+    case "director":
+      return movie.director ? `Directed by ${movie.director}` : null;
+    case "cast": {
+      const match = movie.cast?.find((c) => c.name.toLowerCase().includes(q));
+      return match ? `Starring ${match.name}` : null;
+    }
+    case "genre": {
+      const match = movie.genres?.find((g) => g.toLowerCase().includes(q));
+      return match ?? null;
+    }
+    case "fuzzy":
+      return "Did you mean this?";
+    case "year":
+      return movie.releaseDate?.slice(0, 4) ?? null;
+    default:
+      return movie.releaseDate?.split("-")[0] ?? null;
+  }
 }
 
 interface NavbarProps {
@@ -54,6 +102,12 @@ interface NavbarProps {
   onOpenAuth: () => void;
   searchLoading?: boolean;
   suggestionPool?: Movie[];
+  /** Phase 21 — opens a movie's detail view directly (e.g. Enter / clicking
+   *  a search suggestion), instead of only filling the search box. */
+  onSelectMovie?: (movie: Movie) => void;
+  /** Phase 21 — "Settings" entry in the account dropdown. Falls back to
+   *  just switching to the Profile tab if the parent doesn't supply one. */
+  onOpenSettings?: () => void;
 }
 
 export default function Navbar({
@@ -63,7 +117,9 @@ export default function Navbar({
   setSearchQuery,
   onOpenAuth,
   searchLoading = false,
-  suggestionPool = []
+  suggestionPool = [],
+  onSelectMovie,
+  onOpenSettings
 }: NavbarProps) {
   const [user, setUser] = useState(auth.currentUser);
   const [scrolled, setScrolled] = useState(false);
@@ -75,18 +131,31 @@ export default function Navbar({
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readSearchHistory());
   const suggestBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Live title matches — recomputed only when query or pool changes, capped
-  // to keep the dropdown short and the match a cheap client-side filter.
-  const titleMatches = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
-    return suggestionPool
-      .filter((m) => m.title.toLowerCase().includes(q))
-      .slice(0, 6);
-  }, [searchQuery, suggestionPool]);
+  // Phase 21 — the input updates instantly, but the (potentially fuzzy)
+  // multi-field match computation runs off a short local debounce so fast
+  // typing doesn't recompute on every keystroke. This is independent of the
+  // parent's own (longer) debounce that drives the backend fallback fetch.
+  const debouncedQuery = useDebouncedValue(searchQuery, 220);
+  const isDebouncing = debouncedQuery !== searchQuery;
+
+  const matches = useMemo(
+    () => searchMovies(suggestionPool, debouncedQuery, 8),
+    [debouncedQuery, suggestionPool]
+  );
 
   const showingHistory = searchQuery.trim().length === 0;
-  const suggestionCount = showingHistory ? recentSearches.length : titleMatches.length;
+  const suggestionCount = showingHistory ? recentSearches.length : matches.length;
+
+  // A few of the pool's most common genres, used as quick "try this instead"
+  // chips in the no-results state.
+  const popularGenres = useMemo(() => {
+    const freq = new Map<string, number>();
+    suggestionPool.forEach((m) => m.genres?.forEach((g) => freq.set(g, (freq.get(g) ?? 0) + 1)));
+    return Array.from(freq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([g]) => g);
+  }, [suggestionPool]);
 
   const commitSearch = (query: string) => {
     const trimmed = query.trim();
@@ -97,9 +166,34 @@ export default function Navbar({
     setActiveIndex(-1);
   };
 
+  // Phase 21 — opens a movie's detail page directly (modern typeahead UX:
+  // picking a specific title goes straight to it, rather than just filling
+  // the search box and re-filtering the grid).
+  const openMovie = (movie: Movie) => {
+    setRecentSearches(pushSearchHistory(movie.title));
+    setSuggestOpen(false);
+    setActiveIndex(-1);
+    onSelectMovie?.(movie);
+  };
+
+  const handleClearHistory = () => {
+    clearSearchHistory();
+    setRecentSearches([]);
+  };
+
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!suggestOpen || suggestionCount === 0) {
-      if (e.key === "Enter") commitSearch(searchQuery);
+      if (e.key === "Enter") {
+        // "Enter opens first result" — if there's a query with a ranked
+        // match ready, jump straight to it; otherwise fall back to
+        // committing the raw text into the grid search.
+        if (!showingHistory && matches.length > 0) {
+          e.preventDefault();
+          openMovie(matches[0].movie);
+        } else {
+          commitSearch(searchQuery);
+        }
+      }
       return;
     }
     if (e.key === "ArrowDown") {
@@ -110,11 +204,13 @@ export default function Navbar({
       setActiveIndex((prev) => (prev <= 0 ? suggestionCount - 1 : prev - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (activeIndex >= 0) {
-        const picked = showingHistory ? recentSearches[activeIndex] : titleMatches[activeIndex]?.title;
-        if (picked) commitSearch(picked);
+      if (showingHistory) {
+        const picked = activeIndex >= 0 ? recentSearches[activeIndex] : searchQuery;
+        commitSearch(picked);
       } else {
-        commitSearch(searchQuery);
+        const picked = activeIndex >= 0 ? matches[activeIndex]?.movie : matches[0]?.movie;
+        if (picked) openMovie(picked);
+        else commitSearch(searchQuery);
       }
     } else if (e.key === "Escape") {
       setSuggestOpen(false);
@@ -152,14 +248,18 @@ export default function Navbar({
     }
   };
 
-  const showSuggestDropdown = suggestOpen && suggestionCount > 0;
+  // Dropdown stays open whenever there's a query to react to (even with
+  // zero results — that's the empty/no-results state) or there's history to
+  // show. Only fully hidden when there's nothing useful to display at all.
+  const showSuggestDropdown = suggestOpen && (searchQuery.trim().length > 0 || recentSearches.length > 0);
+  const showNoResults = !showingHistory && !isDebouncing && matches.length === 0;
 
+  // Phase 21 — Profile and My Dashboard now live in the UserMenu account
+  // dropdown (see below), not as standalone tab-bar buttons.
   const menuItems = [
     { id: "explore", label: "Explore", icon: Film },
     { id: "watchlist", label: "Watchlist", icon: Bookmark, authRequired: true },
-    { id: "oracle", label: "AI Matchmaker", icon: Sparkles },
-    { id: "profile", label: "Profile", icon: UserCircle, authRequired: true },
-    { id: "dashboard", label: "My Dashboard", icon: LayoutDashboard, authRequired: true }
+    { id: "oracle", label: "AI Matchmaker", icon: Sparkles }
   ];
 
   return (
@@ -171,7 +271,7 @@ export default function Navbar({
           : "bg-transparent py-5"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-6">
         {/* Logo and Brand */}
         <div
           id="navbar-logo"
@@ -198,8 +298,9 @@ export default function Navbar({
           </span>
         </div>
 
-        {/* Desktop Navigation Tabs */}
-        <div className="hidden md:flex items-center gap-1.5 bg-neutral-900/60 p-1 rounded-xl border border-neutral-800">
+        {/* Desktop Navigation Tabs — Phase 21: wider gaps/padding for a less
+            crowded feel, same colors/radius/visual language as before. */}
+        <div className="hidden md:flex items-center gap-2.5 bg-neutral-900/60 p-1.5 rounded-xl border border-neutral-800">
           {menuItems.map((item) => {
             const Icon = item.icon;
             // Hide Watchlist tab if not logged in, or let them click and prompt log in inside App?
@@ -216,7 +317,7 @@ export default function Navbar({
                     setActiveTab(item.id);
                   }
                 }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
+                className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isActive
                     ? "bg-red-650 text-white shadow-md font-extrabold"
                     : "text-neutral-400 hover:text-white"
@@ -231,7 +332,7 @@ export default function Navbar({
 
         {/* Search Bar - Hide when in Oracle or Watchlist if desired, but general header is epic */}
         <div className="flex-1 max-w-xs mx-4 hidden sm:block relative">
-          <label htmlFor="navbar-search" className="sr-only">Search movies and genres</label>
+          <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500 pointer-events-none">
             <Search className="h-4 w-4" />
           </span>
@@ -243,7 +344,7 @@ export default function Navbar({
             aria-controls="navbar-search-suggestions"
             aria-autocomplete="list"
             autoComplete="off"
-            placeholder="Search movies, genres..."
+            placeholder="Search for movies..."
             value={searchQuery}
             onFocus={() => {
               if (suggestBlurTimeout.current) clearTimeout(suggestBlurTimeout.current);
@@ -285,6 +386,7 @@ export default function Navbar({
               <motion.div
                 id="navbar-search-suggestions"
                 role="listbox"
+                aria-label={showingHistory ? "Recent searches" : "Search suggestions"}
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -293,8 +395,20 @@ export default function Navbar({
               >
                 {showingHistory ? (
                   <>
-                    <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                      <Clock className="h-3 w-3" /> Recent Searches
+                    <div className="flex items-center justify-between gap-1.5 px-3 pt-2.5 pb-1.5">
+                      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                        <Clock className="h-3 w-3" /> Recent Searches
+                      </span>
+                      {recentSearches.length > 0 && (
+                        <button
+                          type="button"
+                          onMouseDown={handleClearHistory}
+                          aria-label="Clear recent searches"
+                          className="flex items-center gap-1 text-[10px] font-semibold text-neutral-600 hover:text-red-400 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="h-3 w-3" /> Clear
+                        </button>
+                      )}
                     </div>
                     {recentSearches.map((q, i) => (
                       <button
@@ -313,35 +427,75 @@ export default function Navbar({
                       </button>
                     ))}
                   </>
+                ) : isDebouncing ? (
+                  <div className="flex items-center gap-2 px-3 py-4 text-xs text-neutral-500">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                    Searching…
+                  </div>
+                ) : showNoResults ? (
+                  <div className="px-3 py-4">
+                    <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2.5">
+                      <SearchX className="h-4 w-4 text-neutral-600 flex-shrink-0" aria-hidden="true" />
+                      No matches for &ldquo;{searchQuery.trim()}&rdquo;. Try a title, actor, director, year, or genre.
+                    </div>
+                    {popularGenres.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {popularGenres.map((g) => (
+                          <button
+                            key={g}
+                            type="button"
+                            onMouseDown={() => commitSearch(g)}
+                            className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2.5 py-1 text-[10px] font-semibold text-neutral-300 hover:border-red-500/40 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                       <TrendingUp className="h-3 w-3" /> Matching Titles
                     </div>
-                    {titleMatches.map((movie, i) => (
-                      <button
-                        key={movie.id}
-                        role="option"
-                        aria-selected={activeIndex === i}
-                        type="button"
-                        onMouseDown={() => commitSearch(movie.title)}
-                        onMouseEnter={() => setActiveIndex(i)}
-                        className={`flex w-full items-center gap-3 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                          activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
-                        }`}
-                      >
-                        <img
-                          src={movie.posterPath}
-                          alt=""
-                          className="h-8 w-6 rounded object-cover flex-shrink-0 bg-neutral-800"
-                          loading="lazy"
-                        />
-                        <span className="truncate">{highlightMatch(movie.title, searchQuery)}</span>
-                        <span className="ml-auto text-[10px] text-neutral-600 flex-shrink-0">
-                          {movie.releaseDate?.split("-")[0]}
-                        </span>
-                      </button>
-                    ))}
+                    {matches.map((result, i) => {
+                      const movie = result.movie;
+                      const subtitle = matchSubtitle(result, debouncedQuery);
+                      return (
+                        <button
+                          key={movie.id}
+                          role="option"
+                          aria-selected={activeIndex === i}
+                          type="button"
+                          onMouseDown={() => openMovie(movie)}
+                          onMouseEnter={() => setActiveIndex(i)}
+                          className={`flex w-full items-center gap-3 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                            activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
+                          }`}
+                        >
+                          <img
+                            src={movie.posterPath}
+                            alt=""
+                            className="h-8 w-6 rounded object-cover flex-shrink-0 bg-neutral-800"
+                            loading="lazy"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate">{renderHighlighted(movie.title, debouncedQuery)}</span>
+                            {subtitle && (
+                              <span className="block truncate text-[10px] text-neutral-500">{subtitle}</span>
+                            )}
+                          </span>
+                          {result.matchedField !== "director" &&
+                            result.matchedField !== "cast" &&
+                            result.matchedField !== "genre" &&
+                            result.matchedField !== "fuzzy" && (
+                              <span className="ml-auto text-[10px] text-neutral-600 flex-shrink-0">
+                                {movie.releaseDate?.split("-")[0]}
+                              </span>
+                            )}
+                        </button>
+                      );
+                    })}
                   </>
                 )}
               </motion.div>
@@ -360,7 +514,7 @@ export default function Navbar({
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-3"
               >
-                {/* User avatar and name info */}
+                {/* User name info */}
                 <div className="hidden lg:flex flex-col text-right">
                   <span className="font-semibold text-xs text-white leading-tight">
                     {user.displayName || "Movie Critic"}
@@ -369,19 +523,16 @@ export default function Navbar({
                     {user.email}
                   </span>
                 </div>
-                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-xs shadow">
-                  {user.displayName ? user.displayName.slice(0, 2).toUpperCase() : <User className="h-4 w-4" />}
-                </div>
 
-                <button
-                  id="navbar-logout-btn"
-                  onClick={handleLogout}
-                  title="Logout Safely"
-                  aria-label="Sign out"
-                  className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-2 text-neutral-400 hover:text-red-400 hover:border-red-500/20 focus-visible:ring-2 focus-visible:ring-red-500 transition-all cursor-pointer"
-                >
-                  <LogOut className="h-4.5 w-4.5" />
-                </button>
+                {/* Phase 21 — avatar now opens the account dropdown menu
+                    (View Profile / My Dashboard / Settings / Theme / Logout)
+                    instead of standalone tab-bar buttons + a bare Logout icon. */}
+                <UserMenu
+                  user={user}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenSettings={onOpenSettings ?? (() => setActiveTab("profile"))}
+                  onLogout={handleLogout}
+                />
               </motion.div>
             ) : (
               <motion.button
@@ -430,7 +581,7 @@ export default function Navbar({
               <input
                 id="mobile-search"
                 type="text"
-                placeholder="Search movies..."
+                placeholder="Search for movies..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);

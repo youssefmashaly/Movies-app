@@ -36,6 +36,15 @@ interface UserProfileProps {
   /** Called when the person clicks another user (e.g. in a followers list)
    *  so the parent can navigate the profile tab to that user. */
   onViewProfile?: (userId: string) => void;
+  /** Phase 21 — when true (and this is the signed-in user's own profile),
+   *  opens directly into edit mode once the profile has loaded. Used by
+   *  the account dropdown's "Settings" item, since account editing already
+   *  lives on this screen. */
+  initialEditMode?: boolean;
+  /** Phase 21 — called once initialEditMode has been acted on, so the
+   *  parent can reset its one-shot flag and editing doesn't reopen on
+   *  every subsequent profile visit. */
+  onEditModeConsumed?: () => void;
 }
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
@@ -176,7 +185,13 @@ const ALL_ACHIEVEMENT_DEFS: Badge[] = [
 
 // ─── main component ──────────────────────────────────────────────────────────
 
-export default function UserProfile({ viewedUserId, onBack, onViewProfile }: UserProfileProps) {
+export default function UserProfile({
+  viewedUserId,
+  onBack,
+  onViewProfile,
+  initialEditMode,
+  onEditModeConsumed
+}: UserProfileProps) {
   const firebaseUser = auth.currentUser;
   const myUserId = firebaseUser?.uid ?? null;
 
@@ -316,6 +331,17 @@ export default function UserProfile({ viewedUserId, onBack, onViewProfile }: Use
   }, [targetUserId, isOwnProfile]);
 
   useEffect(() => { loadProfile(); loadActivity(); loadSocial(); }, [loadProfile, loadActivity, loadSocial]);
+
+  // Phase 21 — "Settings" in the account dropdown routes here with
+  // initialEditMode=true so it opens straight into the edit form rather
+  // than just the read view. Fires once profile data is actually loaded,
+  // and only for the signed-in user's own profile.
+  useEffect(() => {
+    if (initialEditMode && isOwnProfile && !profileLoading && profile && !editing) {
+      startEdit();
+      onEditModeConsumed?.();
+    }
+  }, [initialEditMode, isOwnProfile, profileLoading, profile, editing, onEditModeConsumed]);
 
   const startEdit = () => {
     setEditName(profile?.display_name ?? "");

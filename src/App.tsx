@@ -37,6 +37,8 @@ import AuthModal from "./components/AuthModal";
 import UserProfile from "./components/UserProfile";
 import TrailerModal from "./components/TrailerModal";
 import { MovieCardPreferencesProvider } from "./context/MovieCardContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { searchMovies } from "./lib/movieSearch";
 
 const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
 const CommunityFeed = lazy(() => import("./components/CommunityFeed"));
@@ -247,13 +249,26 @@ export default function App() {
     const delayDebounce = setTimeout(async () => {
       try {
         setSearchLoading(true);
-        const res = await timeAsync("search-suggestion-response", () =>
-          dedupedFetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`)
-        );
-        if (res.ok) {
-          const results = await res.json();
-          setMovies(results);
+        // Phase 21 — intelligent local search first: title/partial/year/
+        // director/cast/genre matching with typo tolerance, ranked, and
+        // running entirely client-side against the catalog (trendingMovies
+        // is the full 500-movie catalog — /api/movies/trending returns it
+        // unsliced). Falls back to the existing AI-augmented backend search
+        // only when local matching comes up empty, so a well-formed query
+        // never needs a network round trip at all.
+        const localResults = searchMovies(trendingMovies, searchQuery).map((r) => r.movie);
+        if (localResults.length > 0) {
+          setMovies(localResults);
           recordRecentSearch(searchQuery);
+        } else {
+          const res = await timeAsync("search-suggestion-response", () =>
+            dedupedFetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`)
+          );
+          if (res.ok) {
+            const results = await res.json();
+            setMovies(results);
+            recordRecentSearch(searchQuery);
+          }
         }
       } catch (err) {
         console.error("Search query server error:", err);
@@ -1014,7 +1029,14 @@ export default function App() {
   const [trailerMovie, setTrailerMovie] = useState<Movie | null>(null);
   const openTrailer = React.useCallback((movie: Movie) => setTrailerMovie(movie), []);
 
+  // Phase 21 — "Settings" in the account dropdown routes to the Profile tab
+  // (where account editing already lives) and opens it directly in edit
+  // mode. One-shot flag: UserProfile calls onEditModeConsumed once it has
+  // triggered edit mode so this doesn't reopen on every profile revisit.
+  const [openProfileInEditMode, setOpenProfileInEditMode] = useState(false);
+
   return (
+    <ThemeProvider>
     <MovieCardPreferencesProvider favoriteGenres={favoriteGenres} openTrailer={openTrailer}>
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased select-none pb-12">
       {/* Skip link: first focusable element for keyboard/screen-reader users */}
@@ -1036,6 +1058,13 @@ export default function App() {
         onOpenAuth={() => setAuthOpen(true)}
         searchLoading={searchLoading}
         suggestionPool={combinedMoviePool}
+        onSelectMovie={handleSelectMovie}
+        onOpenSettings={() => {
+          setActiveTab("profile");
+          setSelectedMovie(null);
+          setViewedProfileUserId(null);
+          setOpenProfileInEditMode(true);
+        }}
       />
 
       {/* Auth Modal Overlay Popup */}
@@ -2351,6 +2380,8 @@ export default function App() {
                 viewedUserId={viewedProfileUserId ?? undefined}
                 onBack={viewedProfileUserId ? () => setViewedProfileUserId(null) : undefined}
                 onViewProfile={(userId) => setViewedProfileUserId(userId)}
+                initialEditMode={openProfileInEditMode}
+                onEditModeConsumed={() => setOpenProfileInEditMode(false)}
               />
             </motion.div>
           ) : activeTab === "community" ? (
@@ -2392,5 +2423,6 @@ export default function App() {
       <TrailerModal movie={trailerMovie} onClose={() => setTrailerMovie(null)} />
     </div>
     </MovieCardPreferencesProvider>
+    </ThemeProvider>
   );
 }
