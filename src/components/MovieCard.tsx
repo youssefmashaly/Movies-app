@@ -134,6 +134,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
           onError={() => setPosterError(true)}
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 group-focus-visible:scale-110"
           loading="lazy"
+          decoding="async"
         />
       ) : (
         <div className="h-full w-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-neutral-900 to-neutral-950 text-neutral-700 p-4">

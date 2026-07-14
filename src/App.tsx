@@ -32,9 +32,6 @@ import {
 import Navbar from "./components/Navbar";
 import MovieCard from "./components/MovieCard";
 import MovieRail from "./components/MovieRail";
-import MovieDetail from "./components/MovieDetail";
-import AuthModal from "./components/AuthModal";
-import UserProfile from "./components/UserProfile";
 import TrailerModal from "./components/TrailerModal";
 import { MovieCardPreferencesProvider } from "./context/MovieCardContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -43,6 +40,21 @@ import { searchMovies } from "./lib/movieSearch";
 const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
 const CommunityFeed = lazy(() => import("./components/CommunityFeed"));
 const UserDashboard = lazy(() => import("./components/UserDashboard"));
+// Phase 22 — Bundle Splitting. These three are large (814/888/224 lines)
+// and, except for AuthModal, already only ever render conditionally, so
+// splitting them out of the main chunk is a pure bundle-size win with no
+// behavior change:
+//   - MovieDetail only mounts when a movie is selected (see the ternary
+//     around `selectedMovie` below) — never needed on first paint.
+//   - UserProfile only mounts on the Profile tab, same Suspense pattern
+//     already used for AIMatchmaker/CommunityFeed/UserDashboard above.
+//   - AuthModal is unconditionally in the tree today (isOpen just toggles
+//     its internal AnimatePresence) so lazy-loading it alone wouldn't defer
+//     the fetch — see the `hasOpenedAuth` gate further down for how its
+//     mount is actually deferred until first use.
+const MovieDetail = lazy(() => import("./components/MovieDetail"));
+const AuthModal = lazy(() => import("./components/AuthModal"));
+const UserProfile = lazy(() => import("./components/UserProfile"));
 
 // Icons
 import {
@@ -97,6 +109,18 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [authOpen, setAuthOpen] = useState<boolean>(false);
+  // Phase 22 — AuthModal is rendered unconditionally today (isOpen just
+  // toggles its internal AnimatePresence so close animates out), so its
+  // chunk would otherwise load immediately on first paint regardless of
+  // whether it's ever used. This flips true the first time authOpen does,
+  // and AuthModal only enters the tree from that point on — deferring both
+  // the code-split chunk fetch AND the mount until the person actually
+  // clicks "Sign in", while keeping every subsequent open/close animation
+  // identical to before once it's mounted.
+  const [hasOpenedAuth, setHasOpenedAuth] = useState(false);
+  useEffect(() => {
+    if (authOpen) setHasOpenedAuth(true);
+  }, [authOpen]);
 
   // User state
   const [user, setUser] = useState(auth.currentUser);
@@ -246,6 +270,7 @@ export default function App() {
       return;
     }
 
+    const controller = new AbortController();
     const delayDebounce = setTimeout(async () => {
       try {
         setSearchLoading(true);
@@ -258,26 +283,39 @@ export default function App() {
         // never needs a network round trip at all.
         const localResults = searchMovies(trendingMovies, searchQuery).map((r) => r.movie);
         if (localResults.length > 0) {
-          setMovies(localResults);
-          recordRecentSearch(searchQuery);
-        } else {
-          const res = await timeAsync("search-suggestion-response", () =>
-            dedupedFetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`)
-          );
-          if (res.ok) {
-            const results = await res.json();
-            setMovies(results);
+          if (!controller.signal.aborted) {
+            setMovies(localResults);
             recordRecentSearch(searchQuery);
+          }
+        } else {
+          // Phase 22 — pass the signal through so a caller that DID
+          // initiate this particular request can still cancel it; a
+          // shared in-flight dedupedFetch from another caller won't be
+          // cancelled by our abort, so we also re-check `aborted` before
+          // committing state below (belt-and-suspenders against a slow,
+          // superseded query overwriting fresher results).
+          const res = await timeAsync("search-suggestion-response", () =>
+            dedupedFetch(`/api/movies/search?q=${encodeURIComponent(searchQuery)}`, { signal: controller.signal })
+          );
+          if (res.ok && !controller.signal.aborted) {
+            const results = await res.json();
+            if (!controller.signal.aborted) {
+              setMovies(results);
+              recordRecentSearch(searchQuery);
+            }
           }
         }
       } catch (err) {
-        console.error("Search query server error:", err);
+        if (!controller.signal.aborted) console.error("Search query server error:", err);
       } finally {
-        setSearchLoading(false);
+        if (!controller.signal.aborted) setSearchLoading(false);
       }
     }, 400);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      clearTimeout(delayDebounce);
+      controller.abort();
+    };
   }, [searchQuery, sortBy, trendingMovies, latestMovies]);
 
   // 4. Update movies list when SortBy swaps
@@ -1067,8 +1105,12 @@ export default function App() {
         }}
       />
 
-      {/* Auth Modal Overlay Popup */}
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      {/* Auth Modal Overlay Popup — Phase 22: only mounted after first open (see hasOpenedAuth above) */}
+      {hasOpenedAuth && (
+        <Suspense fallback={null}>
+          <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+        </Suspense>
+      )}
 
       {/* Responsive layout wrapper */}
       <main id="main-content" className="relative pt-24 z-10">
@@ -1078,19 +1120,21 @@ export default function App() {
 
           {/* 1. SEPARATE MOVIE DETAILS PAGE */}
           {selectedMovie ? (
-            <MovieDetail
-              key={`detail-view-${selectedMovie.id}`}
-              movie={selectedMovie}
-              onBack={() => {
-                setSelectedMovie(null);
-                // Refetch specific list details if required
-              }}
-              onOpenAuth={() => setAuthOpen(true)}
-              relatedPool={combinedMoviePool}
-              onSelectMovie={handleSelectMovie}
-              watchlistIds={watchlistIds}
-              onToggleSave={handleQuickToggleWatchlist}
-            />
+            <Suspense fallback={<TabLoadingFallback />}>
+              <MovieDetail
+                key={`detail-view-${selectedMovie.id}`}
+                movie={selectedMovie}
+                onBack={() => {
+                  setSelectedMovie(null);
+                  // Refetch specific list details if required
+                }}
+                onOpenAuth={() => setAuthOpen(true)}
+                relatedPool={combinedMoviePool}
+                onSelectMovie={handleSelectMovie}
+                watchlistIds={watchlistIds}
+                onToggleSave={handleQuickToggleWatchlist}
+              />
+            </Suspense>
           ) : activeTab === "explore" ? (
             /* 2. EXPLORE VIEW (HOME PAGE) */
             <motion.div
@@ -1211,6 +1255,8 @@ export default function App() {
                         alt=""
                         role="presentation"
                         referrerPolicy="no-referrer"
+                        fetchPriority="high"
+                        decoding="async"
                         initial={{ opacity: 0, scale: 1.06 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.02 }}
@@ -2376,13 +2422,15 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
             >
-              <UserProfile
-                viewedUserId={viewedProfileUserId ?? undefined}
-                onBack={viewedProfileUserId ? () => setViewedProfileUserId(null) : undefined}
-                onViewProfile={(userId) => setViewedProfileUserId(userId)}
-                initialEditMode={openProfileInEditMode}
-                onEditModeConsumed={() => setOpenProfileInEditMode(false)}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <UserProfile
+                  viewedUserId={viewedProfileUserId ?? undefined}
+                  onBack={viewedProfileUserId ? () => setViewedProfileUserId(null) : undefined}
+                  onViewProfile={(userId) => setViewedProfileUserId(userId)}
+                  initialEditMode={openProfileInEditMode}
+                  onEditModeConsumed={() => setOpenProfileInEditMode(false)}
+                />
+              </Suspense>
             </motion.div>
           ) : activeTab === "community" ? (
             /* 6. COMMUNITY FEED */

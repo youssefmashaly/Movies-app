@@ -348,6 +348,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             src={movie.backdropPath}
             alt={movie.title}
             referrerPolicy="no-referrer"
+            fetchPriority="high"
+            decoding="async"
             onError={() => setBackdropError(true)}
             className="h-full w-full object-cover brightness-[0.4]"
           />
@@ -369,6 +371,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                 src={movie.posterPath}
                 alt={movie.title}
                 referrerPolicy="no-referrer"
+                decoding="async"
                 onError={() => setPosterError(true)}
                 className="w-full h-full object-cover"
               />
@@ -493,6 +496,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                         src={c.profilePath}
                         alt={c.name}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                         className="h-24 w-24 rounded-full object-cover mb-3 border border-neutral-800 shadow-md grayscale hover:grayscale-0 transition-all duration-300"
                       />
                       <h4 className="text-sm font-semibold text-white leading-snug truncate w-full">
@@ -751,6 +756,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                                 src={rev.avatarUrl}
                                 alt={rev.displayName || "Reviewer"}
                                 referrerPolicy="no-referrer"
+                                loading="lazy"
+                                decoding="async"
                                 className="h-8 w-8 rounded-full object-cover shrink-0 border border-neutral-700"
                               />
                             ) : (
