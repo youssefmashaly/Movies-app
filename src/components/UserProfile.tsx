@@ -16,8 +16,10 @@ import {
   checkIsFollowing, getPublicProfile, getReviewLikeCounts, computeBadges,
   type FollowWithProfile, type Badge,
 } from "../services/supabase/social";
-import { ALL_GENRES, PRESET_MOVIES } from "../movies-data";
+import { ALL_GENRES } from "../movies-data";
+import { loadMovieCatalog, getCachedCatalog } from "../lib/movieCatalog";
 import { computeFavoriteDecadeAndDirector, computeTasteMatchPct } from "../lib/profileInsights";
+import type { Movie } from "../types";
 import type {
   SupabaseRating,
   SupabaseReview,
@@ -56,10 +58,6 @@ function genreFreq(items: { genres?: string[] | null }[]): Record<string, number
       f[g] = (f[g] ?? 0) + 1;
   return f;
 }
-
-// Built once per module load — PRESET_MOVIES is static catalog data, not
-// per-user state, so this lookup is safe to share across every render/user.
-const MOVIES_BY_ID = new Map(PRESET_MOVIES.map((m) => [m.id, m]));
 
 // ─── small display components ────────────────────────────────────────────────
 
@@ -331,6 +329,31 @@ export default function UserProfile({
   }, [targetUserId, isOwnProfile]);
 
   useEffect(() => { loadProfile(); loadActivity(); loadSocial(); }, [loadProfile, loadActivity, loadSocial]);
+
+  // Phase 23 — the movie catalog used to be a static PRESET_MOVIES import
+  // (module-level MOVIES_BY_ID, above where this component used to live).
+  // It's now loaded on demand through the shared movieCatalog loader.
+  // getCachedCatalog() gives an instant non-empty value in the (very
+  // common) case App.tsx's own initial fetch already completed by the time
+  // this tab is opened; loadMovieCatalog() below is a no-op fetch-wise if
+  // so (singleton cache) and only does real work for a cold/deep-linked
+  // load straight into the Profile tab.
+  const [catalogMovies, setCatalogMovies] = useState<Movie[]>(() => getCachedCatalog());
+  useEffect(() => {
+    let cancelled = false;
+    loadMovieCatalog()
+      .then((movies) => {
+        if (!cancelled) setCatalogMovies(movies);
+      })
+      .catch((err) => {
+        console.error("Failed to load movie catalog for profile insights:", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const MOVIES_BY_ID = useMemo(() => new Map(catalogMovies.map((m) => [m.id, m])), [catalogMovies]);
 
   // Phase 21 — "Settings" in the account dropdown routes here with
   // initialEditMode=true so it opens straight into the edit form rather

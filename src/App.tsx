@@ -17,6 +17,7 @@ import {
 } from "./lib/recentlyViewed";
 import { dedupedFetch } from "./lib/requestDedup";
 import { primeMovieCache, resolveMovies } from "./lib/movieResolver";
+import { loadMovieCatalog } from "./lib/movieCatalog";
 import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
 import { preloadImage } from "./lib/imagePreload";
 import { timeAsync, startTiming, endTiming } from "./lib/analytics";
@@ -229,18 +230,22 @@ export default function App() {
     const fetchPresetMovies = async () => {
       try {
         setMoviesLoading(true);
-        // Fetch trending
-        const trendRes = await dedupedFetch("/api/movies/trending");
-        if (trendRes.ok) {
-          const trendData = await trendRes.json();
+        // Phase 23 — the catalog now loads through the shared movieCatalog
+        // loader (singleton fetch + cache, already primes the movieResolver
+        // internally) instead of a standalone dedupedFetch call here, so
+        // this effect and UserProfile's favorite-decade/director insight
+        // share exactly one network request and one parsed copy. Isolated
+        // in its own try/catch so a catalog failure still lets the
+        // "latest" fetch below proceed, matching the original behavior.
+        try {
+          const trendData = await loadMovieCatalog();
           setTrendingMovies(trendData);
           setMovies(trendData); // Default
-          // Phase 20 — seed the universal movie resolver so ids covered by
-          // this payload never trigger a redundant /api/movies/batch call.
-          primeMovieCache(trendData);
           // First visible rail on load — preload its first few posters so
           // they're warm by the time the fade-in animation reveals them.
           trendData.slice(0, 4).forEach((m: Movie) => preloadImage(m.posterPath));
+        } catch (err) {
+          console.error("Failed loading movie catalog:", err);
         }
 
         // Fetch latest
