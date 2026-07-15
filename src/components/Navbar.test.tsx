@@ -36,7 +36,11 @@ function NavbarHarness(props: Partial<React.ComponentProps<typeof Navbar>> = {})
 
 describe("Navbar search", () => {
   beforeEach(() => {
-    localStorage.clear();
+    // Some Vitest/jsdom environments expose a localStorage stand-in that
+    // doesn't implement clear() — this file only ever reads/writes the one
+    // search-history key, so removing it directly is both more precise and
+    // doesn't depend on clear() existing at all.
+    localStorage.removeItem("movieapp:searchHistory");
   });
 
   afterEach(() => {
