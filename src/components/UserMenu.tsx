@@ -227,7 +227,7 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
                         aria-hidden="true"
                       >
                         <span
-                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          className={`inline-block h-3 w-3 transform rounded-full bg-[#ffffff] transition-transform ${
                             item.checked ? "translate-x-3.5" : "translate-x-0.5"
                           }`}
                         />

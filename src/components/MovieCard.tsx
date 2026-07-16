@@ -241,7 +241,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
                   type="button"
                   onClick={handlePlayTrailer}
                   aria-label={`Play trailer for ${movie.title}`}
-                  className="flex items-center gap-1.5 rounded-lg bg-red-650/90 hover:bg-red-600 active:scale-95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-all"
+                  className="flex items-center gap-1.5 rounded-lg bg-red-650/90 hover:bg-red-600 active:scale-95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#ffffff] cursor-pointer transition-all"
                 >
                   <PlayCircle className="h-3.5 w-3.5" />
                   Trailer

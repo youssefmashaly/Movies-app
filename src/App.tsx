@@ -1023,7 +1023,15 @@ export default function App() {
   // else in the billboard's action buttons needs to change.
   const [heroIndex, setHeroIndex] = useState<number>(0);
   const [heroPlaying, setHeroPlaying] = useState<boolean>(true);
-  const heroSlides = useMemo(() => trendingMovies.slice(0, 5), [trendingMovies]);
+  // Previously `trendingMovies.slice(0, 5)` — always the identical top-5
+  // trending movies in the identical order, every single day. Reusing the
+  // same `dailySeed` already used for Daily Picks elsewhere in this file
+  // gives a wider, still-deterministic-per-day rotation: the same 5 movies
+  // (and order) all day for a given user, a different 5 tomorrow.
+  const heroSlides = useMemo(
+    () => seededShuffle(trendingMovies.slice(0, 20), dailySeed).slice(0, 5),
+    [trendingMovies, dailySeed]
+  );
 
   // Predictively preload the *next* hero slide's backdrop so the rotation
   // (auto or manual) never shows a blank frame while the image loads.
@@ -1215,7 +1223,7 @@ export default function App() {
                           {favoriteGenres.length > 0 && (
                             <button
                               onClick={() => setPrefsExpanded(false)}
-                              className="rounded-lg bg-red-650 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                              className="rounded-lg bg-red-650 px-4 py-2 text-xs font-bold text-[#ffffff] hover:bg-red-600 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                             >
                               Save
                             </button>
@@ -1370,7 +1378,7 @@ export default function App() {
                             onClick={() => handleSelectMovie(featuredMovie)}
                             whileHover={{ scale: 1.035 }}
                             whileTap={{ scale: 0.97 }}
-                            className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                            className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#ffffff] shadow-xl shadow-red-950/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                           >
                             {featuredMovie.trailerUrl ? <PlayCircle className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                             {featuredMovie.trailerUrl ? "Watch Trailer" : "View Details"}
@@ -1926,7 +1934,7 @@ export default function App() {
                       <SlidersHorizontal className="h-3.5 w-3.5" />
                       More Filters
                       {(panelGenres.length > 0 || selectedDecade !== "All" || selectedDirector !== "All" || selectedActor !== "All") && (
-                        <span className="rounded-full bg-red-600 text-white px-1.5 text-[10px] font-extrabold">
+                        <span className="rounded-full bg-red-600 text-[#ffffff] px-1.5 text-[10px] font-extrabold">
                           {[panelGenres.length > 0, selectedDecade !== "All", selectedDirector !== "All", selectedActor !== "All"].filter(Boolean).length}
                         </span>
                       )}
@@ -2119,7 +2127,7 @@ export default function App() {
                           </button>
                           <button
                             onClick={() => setFilterPanelOpen(false)}
-                            className="flex-1 rounded-xl bg-red-650 hover:bg-red-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all cursor-pointer"
+                            className="flex-1 rounded-xl bg-red-650 hover:bg-red-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#ffffff] transition-all cursor-pointer"
                           >
                             Show {filteredMovies.length} Results
                           </button>
@@ -2248,7 +2256,7 @@ export default function App() {
                       {searchQuery && (
                         <button
                           onClick={() => setSearchQuery("")}
-                          className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Clear search
                         </button>
@@ -2256,7 +2264,7 @@ export default function App() {
                       {activeFilterCount > 0 && (
                         <button
                           onClick={clearAllFilters}
-                          className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Reset all filters
                         </button>

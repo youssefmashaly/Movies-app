@@ -102,7 +102,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
 
             <div className="mb-6 text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 text-white shadow-lg shadow-red-900/20 mb-3">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 text-[#ffffff] shadow-lg shadow-red-900/20 mb-3">
                 <Sparkles className="h-6 w-6" />
               </div>
               <h2 id="auth-modal-title" className="text-2xl font-bold tracking-tight">
@@ -193,10 +193,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 id="auth-submit-btn"
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-white shadow-lg hover:from-red-500 hover:to-amber-505 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-400"
+                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-[#ffffff] shadow-lg hover:from-red-500 hover:to-amber-505 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-400"
               >
                 {loading ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#ffffff] border-t-transparent" />
                 ) : isSignUp ? (
                   "Create Free Account"
                 ) : (

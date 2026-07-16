@@ -290,7 +290,7 @@ export default function Navbar({
           }}
           className="flex items-center gap-2.5 cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
         >
-          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-tr from-red-650 to-red-600 bg-red-650 text-white shadow-md shadow-red-950/30">
+          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-tr from-red-650 to-red-600 bg-red-650 text-[#ffffff] shadow-md shadow-red-950/30">
             <Film className="h-5 w-5" />
           </div>
           <span className="font-extrabold text-lg text-white tracking-tight hidden sm:inline-block">
@@ -541,7 +541,7 @@ export default function Navbar({
                 animate={{ opacity: 1 }}
                 id="navbar-login-trigger"
                 onClick={onOpenAuth}
-                className="flex items-center gap-2 rounded-xl bg-red-650 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-red-600 shadow-red-950/10 focus-visible:ring-2 focus-visible:ring-red-400 transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-red-650 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#ffffff] shadow-md hover:bg-red-600 shadow-red-950/10 focus-visible:ring-2 focus-visible:ring-red-400 transition-all cursor-pointer"
               >
                 <LogIn className="h-4 w-4" />
                 Sign in

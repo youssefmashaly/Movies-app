@@ -576,7 +576,7 @@ export default function UserProfile({
                   {saveError && <p className="text-xs text-red-400">{saveError}</p>}
                   <div className="flex gap-2 pt-1">
                     <button onClick={saveEdit} disabled={saving}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer">
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-[#ffffff] text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer">
                       {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Check className="h-3.5 w-3.5" aria-hidden="true" />} Save
                     </button>
                     <button onClick={() => setEditing(false)}

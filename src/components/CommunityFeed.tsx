@@ -408,7 +408,7 @@ export default function CommunityFeed() {
                   onClick={() => setFeedTab(key)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     feedTab === key
-                      ? key === "trending" ? "bg-amber-500 text-white shadow" : "bg-red-600 text-white shadow"
+                      ? key === "trending" ? "bg-amber-500 text-[#ffffff] shadow" : "bg-red-600 text-[#ffffff] shadow"
                       : "text-neutral-400 hover:text-white"
                   }`}
                 >

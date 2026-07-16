@@ -62,6 +62,62 @@ body {
   background: #b91c1c;
 }
 
+/* Phase 28 — Full light-theme architecture.
+   Root cause of "only part of the app changes": every component uses
+   Tailwind's neutral-* and white utilities directly (bg-neutral-900,
+   text-neutral-400, text-white, etc.) with no dark:/light: variants
+   anywhere. Tailwind v4 compiles each of those utilities to reference a
+   single shared CSS custom property per shade — e.g.
+   `.bg-neutral-900 { background-color: var(--color-neutral-900) }` and
+   `.text-white { color: var(--color-white) }` — so instead of editing
+   thousands of class occurrences across every component, we override the
+   underlying variables once, here, scoped to [data-theme="light"]. Every
+   existing and future component that uses these utilities automatically
+   renders correctly in both themes with zero additional per-component
+   work. The neutral scale is inverted symmetrically using Tailwind's own
+   real palette values (900<->100, 800<->200, etc.) for a coherent,
+   properly-contrasted result rather than arbitrary colors.
+
+   Caveat: a small number of call sites use text-white/border-white/bg-white
+   specifically for text/spinners/knobs sitting on a colored (non-neutral)
+   background — e.g. white text on a red gradient CTA button. Those brand
+   surfaces don't change between themes, so their foreground must stay
+   literally white in both themes too. Those specific call sites were
+   switched to an explicit `text-[#ffffff]`/`border-[#ffffff]`/`bg-[#ffffff]`
+   arbitrary value (which Tailwind compiles to a literal color, bypassing
+   this variable) instead of `text-white`, so this override can't affect
+   them. See MovieCard.tsx, Navbar.tsx, AuthModal.tsx, MovieDetail.tsx,
+   UserProfile.tsx, CommunityFeed.tsx, UserMenu.tsx, ErrorBoundary.tsx,
+   AIMatchmaker.tsx, and App.tsx for those exemptions. */
+:root[data-theme="light"] {
+  --color-white: #0a0a0a;
+  --color-neutral-950: oklch(99% 0 0);
+  --color-neutral-900: oklch(97% 0 0);
+  --color-neutral-800: oklch(92.2% 0 0);
+  --color-neutral-700: oklch(87% 0 0);
+  --color-neutral-600: oklch(70.8% 0 0);
+  --color-neutral-500: oklch(55.6% 0 0);
+  --color-neutral-400: oklch(43.9% 0 0);
+  --color-neutral-300: oklch(37.1% 0 0);
+  --color-neutral-200: oklch(26.9% 0 0);
+  --color-neutral-100: oklch(20.5% 0 0);
+}
+
+:root[data-theme="light"] .skeleton-shimmer {
+  background: var(--color-neutral-200);
+}
+
+:root[data-theme="light"] .skeleton-shimmer::after {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(0, 0, 0, 0.04) 40%,
+    rgba(0, 0, 0, 0.07) 50%,
+    rgba(0, 0, 0, 0.04) 60%,
+    transparent 80%
+  );
+}
+
 /* Hide webkit/firefox scrollbars for category selectors */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

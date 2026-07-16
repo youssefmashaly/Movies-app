@@ -159,7 +159,7 @@ export default function AIMatchmaker({
                 id="matchmake-submit-btn"
                 type="submit"
                 disabled={loading || !mood.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-red-650 to-red-600 bg-red-650 hover:bg-red-600 py-3 font-semibold text-white shadow-lg shadow-red-950/20 hover:text-red-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
+                className="w-full rounded-xl bg-gradient-to-r from-red-650 to-red-600 bg-red-650 hover:bg-red-600 py-3 font-semibold text-[#ffffff] shadow-lg shadow-red-950/20 hover:text-red-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
               >
                 {loading ? (
                   <>
@@ -225,7 +225,7 @@ export default function AIMatchmaker({
                     {sample.label}
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <div className="text-neutral-550 mt-1 line-clamp-1">{sample.text}</div>
+                  <div className="text-neutral-500 mt-1 line-clamp-1">{sample.text}</div>
                 </button>
               ))}
             </div>

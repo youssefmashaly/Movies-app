@@ -64,7 +64,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={this.handleReturnHome}
-              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-xl shadow-red-950/30 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#ffffff] shadow-xl shadow-red-950/30 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
             >
               <Home className="h-4 w-4" aria-hidden="true" />
               Return to Homepage
