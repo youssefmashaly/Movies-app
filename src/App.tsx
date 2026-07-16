@@ -1210,7 +1210,7 @@ export default function App() {
                                 aria-pressed={isSelected}
                                 className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
                                   isSelected
-                                    ? "bg-red-650 border-red-650 text-white shadow-md"
+                                    ? "bg-red-650 border-red-650 text-[#ffffff] shadow-md"
                                     : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
                                 }`}
                               >
@@ -2006,7 +2006,7 @@ export default function App() {
                                       aria-pressed={isSelected}
                                       className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                         isSelected
-                                          ? "bg-red-650 border-red-650 text-white"
+                                          ? "bg-red-650 border-red-650 text-[#ffffff]"
                                           : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
                                       }`}
                                     >
@@ -2034,7 +2034,7 @@ export default function App() {
                                   aria-pressed={selectedDecade === "All"}
                                   className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                     selectedDecade === "All"
-                                      ? "bg-red-650 border-red-650 text-white"
+                                      ? "bg-red-650 border-red-650 text-[#ffffff]"
                                       : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
                                   }`}
                                 >
@@ -2047,7 +2047,7 @@ export default function App() {
                                     aria-pressed={selectedDecade === String(d)}
                                     className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                       selectedDecade === String(d)
-                                        ? "bg-red-650 border-red-650 text-white"
+                                        ? "bg-red-650 border-red-650 text-[#ffffff]"
                                         : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
                                     }`}
                                   >
@@ -2148,7 +2148,7 @@ export default function App() {
                         aria-pressed={isSelected}
                         className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
                           isSelected
-                            ? "bg-red-650 border-red-650 text-white shadow-lg shadow-red-950/20 font-extrabold"
+                            ? "bg-red-650 border-red-650 text-[#ffffff] shadow-lg shadow-red-950/20 font-extrabold"
                             : "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
                         }`}
                       >
@@ -2381,7 +2381,7 @@ export default function App() {
                   <button
                     id="watchlist-to-explore"
                     onClick={() => setActiveTab("explore")}
-                    className="rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Browse Explore
                   </button>
@@ -2395,7 +2395,7 @@ export default function App() {
                   </p>
                   <button
                     onClick={() => setWatchlistGenreFilter("All")}
-                    className="mt-5 rounded-lg bg-neutral-850 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="mt-5 rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Reset genre filter
                   </button>

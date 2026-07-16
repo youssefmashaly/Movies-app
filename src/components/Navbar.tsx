@@ -319,7 +319,7 @@ export default function Navbar({
                 }}
                 className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isActive
-                    ? "bg-red-650 text-white shadow-md font-extrabold"
+                    ? "bg-red-650 text-[#ffffff] shadow-md font-extrabold"
                     : "text-neutral-400 hover:text-white"
                 }`}
               >
@@ -419,7 +419,7 @@ export default function Navbar({
                         onMouseDown={() => commitSearch(q)}
                         onMouseEnter={() => setActiveIndex(i)}
                         className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                          activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
+                          activeIndex === i ? "bg-red-600/15 text-[#ffffff]" : "text-neutral-300 hover:bg-neutral-900"
                         }`}
                       >
                         <Clock className="h-3.5 w-3.5 text-neutral-600 flex-shrink-0" />
@@ -470,7 +470,7 @@ export default function Navbar({
                           onMouseDown={() => openMovie(movie)}
                           onMouseEnter={() => setActiveIndex(i)}
                           className={`flex w-full items-center gap-3 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                            activeIndex === i ? "bg-red-600/15 text-white" : "text-neutral-300 hover:bg-neutral-900"
+                            activeIndex === i ? "bg-red-600/15 text-[#ffffff]" : "text-neutral-300 hover:bg-neutral-900"
                           }`}
                         >
                           <img
@@ -622,7 +622,7 @@ export default function Navbar({
                     }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-colors cursor-pointer ${
                       isActive
-                        ? "bg-red-650 text-white"
+                        ? "bg-red-650 text-[#ffffff]"
                         : "text-neutral-400 hover:text-white hover:bg-neutral-900"
                     }`}
                   >

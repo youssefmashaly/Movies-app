@@ -566,7 +566,7 @@ export default function UserProfile({
                           aria-pressed={editGenres.includes(g)}
                           className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                             editGenres.includes(g)
-                              ? "bg-red-600 border-red-500 text-white"
+                              ? "bg-red-600 border-red-500 text-[#ffffff]"
                               : "bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-600"
                           }`}
                         >{g}</button>
@@ -632,7 +632,7 @@ export default function UserProfile({
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer ${
                           isFollowing
                             ? "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
-                            : "bg-red-600 hover:bg-red-500 text-white"
+                            : "bg-red-600 hover:bg-red-500 text-[#ffffff]"
                         }`}
                       >
                         {followBusy

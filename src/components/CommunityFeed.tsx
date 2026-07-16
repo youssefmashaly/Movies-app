@@ -480,7 +480,7 @@ export default function CommunityFeed() {
                   key={key}
                   onClick={() => setSidebarTab(key)}
                   className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                    sidebarTab === key ? "bg-red-600 text-white" : "text-neutral-500 hover:text-white"
+                    sidebarTab === key ? "bg-red-600 text-[#ffffff]" : "text-neutral-500 hover:text-white"
                   }`}
                 >
                   <Icon className="h-3 w-3" />{label}
