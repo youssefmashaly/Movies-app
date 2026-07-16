@@ -36,6 +36,7 @@ import MovieRail from "./components/MovieRail";
 import TrailerModal from "./components/TrailerModal";
 import { MovieCardPreferencesProvider } from "./context/MovieCardContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { useToast } from "./context/ToastContext";
 import { searchMovies } from "./lib/movieSearch";
 
 const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
@@ -440,6 +441,8 @@ export default function App() {
   // Fast lookup set for "is this movie saved" checks used by card quick-actions
   const watchlistIds = useMemo(() => new Set(watchlistMovies.map((m) => m.id)), [watchlistMovies]);
 
+  const { showToast } = useToast();
+
   // Quick-add/remove from any MovieCard (Trending/Popular/Latest/Recommended rails + grid)
   // without leaving the current view. Mirrors the toggle logic in MovieDetail.
   const handleQuickToggleWatchlist = React.useCallback(async (movie: Movie) => {
@@ -453,6 +456,7 @@ export default function App() {
       const ensured = await getOrCreateDefaultWatchlist(user.uid);
       if (ensured.error || !ensured.data) {
         console.error("Quick watchlist toggle failed:", ensured.error);
+        showToast("Couldn't update your watchlist — please try again.", "error");
         return;
       }
       watchlistId = ensured.data.id;
@@ -470,6 +474,7 @@ export default function App() {
       if (alreadySaved) {
         const result = await removeMovieFromWatchlist(watchlistId, movie.id);
         if (result.error) throw new Error(result.error);
+        showToast(`Removed "${movie.title}" from your watchlist.`, "success");
       } else {
         const result = await addMovieToWatchlist(watchlistId, {
           movie_id: movie.id,
@@ -480,12 +485,14 @@ export default function App() {
           genres: movie.genres || []
         });
         if (result.error) throw new Error(result.error);
+        showToast(`Added "${movie.title}" to your watchlist.`, "success");
       }
     } catch (err) {
       console.error("Quick watchlist toggle failed:", err);
       setWatchlistMovies((prev) => (alreadySaved ? [movie, ...prev] : prev.filter((m) => m.id !== movie.id)));
+      showToast("Couldn't update your watchlist — please try again.", "error");
     }
-  }, [user, defaultWatchlistId, watchlistIds]);
+  }, [user, defaultWatchlistId, watchlistIds, showToast]);
 
   // Toggle a favorite genre on/off. Works for guests (localStorage only, via
   // the persistence effect above) and signed-in users (also mirrored to Firestore).

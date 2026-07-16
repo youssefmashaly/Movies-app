@@ -66,6 +66,7 @@ function RatingRing({ score }: { score: number }) {
 
 function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave, favoriteGenres, onPlayTrailer }: MovieCardProps) {
   const [posterError, setPosterError] = useState(false);
+  const [posterLoaded, setPosterLoaded] = useState(false);
 
   if (isLoading || !movie) {
     return (
@@ -119,7 +120,10 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
           alt={movie.title}
           referrerPolicy="no-referrer"
           onError={() => setPosterError(true)}
-          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 group-focus-visible:scale-110"
+          onLoad={() => setPosterLoaded(true)}
+          className={`h-full w-full object-cover transition-[opacity,transform] duration-500 ease-out group-hover:scale-110 group-focus-visible:scale-110 motion-reduce:transition-opacity ${
+            posterLoaded ? "opacity-100" : "opacity-0"
+          }`}
           loading="lazy"
           decoding="async"
         />
@@ -174,7 +178,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
             }}
             aria-label={isSaved ? `Remove ${movie.title} from watchlist` : `Add ${movie.title} to watchlist`}
             aria-pressed={isSaved}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md shadow-md transition-all cursor-pointer opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0 ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md shadow-md transition-all cursor-pointer opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0 active:scale-90 ${
               isSaved
                 ? "bg-red-500/20 border-red-500/50 text-red-300"
                 : "bg-neutral-950/70 border-neutral-700/60 text-neutral-200 hover:text-white hover:border-neutral-500"
@@ -237,7 +241,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
                   type="button"
                   onClick={handlePlayTrailer}
                   aria-label={`Play trailer for ${movie.title}`}
-                  className="flex items-center gap-1.5 rounded-lg bg-red-650/90 hover:bg-red-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 rounded-lg bg-red-650/90 hover:bg-red-600 active:scale-95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-all"
                 >
                   <PlayCircle className="h-3.5 w-3.5" />
                   Trailer
@@ -248,7 +252,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onClick(); }}
                   aria-label={`More info about ${movie.title}`}
-                  className="flex items-center gap-1.5 rounded-lg bg-neutral-800/90 hover:bg-neutral-700 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 rounded-lg bg-neutral-800/90 hover:bg-neutral-700 active:scale-95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-all"
                 >
                   <Info className="h-3.5 w-3.5" />
                   More Info
