@@ -6,6 +6,7 @@ import {
   Trophy, Sparkles, Zap, Flame
 } from "lucide-react";
 import { auth } from "../firebase";
+import { useToast } from "../context/ToastContext";
 import {
   listCommunityReviews,
   listTrendingReviews,
@@ -194,6 +195,7 @@ type SidebarTab = "active" | "suggested" | "leaderboard";
 export default function CommunityFeed() {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
+  const { showToast } = useToast();
 
   // feed state
   const [feedTab, setFeedTab] = useState<FeedTab>("everyone");
@@ -288,8 +290,14 @@ export default function CommunityFeed() {
     const isLiked = likedIds.has(reviewId);
     setLikedIds(prev => { const n = new Set(prev); isLiked ? n.delete(reviewId) : n.add(reviewId); return n; });
     setLikeCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isLiked ? -1 : 1)) }));
-    if (isLiked) await unlikeReview(reviewId, userId);
-    else await likeReview(reviewId, userId);
+    const result = isLiked ? await unlikeReview(reviewId, userId) : await likeReview(reviewId, userId);
+    if (result.error) {
+      // Roll back the optimistic update — without this, a failed write left
+      // the like state permanently out of sync with the database.
+      setLikedIds(prev => { const n = new Set(prev); isLiked ? n.add(reviewId) : n.delete(reviewId); return n; });
+      setLikeCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isLiked ? 1 : -1)) }));
+      console.error("Failed to update like:", result.error);
+    }
     setLikeLoading(s => { const n = new Set(s); n.delete(reviewId); return n; });
   };
 
@@ -299,8 +307,13 @@ export default function CommunityFeed() {
     const isHelpful = helpfulIds.has(reviewId);
     setHelpfulIds(prev => { const n = new Set(prev); isHelpful ? n.delete(reviewId) : n.add(reviewId); return n; });
     setHelpfulCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isHelpful ? -1 : 1)) }));
-    if (isHelpful) await unvoteHelpful(reviewId, userId);
-    else await voteHelpful(reviewId, userId);
+    const result = isHelpful ? await unvoteHelpful(reviewId, userId) : await voteHelpful(reviewId, userId);
+    if (result.error) {
+      // Roll back — same reasoning as handleLike above.
+      setHelpfulIds(prev => { const n = new Set(prev); isHelpful ? n.add(reviewId) : n.delete(reviewId); return n; });
+      setHelpfulCounts(prev => ({ ...prev, [reviewId]: Math.max(0, (prev[reviewId] ?? 0) + (isHelpful ? 1 : -1)) }));
+      console.error("Failed to update helpful vote:", result.error);
+    }
     setHelpfulLoading(s => { const n = new Set(s); n.delete(reviewId); return n; });
   };
 
@@ -309,8 +322,15 @@ export default function CommunityFeed() {
     setFollowLoading(s => new Set(s).add(targetId));
     const isFollowing = followingIds.has(targetId);
     setFollowingIds(prev => { const n = new Set(prev); isFollowing ? n.delete(targetId) : n.add(targetId); return n; });
-    if (isFollowing) await unfollowUser(userId, targetId);
-    else await followUser(userId, targetId);
+    const result = isFollowing ? await unfollowUser(userId, targetId) : await followUser(userId, targetId);
+    if (result.error) {
+      // Roll back the optimistic follow-state change and let the user know,
+      // since silently leaving the button in the wrong state is worse than
+      // a brief error toast here.
+      setFollowingIds(prev => { const n = new Set(prev); isFollowing ? n.add(targetId) : n.delete(targetId); return n; });
+      console.error("Failed to update follow state:", result.error);
+      showToast("Couldn't update follow status — please try again.", "error");
+    }
     setFollowLoading(s => { const n = new Set(s); n.delete(targetId); return n; });
   };
 

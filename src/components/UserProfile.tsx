@@ -20,6 +20,7 @@ import { ALL_GENRES } from "../movies-data";
 import { loadMovieCatalog, getCachedCatalog } from "../lib/movieCatalog";
 import { computeFavoriteDecadeAndDirector, computeTasteMatchPct } from "../lib/profileInsights";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { useToast } from "../context/ToastContext";
 import type { Movie } from "../types";
 import type {
   SupabaseRating,
@@ -193,6 +194,7 @@ export default function UserProfile({
 }: UserProfileProps) {
   const firebaseUser = auth.currentUser;
   const myUserId = firebaseUser?.uid ?? null;
+  const { showToast } = useToast();
 
   // The profile actually being displayed. Falls back to "myself" when no
   // explicit target is given — preserves 100% of the original behavior.
@@ -397,6 +399,9 @@ export default function UserProfile({
     if (!res.error) {
       setIsFollowing(!isFollowing);
       setFollowCounts((prev) => ({ ...prev, followers: prev.followers + (isFollowing ? -1 : 1) }));
+    } else {
+      console.error("Failed to update follow state:", res.error);
+      showToast("Couldn't update follow status — please try again.", "error");
     }
     setFollowBusy(false);
   };

@@ -10,6 +10,7 @@ import {
 import MovieRail from "./MovieRail";
 import { listMovieReviews, getUserReview, createReview, updateReview, deleteReview } from "../services/supabase/reviews";
 import { getUserRating, setUserRating, deleteRating } from "../services/supabase/ratings";
+import { useToast } from "../context/ToastContext";
 
 // Pure helpers — cheap, no allocation beyond a single Date parse per call.
 function formatReleaseDate(dateStr?: string): string {
@@ -84,6 +85,7 @@ interface MovieDetailProps {
 }
 
 export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, onSelectMovie, watchlistIds, onToggleSave }: MovieDetailProps) {
+  const { showToast } = useToast();
   const [user, setUser] = useState(auth.currentUser);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
@@ -228,6 +230,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (err) {
       console.error("Error saving review:", err);
+      showToast("Couldn't save your review — please try again.", "error");
     } finally {
       setSubmitLoading(false);
     }
@@ -248,6 +251,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
       setNewComment("");
     } catch (err) {
       console.error("Error deleting review:", err);
+      showToast("Couldn't delete your review — please try again.", "error");
     } finally {
       setSubmitLoading(false);
     }
