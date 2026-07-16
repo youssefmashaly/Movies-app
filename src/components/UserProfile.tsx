@@ -19,6 +19,7 @@ import {
 import { ALL_GENRES } from "../movies-data";
 import { loadMovieCatalog, getCachedCatalog } from "../lib/movieCatalog";
 import { computeFavoriteDecadeAndDirector, computeTasteMatchPct } from "../lib/profileInsights";
+import { useFocusTrap } from "../lib/useFocusTrap";
 import type { Movie } from "../types";
 import type {
   SupabaseRating,
@@ -148,7 +149,7 @@ function AchievementBadge({ badge, unlocked }: { badge: Badge; unlocked: boolean
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-opacity ${
-        unlocked ? colorClass : "bg-neutral-900/40 border-neutral-800/60 text-neutral-600 opacity-50"
+        unlocked ? colorClass : "bg-neutral-900/40 border-neutral-800/60 text-neutral-400 opacity-50"
       }`}
       title={badge.description}
     >
@@ -221,6 +222,7 @@ export default function UserProfile({
   const [socialPanel, setSocialPanel] = useState<"followers" | "following" | null>(null);
   const [socialList, setSocialList] = useState<FollowWithProfile[]>([]);
   const [socialLoading, setSocialLoading] = useState(false);
+  const socialPanelDialogRef = useFocusTrap<HTMLDivElement>(Boolean(socialPanel));
 
   // public-mode-only social state
   const [isFollowing, setIsFollowing] = useState(false);
@@ -597,7 +599,7 @@ export default function UserProfile({
                   </div>
                   {email && <p className="text-sm text-neutral-500 mb-1">{email}</p>}
                   {formattedJoinDate && (
-                    <p className="text-xs text-neutral-600 mb-3">Joined {formattedJoinDate}</p>
+                    <p className="text-xs text-neutral-400 mb-3">Joined {formattedJoinDate}</p>
                   )}
                   <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mb-3">
                     {favGenres.map(g => (
@@ -680,8 +682,10 @@ export default function UserProfile({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4 outline-none"
               onClick={() => setSocialPanel(null)}
+              ref={socialPanelDialogRef}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
               aria-label={socialPanel === "followers" ? "Followers" : "Following"}
@@ -830,7 +834,7 @@ export default function UserProfile({
                 </div>
                 {avgRating
                   ? <div className="flex items-end gap-1"><span className="text-4xl font-bold text-white">{avgRating}</span><span className="text-neutral-500 text-sm mb-1">/10</span></div>
-                  : <p className="text-xs text-neutral-600">No ratings yet.</p>
+                  : <p className="text-xs text-neutral-400">No ratings yet.</p>
                 }
               </div>
 
@@ -849,7 +853,7 @@ export default function UserProfile({
                 </div>
                 {topWatched.length > 0
                   ? <div className="space-y-2.5">{topWatched.map(([g, c]) => <GenreBar key={g} genre={g} count={c} max={maxWatched} />)}</div>
-                  : <p className="text-xs text-neutral-600">Watch some movies to see this.</p>
+                  : <p className="text-xs text-neutral-400">Watch some movies to see this.</p>
                 }
               </div>
 
@@ -870,7 +874,7 @@ export default function UserProfile({
                         </div>
                       ))}
                     </div>
-                  : <p className="text-xs text-neutral-600">Rate movies across genres to see this.</p>
+                  : <p className="text-xs text-neutral-400">Rate movies across genres to see this.</p>
                 }
               </div>
 
@@ -883,7 +887,7 @@ export default function UserProfile({
                   ? <div className="flex flex-wrap gap-2">{favGenres.map(g => <span key={g} className="px-3 py-1 rounded-full bg-red-600/20 border border-red-600/30 text-red-400 text-xs font-medium">{g}</span>)}</div>
                   : isOwnProfile
                     ? <button onClick={startEdit} className="flex items-center gap-1 text-xs text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"><ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />Set your favorite genres</button>
-                    : <p className="text-xs text-neutral-600">No favorite genres set.</p>
+                    : <p className="text-xs text-neutral-400">No favorite genres set.</p>
                 }
               </div>
 
@@ -899,7 +903,7 @@ export default function UserProfile({
                       {favoriteDirector && <p className="text-neutral-300">Director: <span className="font-semibold text-white">{favoriteDirector}</span></p>}
                     </div>
                   )
-                  : <p className="text-xs text-neutral-600">Rate or watchlist movies to see this.</p>
+                  : <p className="text-xs text-neutral-400">Rate or watchlist movies to see this.</p>
                 }
               </div>
 

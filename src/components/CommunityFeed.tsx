@@ -320,8 +320,8 @@ export default function CommunityFeed() {
     list.length === 0 ? (
       <div className="rounded-2xl border border-neutral-800 py-16 text-center">
         <div className="flex justify-center mb-3">{emptyIcon}</div>
-        <p className="text-sm text-neutral-500">{emptyMsg}</p>
-        {emptyHint && <p className="text-xs text-neutral-600 mt-1">{emptyHint}</p>}
+        <p className="text-sm text-neutral-400">{emptyMsg}</p>
+        {emptyHint && <p className="text-xs text-neutral-400 mt-1">{emptyHint}</p>}
       </div>
     ) : (
       <AnimatePresence mode="popLayout">
@@ -472,7 +472,7 @@ export default function CommunityFeed() {
             {sidebarTab === "active" && (
               <div className="space-y-2">
                 {reviewers.length === 0 ? (
-                  <p className="text-xs text-neutral-600 text-center py-6">No reviewers yet.</p>
+                  <p className="text-xs text-neutral-400 text-center py-6">No reviewers yet.</p>
                 ) : reviewers.map(profile => (
                   <ReviewerCard
                     key={profile.id}
@@ -555,11 +555,11 @@ export default function CommunityFeed() {
                 </div>
                 <div className="divide-y divide-neutral-800/60">
                   {leaderboard.length === 0 ? (
-                    <p className="text-xs text-neutral-600 text-center py-8">No data yet.</p>
+                    <p className="text-xs text-neutral-400 text-center py-8">No data yet.</p>
                   ) : leaderboard.map((entry, i) => (
                     <div key={entry.user_id} className="flex items-center gap-3 px-4 py-2.5">
                       <span className={`text-xs font-black w-4 flex-shrink-0 ${
-                        i === 0 ? "text-amber-400" : i === 1 ? "text-neutral-300" : i === 2 ? "text-amber-700" : "text-neutral-600"
+                        i === 0 ? "text-amber-400" : i === 1 ? "text-neutral-300" : i === 2 ? "text-amber-700" : "text-neutral-400"
                       }`}>{i + 1}</span>
                       <Avatar url={entry.avatar_url} name={entry.display_name} size="sm" />
                       <p className="flex-1 text-xs font-semibold text-white truncate">{entry.display_name ?? "Anonymous"}</p>

@@ -404,7 +404,7 @@ export default function Navbar({
                           type="button"
                           onMouseDown={handleClearHistory}
                           aria-label="Clear recent searches"
-                          className="flex items-center gap-1 text-[10px] font-semibold text-neutral-600 hover:text-red-400 transition-colors cursor-pointer"
+                          className="flex items-center gap-1 text-[10px] font-semibold text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
                         >
                           <Trash2 className="h-3 w-3" /> Clear
                         </button>
@@ -489,7 +489,7 @@ export default function Navbar({
                             result.matchedField !== "cast" &&
                             result.matchedField !== "genre" &&
                             result.matchedField !== "fuzzy" && (
-                              <span className="ml-auto text-[10px] text-neutral-600 flex-shrink-0">
+                              <span className="ml-auto text-[10px] text-neutral-400 flex-shrink-0">
                                 {movie.releaseDate?.split("-")[0]}
                               </span>
                             )}
@@ -555,6 +555,7 @@ export default function Navbar({
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu-drawer"
             className="md:hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

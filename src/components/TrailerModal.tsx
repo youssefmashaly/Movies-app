@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import type { Movie } from "../types";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 // The single shared trailer player for card-triggered "quick play" — reuses
 // the exact same iframe embed configuration already used inline on the
@@ -13,6 +14,8 @@ interface TrailerModalProps {
 }
 
 export default function TrailerModal({ movie, onClose }: TrailerModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(movie?.trailerUrl));
+
   useEffect(() => {
     if (!movie) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,8 +33,10 @@ export default function TrailerModal({ movie, onClose }: TrailerModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 outline-none"
           onClick={onClose}
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label={`${movie.title} trailer`}

@@ -7,6 +7,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { X, Mail, Lock, User, Sparkles } from "lucide-react";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
 
 // Close on Escape for keyboard users
   useEffect(() => {
@@ -77,13 +79,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {/* Modal box */}
           <motion.div
             id="auth-container"
+            ref={dialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="auth-modal-title"
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl"
+            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl outline-none"
           >
             {/* Top graphic accent */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-amber-500 to-indigo-600" />
@@ -125,7 +129,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
+                  <label htmlFor="auth-name-input" className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
                     Your Name
                   </label>
                   <div className="relative">
@@ -146,7 +150,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               )}
 
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
+                <label htmlFor="auth-email-input" className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
                   Email Address
                 </label>
                 <div className="relative">
@@ -166,7 +170,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
+                <label htmlFor="auth-pass-input" className="block text-xs font-medium text-neutral-400 mb-1.5 uppercase tracking-wider">
                   Password
                 </label>
                 <div className="relative">

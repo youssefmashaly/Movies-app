@@ -81,7 +81,7 @@ function Achievement({ icon: Icon, label, desc, unlocked }: {
       </div>
       <div className="min-w-0">
         <p className={`text-xs font-semibold ${unlocked ? "text-amber-300" : "text-neutral-500"}`}>{label}</p>
-        <p className="text-[10px] text-neutral-600 leading-snug">{desc}</p>
+        <p className="text-[10px] text-neutral-400 leading-snug">{desc}</p>
       </div>
       {unlocked && <Zap className="h-3 w-3 text-amber-400 ml-auto flex-shrink-0" />}
     </div>

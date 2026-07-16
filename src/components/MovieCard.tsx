@@ -88,13 +88,6 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
   const effectiveFavoriteGenres = favoriteGenres ?? contextFavoriteGenres;
   const isFavoriteGenre = !!effectiveFavoriteGenres?.length && movie.genres?.some((g) => effectiveFavoriteGenres.includes(g));
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onClick?.();
-    }
-  };
-
   const handleToggleSave = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onToggleSave?.();
@@ -108,21 +101,15 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
   return (
     <motion.div
       id={`movie-card-${movie.id}`}
-      role="button"
-      tabIndex={0}
-      aria-label={`View details for ${movie.title} (${releaseYear})`}
       whileHover={{ y: -8, scale: 1.02 }}
-      whileFocus={{ y: -8, scale: 1.02 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index, 10) * 0.04 }}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
       onMouseEnter={() => prefetchMovieDetail(movie.id)}
       onMouseLeave={() => cancelPrefetch(movie.id)}
       onFocus={() => prefetchMovieDetail(movie.id)}
       onBlur={() => cancelPrefetch(movie.id)}
-      className="group relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl border border-neutral-800/80 bg-neutral-900 shadow-xl transition-shadow hover:shadow-2xl hover:shadow-red-950/20 focus-visible:shadow-2xl focus-visible:shadow-red-950/30"
+      className="group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-neutral-800/80 bg-neutral-900 shadow-xl transition-[box-shadow,transform] duration-300 ease-out hover:shadow-2xl hover:shadow-red-950/20 focus-within:shadow-2xl focus-within:shadow-red-950/30 focus-within:-translate-y-2 focus-within:scale-[1.02] motion-reduce:transition-none"
     >
       {/* Background Poster Image */}
       {!posterError && movie.posterPath ? (
@@ -149,6 +136,20 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
 
       {/* Grid overlay shading always subtly present */}
       <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+
+      {/* Primary clickable target — a single real, stretched <button> that
+          covers the whole card. It's a sibling of (not a wrapper around) the
+          bookmark/trailer/more-info buttons below, so the card stays fully
+          clickable and keyboard-operable without nesting interactive
+          elements inside one another (the previous role="button" div
+          wrapping real <button> children was an ARIA/axe "nested-interactive"
+          violation). */}
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`View details for ${movie.title} (${releaseYear})`}
+        className="absolute inset-0 z-0 cursor-pointer rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-inset"
+      />
 
       {/* Top-right: rating ring + quick-action bookmark */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-2 z-10">
@@ -184,8 +185,11 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
         )}
       </div>
 
-      {/* Visual content overlay on hover/static */}
-      <div className="absolute inset-0 flex flex-col justify-end p-5 text-left">
+      {/* Visual content overlay on hover/static. pointer-events-none lets
+          clicks on the non-interactive text (title/genres/overview) pass
+          through to the stretched button above; the actions row below
+          re-enables pointer-events for its own real buttons. */}
+      <div className="absolute inset-0 flex flex-col justify-end p-5 text-left pointer-events-none">
         {/* Genre Tags */}
         <div className="mb-2 flex flex-wrap gap-1">
           {movie.genres.slice(0, 2).map((g, idx) => (
@@ -227,7 +231,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
                 {movie.overview}
               </p>
             )}
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2 pointer-events-auto">
               {movie.trailerUrl && onPlayTrailer && (
                 <button
                   type="button"

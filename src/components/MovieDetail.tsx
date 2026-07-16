@@ -453,7 +453,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   )}
                 </>
               ) : (
-                <p className="text-neutral-500 text-sm italic">No synopsis available for this title yet.</p>
+                <p className="text-neutral-400 text-sm italic">No synopsis available for this title yet.</p>
               )}
             </div>
 
@@ -568,7 +568,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   <dd className="font-semibold text-amber-400 flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-amber-400" aria-hidden="true" />
                     <AnimatedNumber value={movie.voteAverage} decimals={1} />
-                    <span className="text-neutral-600 font-normal">({formatVoteCount(movie.voteCount)})</span>
+                    <span className="text-neutral-400 font-normal">({formatVoteCount(movie.voteCount)})</span>
                   </dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -580,7 +580,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                         {communityAverage.toFixed(1)}
                       </span>
                     ) : (
-                      <span className="text-neutral-600 font-normal text-xs">No ratings yet</span>
+                      <span className="text-neutral-400 font-normal text-xs">No ratings yet</span>
                     )}
                   </dd>
                 </div>
@@ -727,8 +727,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               ) : reviews.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-neutral-800 px-4 py-8 text-center space-y-2">
                   <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto" />
-                  <p className="text-sm font-semibold text-neutral-500">No reviews yet</p>
-                  <p className="text-xs text-neutral-600">
+                  <p className="text-sm font-semibold text-neutral-400">No reviews yet</p>
+                  <p className="text-xs text-neutral-400">
                     {user ? "Be the first to review this film." : "Sign in to leave the first review."}
                   </p>
                 </div>
@@ -776,7 +776,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-neutral-600 mt-0.5">
+                              <div className="text-[10px] text-neutral-400 mt-0.5">
                                 {new Date(rev.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                               </div>
                             </div>
