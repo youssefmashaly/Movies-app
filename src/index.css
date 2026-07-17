@@ -62,45 +62,79 @@ body {
   background: #b91c1c;
 }
 
-/* Phase 28 — Full light-theme architecture.
-   Root cause of "only part of the app changes": every component uses
-   Tailwind's neutral-* and white utilities directly (bg-neutral-900,
-   text-neutral-400, text-white, etc.) with no dark:/light: variants
-   anywhere. Tailwind v4 compiles each of those utilities to reference a
-   single shared CSS custom property per shade — e.g.
-   `.bg-neutral-900 { background-color: var(--color-neutral-900) }` and
-   `.text-white { color: var(--color-white) }` — so instead of editing
-   thousands of class occurrences across every component, we override the
-   underlying variables once, here, scoped to [data-theme="light"]. Every
-   existing and future component that uses these utilities automatically
-   renders correctly in both themes with zero additional per-component
-   work. The neutral scale is inverted symmetrically using Tailwind's own
-   real palette values (900<->100, 800<->200, etc.) for a coherent,
-   properly-contrasted result rather than arbitrary colors.
+/* Phase 29 — Theme-switch transition window (fixes the reported "freeze").
+   Flipping ~10 shared CSS variables at :root forces the browser to
+   recompute style for every element in the DOM in a single frame — with
+   a few hundred movie cards, gradients and shadows on screen, that
+   recalculation is large enough to read as a freeze/hard-flash. Rather
+   than fight that (it's the direct cost of the one-variable-updates-the-
+   whole-app architecture that makes this scale to future pages for
+   free), ThemeContext now adds this class for ~260ms around the flip so
+   the same recalculation resolves as a smooth cross-fade instead of an
+   instant snap. Scoped to a temporary class (not a permanent global
+   rule) so ordinary hover/press interactions stay instant the rest of
+   the time — see the existing Phase 26/27 `active:scale-*` press
+   feedback, which would otherwise feel laggy under a permanent
+   transition. Skipped entirely under prefers-reduced-motion (see
+   ThemeContext.tsx). */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition-property: background-color, border-color, color, box-shadow, fill, stroke, background-image !important;
+  transition-duration: 240ms !important;
+  transition-timing-function: ease !important;
+}
 
-   Caveat: a small number of call sites use text-white/border-white/bg-white
-   specifically for text/spinners/knobs sitting on a colored (non-neutral)
-   background — e.g. white text on a red gradient CTA button. Those brand
-   surfaces don't change between themes, so their foreground must stay
-   literally white in both themes too. Those specific call sites were
-   switched to an explicit `text-[#ffffff]`/`border-[#ffffff]`/`bg-[#ffffff]`
-   arbitrary value (which Tailwind compiles to a literal color, bypassing
-   this variable) instead of `text-white`, so this override can't affect
-   them. See MovieCard.tsx, Navbar.tsx, AuthModal.tsx, MovieDetail.tsx,
-   UserProfile.tsx, CommunityFeed.tsx, UserMenu.tsx, ErrorBoundary.tsx,
-   AIMatchmaker.tsx, and App.tsx for those exemptions. */
+/* Phase 29 — Premium light theme.
+   The Phase 28 palette technically worked but was too flat: neutral-950
+   (page bg) and neutral-900 (card bg) were only ~2% apart in lightness,
+   so cards had almost no visual separation from the page — "everything
+   becomes plain white". This pass widens the gaps for real depth, adds
+   a faint warm tint (ties the neutral scale back to the red brand
+   instead of a cold/clinical white), and keeps every existing neutral
+   and white utility working exactly as before — same variables,
+   recalibrated values, zero component changes. */
 :root[data-theme="light"] {
-  --color-white: #0a0a0a;
-  --color-neutral-950: oklch(99% 0 0);
-  --color-neutral-900: oklch(97% 0 0);
-  --color-neutral-800: oklch(92.2% 0 0);
-  --color-neutral-700: oklch(87% 0 0);
-  --color-neutral-600: oklch(70.8% 0 0);
-  --color-neutral-500: oklch(55.6% 0 0);
-  --color-neutral-400: oklch(43.9% 0 0);
-  --color-neutral-300: oklch(37.1% 0 0);
-  --color-neutral-200: oklch(26.9% 0 0);
-  --color-neutral-100: oklch(20.5% 0 0);
+  --color-white: oklch(16% 0 0);
+  --color-neutral-950: oklch(98% 0.006 55);
+  --color-neutral-900: oklch(94% 0.006 55);
+  --color-neutral-800: oklch(88% 0.007 55);
+  --color-neutral-700: oklch(80% 0 0);
+  --color-neutral-600: oklch(66% 0 0);
+  --color-neutral-500: oklch(53% 0 0);
+  --color-neutral-400: oklch(42% 0 0);
+  --color-neutral-300: oklch(34% 0 0);
+  --color-neutral-200: oklch(24% 0 0);
+  --color-neutral-100: oklch(16% 0 0);
+}
+
+/* Soft cinematic gradient instead of a flat off-white page background —
+   a faint warm glow anchored top-center, echoing the brand red without
+   competing with poster artwork or text contrast. */
+:root[data-theme="light"] body {
+  background-color: oklch(98% 0.006 55);
+  background-image: radial-gradient(
+    ellipse 1200px 600px at 50% -10%,
+    oklch(94% 0.02 30 / 0.5),
+    transparent 60%
+  );
+  background-attachment: fixed;
+  color: #171717;
+}
+
+/* Glassmorphism: the app already uses .glass-effect/.absolute-nav (dark,
+   hardcoded rgba) for the navbar/overlays. In light mode those need a
+   light-tinted translucent surface instead of a dark one to actually
+   read as "glass" rather than a stray dark panel on a light page. */
+:root[data-theme="light"] .glass-effect {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .absolute-nav {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 :root[data-theme="light"] .skeleton-shimmer {

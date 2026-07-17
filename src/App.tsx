@@ -42,6 +42,7 @@ import { searchMovies } from "./lib/movieSearch";
 const AIMatchmaker = lazy(() => import("./components/AIMatchmaker"));
 const CommunityFeed = lazy(() => import("./components/CommunityFeed"));
 const UserDashboard = lazy(() => import("./components/UserDashboard"));
+const MovieLibrary = lazy(() => import("./components/MovieLibrary"));
 // Phase 22 — Bundle Splitting. These three are large (814/888/224 lines)
 // and, except for AuthModal, already only ever render conditionally, so
 // splitting them out of the main chunk is a pure bundle-size win with no
@@ -2462,6 +2463,22 @@ export default function App() {
             >
               <Suspense fallback={<TabLoadingFallback />}>
                 <CommunityFeed />
+              </Suspense>
+            </motion.div>
+          ) : activeTab === "library" ? (
+            /* 6.5 MOVIE LIBRARY — full-catalog browse (Phase 29) */
+            <motion.div
+              key="library-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <Suspense fallback={<TabLoadingFallback />}>
+                <MovieLibrary
+                  onSelectMovie={handleSelectMovie}
+                  watchlistIds={watchlistIds}
+                  onToggleSave={handleQuickToggleWatchlist}
+                />
               </Suspense>
             </motion.div>
           ) : (
