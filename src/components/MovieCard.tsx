@@ -9,10 +9,10 @@ interface MovieCardProps {
   key?: string | number;
   movie?: Movie;
   isLoading?: boolean;
-  onClick?: () => void;
+  onClick?: (movie: Movie) => void;
   index?: number;
   isSaved?: boolean;
-  onToggleSave?: () => void;
+  onToggleSave?: (movie: Movie) => void;
   // Optional — when provided, shows a favorite indicator if the movie
   // matches one of the user's favorite genres. Omitting this prop preserves
   // exactly the existing card appearance everywhere it's already used.
@@ -91,7 +91,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
 
   const handleToggleSave = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
-    onToggleSave?.();
+    onToggleSave?.(movie);
   };
 
   const handlePlayTrailer = (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -150,7 +150,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
           violation). */}
       <button
         type="button"
-        onClick={onClick}
+        onClick={() => onClick?.(movie)}
         aria-label={`View details for ${movie.title} (${releaseYear})`}
         className="absolute inset-0 z-0 cursor-pointer rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-inset"
       />
@@ -250,7 +250,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
               {onClick && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                  onClick={(e) => { e.stopPropagation(); onClick(movie); }}
                   aria-label={`More info about ${movie.title}`}
                   className="flex items-center gap-1.5 rounded-lg bg-neutral-800/90 hover:bg-neutral-700 active:scale-95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white cursor-pointer transition-all"
                 >

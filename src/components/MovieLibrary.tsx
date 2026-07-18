@@ -285,8 +285,8 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
                 movie={movie}
                 index={idx % PAGE_SIZE}
                 isSaved={watchlistIds.has(movie.id)}
-                onToggleSave={() => onToggleSave(movie)}
-                onClick={() => onSelectMovie(movie)}
+                onToggleSave={onToggleSave}
+                onClick={onSelectMovie}
               />
             ))}
           </div>

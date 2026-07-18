@@ -195,9 +195,9 @@ function MovieRailComponent({
                 <MovieCard
                   movie={movie}
                   index={idx}
-                  onClick={() => onMovieClick(movie)}
+                  onClick={onMovieClick}
                   isSaved={isSaved?.(movie.id)}
-                  onToggleSave={onToggleSave ? () => onToggleSave(movie) : undefined}
+                  onToggleSave={onToggleSave}
                 />
               </div>
             ))}

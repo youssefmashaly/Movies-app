@@ -141,6 +141,7 @@ interface UserDashboardProps {
   onSelectMovie: (movie: Movie) => void;
   onToggleSave: (movie: Movie) => void;
   watchlistIds: Set<string>;
+  onEditGenres: () => void;
 }
 
 export default function UserDashboard({
@@ -151,6 +152,7 @@ export default function UserDashboard({
   onSelectMovie,
   onToggleSave,
   watchlistIds,
+  onEditGenres,
 }: UserDashboardProps) {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
@@ -161,6 +163,12 @@ export default function UserDashboard({
 
   // Session-stable shuffle seed, mirrors the pattern used in App.tsx's rails.
   const [sessionSeed] = useState<number>(() => Math.floor(Math.random() * 2 ** 31));
+
+  // Phase 30 perf fix — every MovieRail below previously received its own
+  // inline `(id) => watchlistIds.has(id)` closure, a fresh function on
+  // every render that defeated MovieRail/MovieCard's React.memo across
+  // all ~10 rails on this page. One stable reference, reused everywhere.
+  const isMovieSaved = React.useCallback((id: string) => watchlistIds.has(id), [watchlistIds]);
 
   // Collaborative discovery signals (Phase 11A final batch)
   const [followingHighlyRated, setFollowingHighlyRated] = useState<CollaborativeMovieSignal[]>([]);
@@ -340,9 +348,19 @@ export default function UserDashboard({
           )}
         </div>
         {!activityLoading && (
-          <div className="flex items-center gap-2 text-xs text-neutral-500">
-            <Award className="h-4 w-4 text-amber-400" />
-            <span>{unlockedCount}/{achievements.length} achievements unlocked</span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onEditGenres}
+              className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+            >
+              <Heart className="h-3.5 w-3.5 text-red-400" aria-hidden="true" />
+              {favoriteGenres.length > 0 ? "Edit Favorite Genres" : "Pick Favorite Genres"}
+            </button>
+            <div className="flex items-center gap-2 text-xs text-neutral-500">
+              <Award className="h-4 w-4 text-amber-400" />
+              <span>{unlockedCount}/{achievements.length} achievements unlocked</span>
+            </div>
           </div>
         )}
       </div>
@@ -378,7 +396,7 @@ export default function UserDashboard({
               movies={recentlyViewed.slice(0, 12)}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           ) : (
@@ -401,7 +419,7 @@ export default function UserDashboard({
               movies={becauseYouWatched}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           ) : (
@@ -428,7 +446,7 @@ export default function UserDashboard({
               movies={watchlistMovies.slice(0, 16)}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           ) : (
@@ -455,7 +473,7 @@ export default function UserDashboard({
               movies={basedOnFavorites}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           )}
@@ -471,7 +489,7 @@ export default function UserDashboard({
               movies={yourHighestRated}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           )}
@@ -487,7 +505,7 @@ export default function UserDashboard({
               movies={trendingInGenre}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           ) : (
@@ -514,7 +532,7 @@ export default function UserDashboard({
               movies={hiddenGemsForYou}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           ) : (
@@ -569,7 +587,7 @@ export default function UserDashboard({
               movies={followingHighlyRatedMovies}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           )}
@@ -585,7 +603,7 @@ export default function UserDashboard({
               movies={similarTasteHighlyRatedMovies}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           )}
@@ -601,7 +619,7 @@ export default function UserDashboard({
               movies={communityFavoriteMovies}
               isLoading={false}
               onMovieClick={onSelectMovie}
-              isSaved={(id) => watchlistIds.has(id)}
+              isSaved={isMovieSaved}
               onToggleSave={onToggleSave}
             />
           )}

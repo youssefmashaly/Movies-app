@@ -12,9 +12,10 @@ import { useFocusTrap } from "../lib/useFocusTrap";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthSuccess?: (info: { isNewAccount: boolean }) => void;
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +46,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+      onAuthSuccess?.({ isNewAccount: isSignUp });
       onClose();
     } catch (err: any) {
       console.error(err);

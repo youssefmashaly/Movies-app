@@ -308,7 +308,7 @@ export default function AIMatchmaker({
                       <MovieCard
                         key={rec.id}
                         movie={rec}
-                        onClick={() => onSelectMovie(rec)}
+                        onClick={onSelectMovie}
                       />
                     ))}
                   </div>

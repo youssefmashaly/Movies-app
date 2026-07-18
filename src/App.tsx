@@ -35,6 +35,7 @@ import MovieCard from "./components/MovieCard";
 import MovieRail from "./components/MovieRail";
 import TrailerModal from "./components/TrailerModal";
 import { MovieCardPreferencesProvider } from "./context/MovieCardContext";
+import GenreOnboardingModal from "./components/GenreOnboardingModal";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useToast } from "./context/ToastContext";
 import { searchMovies } from "./lib/movieSearch";
@@ -70,7 +71,7 @@ import {
 // localStorage keys for guest-friendly, backend-free personalization
 const FAVORITE_GENRES_KEY = "movieapp:favoriteGenres";
 const RECENTLY_VIEWED_KEY = "movieapp:recentlyViewed";
-const ONBOARDING_DISMISSED_KEY = "movieapp:onboardingDismissed";
+const GENRE_ONBOARDING_SEEN_KEY = "movieapp:genreOnboardingSeen";
 const RECENT_SEARCHES_KEY = "movieapp:recentSearches";
 
 // Phase 18A — shared confidence copy for personalized rails (Recommended,
@@ -179,10 +180,17 @@ export default function App() {
   const [recentlyViewedEntries, setRecentlyViewedEntries] = useState<RecentlyViewedEntry[]>(() =>
     migrateRecentlyViewedEntries(readLocalJSON<unknown>(RECENTLY_VIEWED_KEY, []))
   );
-  const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => readLocalJSON(ONBOARDING_DISMISSED_KEY, false));
+  // Phase 30 — replaces the old permanently-visible inline genre panel.
+  // `genreOnboardingSeen` guards the *automatic* triggers (new signup,
+  // first Dashboard visit with no genres) so they fire at most once ever
+  // per browser; manual reopens from Dashboard/Settings always work
+  // regardless of this flag.
+  const [showGenreOnboarding, setShowGenreOnboarding] = useState(false);
+  const [genreOnboardingSeen, setGenreOnboardingSeen] = useState<boolean>(() =>
+    readLocalJSON(GENRE_ONBOARDING_SEEN_KEY, false)
+  );
   // Phase 18A — Recently Searched: device-local, capped, most-recent-first.
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readLocalJSON(RECENT_SEARCHES_KEY, []));
-  const [prefsExpanded, setPrefsExpanded] = useState<boolean>(false);
 
    // Phase 20 — Continue Browsing's cached { id, viewedAt } entries are
   // resolved into up-to-date Movie objects via the universal movie
@@ -413,8 +421,19 @@ export default function App() {
   }, [activeTab, viewedProfileUserId]);
 
   useEffect(() => {
-    localStorage.setItem(ONBOARDING_DISMISSED_KEY, JSON.stringify(onboardingDismissed));
-  }, [onboardingDismissed]);
+    localStorage.setItem(GENRE_ONBOARDING_SEEN_KEY, JSON.stringify(genreOnboardingSeen));
+  }, [genreOnboardingSeen]);
+
+  // Phase 30 — auto-show the genre onboarding the first time a signed-in
+  // user with no saved genres opens their Dashboard. Guarded by
+  // `genreOnboardingSeen` so it only ever auto-fires once per browser;
+  // reopening later (Dashboard/Settings button) always works regardless.
+  useEffect(() => {
+    if (activeTab === "dashboard" && user && favoriteGenres.length === 0 && !genreOnboardingSeen) {
+      setShowGenreOnboarding(true);
+      setGenreOnboardingSeen(true);
+    }
+  }, [activeTab, user, favoriteGenres.length, genreOnboardingSeen]);
 
   // 7. On sign-in, hydrate favourite genres from Supabase profiles.favorite_genres.
   // If the account has saved genres, they win over whatever is in localStorage
@@ -1129,9 +1148,29 @@ export default function App() {
       {/* Auth Modal Overlay Popup — Phase 22: only mounted after first open (see hasOpenedAuth above) */}
       {hasOpenedAuth && (
         <Suspense fallback={null}>
-          <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+          <AuthModal
+            isOpen={authOpen}
+            onClose={() => setAuthOpen(false)}
+            onAuthSuccess={({ isNewAccount }) => {
+              if (isNewAccount) {
+                setShowGenreOnboarding(true);
+                setGenreOnboardingSeen(true);
+              }
+            }}
+          />
         </Suspense>
       )}
+
+      {/* Phase 30 — genre onboarding modal: auto-shown for new signups and
+          first-time Dashboard visits with no saved genres (see effects
+          above), or reopened manually from Dashboard. */}
+      <GenreOnboardingModal
+        isOpen={showGenreOnboarding}
+        favoriteGenres={favoriteGenres}
+        onToggleGenre={toggleFavoriteGenre}
+        onSave={() => setShowGenreOnboarding(false)}
+        onSkip={() => setShowGenreOnboarding(false)}
+      />
 
       {/* Responsive layout wrapper */}
       <main id="main-content" className="relative pt-24 z-10">
@@ -1165,85 +1204,10 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-12"
             >
-              {/* Personalize panel: first-run onboarding for new users, collapsible editor afterwards */}
-              {!searchQuery && (!onboardingDismissed || favoriteGenres.length > 0) && (
-                <div className="max-w-[1600px] mx-auto px-6">
-                  <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
-                    {!prefsExpanded && favoriteGenres.length > 0 ? (
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="text-xs text-neutral-400">
-                          <Heart className="inline h-3.5 w-3.5 text-red-400 mr-1.5 -mt-0.5" aria-hidden="true" />
-                          Your picks: <span className="text-white font-semibold">{favoriteGenres.join(", ")}</span>
-                        </p>
-                        <button
-                          onClick={() => setPrefsExpanded(true)}
-                          className="text-xs font-bold text-red-400 hover:text-red-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
-                        >
-                          Edit preferences
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                            <Heart className="h-4 w-4 text-red-400" aria-hidden="true" />
-                            {favoriteGenres.length === 0 ? "Pick a few favorite genres" : "Edit your favorite genres"}
-                          </h2>
-                          {favoriteGenres.length > 0 && (
-                            <button
-                              onClick={() => setPrefsExpanded(false)}
-                              className="text-xs font-bold text-neutral-400 hover:text-white cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
-                            >
-                              Done
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-xs text-neutral-500 mb-4">
-                          This personalizes Recommended and the genre rows below. Change it anytime.
-                        </p>
-                        <div role="group" aria-label="Favorite genres" className="flex flex-wrap gap-2">
-                          {ALL_GENRES.filter((g) => g !== "All").map((g) => {
-                            const isSelected = favoriteGenres.includes(g);
-                            return (
-                              <button
-                                key={`fav-genre-${g}`}
-                                onClick={() => toggleFavoriteGenre(g)}
-                                aria-pressed={isSelected}
-                                className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
-                                  isSelected
-                                    ? "bg-red-650 border-red-650 text-[#ffffff] shadow-md"
-                                    : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
-                                }`}
-                              >
-                                {g}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <div className="mt-4 flex items-center gap-3">
-                          {favoriteGenres.length > 0 && (
-                            <button
-                              onClick={() => setPrefsExpanded(false)}
-                              className="rounded-lg bg-red-650 px-4 py-2 text-xs font-bold text-[#ffffff] hover:bg-red-600 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
-                            >
-                              Save
-                            </button>
-                          )}
-                          <button
-                            onClick={() => {
-                              setOnboardingDismissed(true);
-                              setPrefsExpanded(false);
-                            }}
-                            className="text-xs font-semibold text-neutral-500 hover:text-neutral-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 rounded"
-                          >
-                            Skip for now
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
+              {/* Phase 30 — the genre picker used to live here permanently;
+                  it's now GenreOnboardingModal, triggered automatically
+                  (new signup, first Dashboard visit) or reopened from
+                  Dashboard. See the modal render near AuthModal below. */}
               {/* Cinematic hero skeleton while the first fetch is in flight */}
               {!searchQuery && moviesLoading && !featuredMovie && (
                 <div className="max-w-[1600px] mx-auto px-6 mt-4">
@@ -1498,7 +1462,7 @@ export default function App() {
                     movies={recommendedMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
+                    isSaved={isMovieSaved}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
                   {dailyPicksMovies.length > 0 && (
@@ -1511,7 +1475,7 @@ export default function App() {
                       movies={dailyPicksMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1524,7 +1488,7 @@ export default function App() {
                     movies={trendingMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
+                    isSaved={isMovieSaved}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
                   <MovieRail
@@ -1536,7 +1500,7 @@ export default function App() {
                     movies={popularMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
+                    isSaved={isMovieSaved}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
                   <MovieRail
@@ -1548,7 +1512,7 @@ export default function App() {
                     movies={latestMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
+                    isSaved={isMovieSaved}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
                   <MovieRail
@@ -1560,7 +1524,7 @@ export default function App() {
                     movies={hiddenGemMovies}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
-                    isSaved={(id) => watchlistIds.has(id)}
+                    isSaved={isMovieSaved}
                     onToggleSave={handleQuickToggleWatchlist}
                   />
                   {criticallyAcclaimed.length >= 4 && (
@@ -1573,7 +1537,7 @@ export default function App() {
                       movies={criticallyAcclaimed}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1587,7 +1551,7 @@ export default function App() {
                       movies={awardWinners}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1601,7 +1565,7 @@ export default function App() {
                       movies={mindBending}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1615,7 +1579,7 @@ export default function App() {
                       movies={familyNight}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1629,7 +1593,7 @@ export default function App() {
                       movies={feelGood}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1643,7 +1607,7 @@ export default function App() {
                       movies={basedOnTrueStories}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1657,7 +1621,7 @@ export default function App() {
                       movies={internationalCinema}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1671,7 +1635,7 @@ export default function App() {
                       movies={cultClassics}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1685,7 +1649,7 @@ export default function App() {
                       movies={staffPicks}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1699,7 +1663,7 @@ export default function App() {
                       movies={editorsChoice}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1713,7 +1677,7 @@ export default function App() {
                       movies={weekendMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1727,7 +1691,7 @@ export default function App() {
                       movies={underratedMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1741,7 +1705,7 @@ export default function App() {
                       movies={expandHorizonsMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1755,7 +1719,7 @@ export default function App() {
                       movies={decade1990s}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1769,7 +1733,7 @@ export default function App() {
                       movies={decade2000s}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1783,7 +1747,7 @@ export default function App() {
                       movies={decade2010s}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1797,7 +1761,7 @@ export default function App() {
                       movies={nolanMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1811,7 +1775,7 @@ export default function App() {
                       movies={spielbergMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1825,7 +1789,7 @@ export default function App() {
                       movies={tarantinoMovies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   )}
@@ -1848,7 +1812,7 @@ export default function App() {
                       movies={section.movies}
                       isLoading={moviesLoading}
                       onMovieClick={handleSelectMovie}
-                      isSaved={(id) => watchlistIds.has(id)}
+                      isSaved={isMovieSaved}
                       onToggleSave={handleQuickToggleWatchlist}
                     />
                   ))}
@@ -2280,8 +2244,8 @@ export default function App() {
                         movie={movie}
                         index={idx}
                         isSaved={watchlistIds.has(movie.id)}
-                        onToggleSave={() => handleQuickToggleWatchlist(movie)}
-                        onClick={() => handleSelectMovie(movie)}
+                        onToggleSave={handleQuickToggleWatchlist}
+                        onClick={handleSelectMovie}
                       />
                     ))}
                   </div>
@@ -2409,8 +2373,8 @@ export default function App() {
                       movie={movie}
                       index={idx}
                       isSaved={true}
-                      onToggleSave={() => handleQuickToggleWatchlist(movie)}
-                      onClick={() => handleSelectMovie(movie)}
+                      onToggleSave={handleQuickToggleWatchlist}
+                      onClick={handleSelectMovie}
                     />
                   ))}
                 </div>
@@ -2498,6 +2462,7 @@ export default function App() {
                   onSelectMovie={handleSelectMovie}
                   onToggleSave={handleQuickToggleWatchlist}
                   watchlistIds={watchlistIds}
+                  onEditGenres={() => setShowGenreOnboarding(true)}
                 />
               </Suspense>
             </motion.div>
