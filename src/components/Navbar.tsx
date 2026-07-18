@@ -21,6 +21,7 @@ import type { Movie } from "../types";
 import { searchMovies, highlightMatch, MovieSearchResult } from "../lib/movieSearch";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 import UserMenu from "./UserMenu";
+import NotificationBell from "./NotificationBell";
 
 // ── Search history (localStorage, guest-friendly, same pattern as App.tsx) ──
 const SEARCH_HISTORY_KEY = "movieapp:searchHistory";
@@ -332,11 +333,84 @@ export default function Navbar({
           })}
         </div>
 
-        {/* Search Bar - Hide when in Oracle or Watchlist if desired, but general header is epic */}
-        <div className="flex-1 max-w-xs mx-6 hidden sm:block relative">
+        {/* User Auth Info Widget */}
+        <div className="flex items-center gap-4">
+          <AnimatePresence mode="wait">
+            {user ? (
+              <motion.div
+                key="user-logged-in"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-3"
+              >
+                {/* User name info */}
+                <div className="hidden lg:flex flex-col text-right">
+                  <span className="font-semibold text-xs text-white leading-tight">
+                    {user.displayName || "Movie Critic"}
+                  </span>
+                  <span className="text-[10px] text-neutral-500 truncate max-w-[120px]">
+                    {user.email}
+                  </span>
+                </div>
+
+                {/* Task Z — Notifications bell, positioned beside the
+                    account avatar per the reference layout. Frontend-only
+                    placeholder dropdown for now (see NotificationBell.tsx). */}
+                <NotificationBell />
+
+                {/* Phase 21 — avatar now opens the account dropdown menu
+                    (View Profile / My Dashboard / Settings / Logout)
+                    instead of standalone tab-bar buttons + a bare Logout icon.
+                    Task Y — theme selection moved out of this dropdown and
+                    into the dedicated Settings page. */}
+                <UserMenu
+                  user={user}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenSettings={onOpenSettings ?? (() => setActiveTab("settings"))}
+                  onLogout={handleLogout}
+                />
+              </motion.div>
+            ) : (
+              <motion.button
+                key="user-logged-out"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                id="navbar-login-trigger"
+                onClick={onOpenAuth}
+                className="flex items-center gap-2 rounded-xl bg-red-650 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#ffffff] shadow-md hover:bg-red-600 shadow-red-950/10 focus-visible:ring-2 focus-visible:ring-red-400 transition-all cursor-pointer"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          {/* Mobile menu trigger */}
+          <button
+            id="mobile-menu-trigger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu-drawer"
+            className="md:hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Search Bar — Task Z: moved below the nav tabs into its own full-width
+          row so it reads as a primary feature rather than a squeezed-in
+          input between the tabs and the account widget. Larger height,
+          wider container, bigger centered icon, generous padding. Desktop
+          only (sm:block) — the mobile drawer keeps its own compact search
+          input below, unaffected by this change. */}
+      <div className="max-w-7xl mx-auto px-6 md:px-8 mt-8 hidden sm:block">
+        <div className="relative">
           <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500 pointer-events-none">
-            <Search className="h-4 w-4" />
+          <span className="absolute inset-y-0 left-0 flex items-center pl-5 text-neutral-500 pointer-events-none">
+            <Search className="h-5 w-5" />
           </span>
           <input
             id="navbar-search"
@@ -346,7 +420,7 @@ export default function Navbar({
             aria-controls="navbar-search-suggestions"
             aria-autocomplete="list"
             autoComplete="off"
-            placeholder="Search for movies..."
+            placeholder="Search for movies, actors, genres..."
             value={searchQuery}
             onFocus={() => {
               if (suggestBlurTimeout.current) clearTimeout(suggestBlurTimeout.current);
@@ -365,19 +439,19 @@ export default function Navbar({
                 setActiveTab("explore");
               }
             }}
-            className="w-full text-xs font-medium rounded-xl border border-neutral-800 bg-neutral-900/50 py-2.5 pl-9 pr-9 text-white placeholder-neutral-500 outline-none focus:border-red-500/50 focus:bg-neutral-950 transition-all"
+            className="w-full text-sm font-medium rounded-2xl border border-neutral-800 bg-neutral-900/50 py-4 pl-14 pr-14 text-white placeholder-neutral-500 outline-none focus:border-red-500/50 focus:bg-neutral-950 transition-all"
           />
-          <span className="absolute inset-y-0 right-0 flex items-center pr-2.5">
+          <span className="absolute inset-y-0 right-0 flex items-center pr-4">
             {searchLoading ? (
-              <Loader2 className="h-3.5 w-3.5 text-red-400 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-4 w-4 text-red-400 animate-spin" aria-hidden="true" />
             ) : searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search"
-                className="rounded-full p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="rounded-full p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             ) : null}
           </span>
@@ -503,67 +577,6 @@ export default function Navbar({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* User Auth Info Widget */}
-        <div className="flex items-center gap-4">
-          <AnimatePresence mode="wait">
-            {user ? (
-              <motion.div
-                key="user-logged-in"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3"
-              >
-                {/* User name info */}
-                <div className="hidden lg:flex flex-col text-right">
-                  <span className="font-semibold text-xs text-white leading-tight">
-                    {user.displayName || "Movie Critic"}
-                  </span>
-                  <span className="text-[10px] text-neutral-500 truncate max-w-[120px]">
-                    {user.email}
-                  </span>
-                </div>
-
-                {/* Phase 21 — avatar now opens the account dropdown menu
-                    (View Profile / My Dashboard / Settings / Logout)
-                    instead of standalone tab-bar buttons + a bare Logout icon.
-                    Task Y — theme selection moved out of this dropdown and
-                    into the dedicated Settings page. */}
-                <UserMenu
-                  user={user}
-                  onNavigate={(tab) => setActiveTab(tab)}
-                  onOpenSettings={onOpenSettings ?? (() => setActiveTab("settings"))}
-                  onLogout={handleLogout}
-                />
-              </motion.div>
-            ) : (
-              <motion.button
-                key="user-logged-out"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                id="navbar-login-trigger"
-                onClick={onOpenAuth}
-                className="flex items-center gap-2 rounded-xl bg-red-650 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#ffffff] shadow-md hover:bg-red-600 shadow-red-950/10 focus-visible:ring-2 focus-visible:ring-red-400 transition-all cursor-pointer"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign in
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          {/* Mobile menu trigger */}
-          <button
-            id="mobile-menu-trigger"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-menu-drawer"
-            className="md:hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
       </div>
 

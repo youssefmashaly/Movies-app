@@ -1174,7 +1174,7 @@ export default function App() {
       />
 
       {/* Responsive layout wrapper */}
-      <main id="main-content" className="relative pt-24 z-10">
+      <main id="main-content" className="relative pt-24 sm:pt-48 z-10">
         <AnimatePresence mode="wait">
 
 

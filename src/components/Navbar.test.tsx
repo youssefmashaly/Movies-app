@@ -49,7 +49,7 @@ describe("Navbar search", () => {
 
   it("uses the updated placeholder text", () => {
     render(<NavbarHarness />);
-    expect(screen.getByPlaceholderText("Search for movies...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search for movies, actors, genres...")).toBeInTheDocument();
   });
 
   it("shows ranked, matching suggestions after typing (director search)", async () => {
