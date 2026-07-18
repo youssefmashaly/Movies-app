@@ -142,36 +142,6 @@ export async function createApp() {
     }
   });
 
-    // Batch-resolve movies by id — Phase 20 (Universal Movie Resolution).
-  // GET /api/movies/batch?ids=1,15,27,83
-  // - returns movies in the same order the ids were requested in
-  // - silently ignores ids that aren't in the catalog (never 404s/errors
-  //   for a partially-invalid list — callers just get back what resolved)
-  // - never returns duplicates, even if the same id was requested twice
-  // - reads only from the existing static catalog — no DB/schema involved
-  app.get("/api/movies/batch", (req, res) => {
-    try {
-      const idsParam = typeof req.query.ids === "string" ? req.query.ids : "";
-      const requestedIds = idsParam
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
-      const seen = new Set<string>();
-      const resolved: Movie[] = [];
-      for (const id of requestedIds) {
-        if (seen.has(id)) continue;
-        seen.add(id);
-        const movie = PRESET_MOVIES_BY_ID.get(id);
-        if (movie) resolved.push(movie);
-      }
-
-      res.json(resolved);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   // Get specific movie details
   app.get("/api/movies/detail/:id", async (req, res) => {
     try {

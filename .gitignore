@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+probe.mjs
+patches.txt
+*.bak-*
+tmdb-repair-report.json
+tmdb-repair-report.txt
+tmdb-id-repair-report.json
+tmdb-id-repair-report.txt
