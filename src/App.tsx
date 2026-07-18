@@ -59,6 +59,7 @@ const MovieLibrary = lazy(() => import("./components/MovieLibrary"));
 const MovieDetail = lazy(() => import("./components/MovieDetail"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 const UserProfile = lazy(() => import("./components/UserProfile"));
+const SettingsPage = lazy(() => import("./components/SettingsPage"));
 
 // Icons
 import {
@@ -1139,10 +1140,9 @@ export default function App() {
         suggestionPool={combinedMoviePool}
         onSelectMovie={handleSelectMovie}
         onOpenSettings={() => {
-          setActiveTab("profile");
+          setActiveTab("settings");
           setSelectedMovie(null);
           setViewedProfileUserId(null);
-          setOpenProfileInEditMode(true);
         }}
       />
 
@@ -2444,6 +2444,18 @@ export default function App() {
                   watchlistIds={watchlistIds}
                   onToggleSave={handleQuickToggleWatchlist}
                 />
+              </Suspense>
+            </motion.div>
+          ) : activeTab === "settings" ? (
+            /* 6.75 SETTINGS — Task Y: dedicated Settings page (Appearance/theme) */
+            <motion.div
+              key="settings-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <Suspense fallback={<TabLoadingFallback />}>
+                <SettingsPage />
               </Suspense>
             </motion.div>
           ) : (

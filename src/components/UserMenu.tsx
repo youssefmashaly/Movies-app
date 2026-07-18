@@ -5,7 +5,7 @@
 // Replaces the standalone "Profile" / "My Dashboard" nav buttons and the
 // bare Logout button with a single avatar-triggered dropdown, in the spirit
 // of Google/GitHub/Discord/Netflix account menus:
-//   - View Profile / My Dashboard / Settings / Theme toggle / Logout
+//   - View Profile / My Dashboard / Settings / Logout
 //   - animates open/closed, closes on outside click or Escape
 //   - full keyboard support: ArrowUp/ArrowDown/Home/End cycle items, Tab is
 //     trapped inside the menu while open, Escape returns focus to the
@@ -19,11 +19,8 @@ import {
   LayoutDashboard,
   Settings as SettingsIcon,
   LogOut,
-  Sun,
-  Moon,
   ChevronDown
 } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
 
 interface UserMenuProps {
   user: FirebaseUser;
@@ -43,7 +40,6 @@ interface MenuItem {
 }
 
 export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }: UserMenuProps) {
-  const { theme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -79,14 +75,6 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
         }
       },
       {
-        id: "theme",
-        label: theme === "dark" ? "Switch to Light theme" : "Switch to Dark theme",
-        icon: theme === "dark" ? Sun : Moon,
-        onSelect: () => toggleTheme(),
-        checkbox: true,
-        checked: theme === "light"
-      },
-      {
         id: "logout",
         label: "Logout",
         icon: LogOut,
@@ -97,7 +85,7 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
         danger: true
       }
     ],
-    [theme, onNavigate, onOpenSettings, onLogout, toggleTheme]
+    [onNavigate, onOpenSettings, onLogout]
   );
 
   // Close on outside click.

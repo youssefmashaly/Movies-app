@@ -74,27 +74,22 @@ body {
   background: rgba(220, 38, 38, 0.9);
 }
 
-/* Phase 29 — Theme-switch transition window (fixes the reported "freeze").
-   Flipping ~10 shared CSS variables at :root forces the browser to
-   recompute style for every element in the DOM in a single frame — with
-   a few hundred movie cards, gradients and shadows on screen, that
-   recalculation is large enough to read as a freeze/hard-flash. Rather
-   than fight that (it's the direct cost of the one-variable-updates-the-
-   whole-app architecture that makes this scale to future pages for
-   free), ThemeContext now adds this class for ~260ms around the flip so
-   the same recalculation resolves as a smooth cross-fade instead of an
-   instant snap. Scoped to a temporary class (not a permanent global
-   rule) so ordinary hover/press interactions stay instant the rest of
-   the time — see the existing Phase 26/27 `active:scale-*` press
-   feedback, which would otherwise feel laggy under a permanent
-   transition. Skipped entirely under prefers-reduced-motion (see
-   ThemeContext.tsx). */
+/* Task Y — theme-switch performance fix.
+   The previous rule transitioned background-color, border-color, color,
+   box-shadow, fill, stroke, AND background-image on `*` plus every
+   `*::before`/`*::after` pseudo-element for 240ms. box-shadow and
+   background-image are not compositor-only properties, so the browser had
+   to repaint (not just composite) on every frame of the transition, across
+   every one of the few hundred movie cards/gradients/shadows on screen —
+   that repaint cost was the actual freeze, not the CSS-variable flip itself.
+   This trims the transitioned properties to only the cheap, GPU-composited
+   ones, drops the redundant pseudo-element selectors (halving the matched
+   node count), and shortens the window — the flip still cross-fades
+   smoothly, it just does far less work per frame. */
 .theme-transitioning,
-.theme-transitioning *,
-.theme-transitioning *::before,
-.theme-transitioning *::after {
-  transition-property: background-color, border-color, color, box-shadow, fill, stroke, background-image !important;
-  transition-duration: 240ms !important;
+.theme-transitioning * {
+  transition-property: background-color, border-color, color, fill, stroke !important;
+  transition-duration: 120ms !important;
   transition-timing-function: ease !important;
 }
 

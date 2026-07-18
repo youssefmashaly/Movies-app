@@ -527,12 +527,14 @@ export default function Navbar({
                 </div>
 
                 {/* Phase 21 — avatar now opens the account dropdown menu
-                    (View Profile / My Dashboard / Settings / Theme / Logout)
-                    instead of standalone tab-bar buttons + a bare Logout icon. */}
+                    (View Profile / My Dashboard / Settings / Logout)
+                    instead of standalone tab-bar buttons + a bare Logout icon.
+                    Task Y — theme selection moved out of this dropdown and
+                    into the dedicated Settings page. */}
                 <UserMenu
                   user={user}
                   onNavigate={(tab) => setActiveTab(tab)}
-                  onOpenSettings={onOpenSettings ?? (() => setActiveTab("profile"))}
+                  onOpenSettings={onOpenSettings ?? (() => setActiveTab("settings"))}
                   onLogout={handleLogout}
                 />
               </motion.div>

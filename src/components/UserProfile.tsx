@@ -734,7 +734,7 @@ export default function UserProfile({
                         <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-400 text-xs flex-shrink-0 overflow-hidden">
                           {u.avatar_url
                             ? <img src={u.avatar_url} alt={u.display_name ?? ""} className="w-full h-full object-cover" />
-                            : (u.display_name ?? "?")[0].toUpperCase()
+                            : (u.display_name?.trim() ? u.display_name.trim()[0].toUpperCase() : "?")
                           }
                         </div>
                         <div className="flex-1 min-w-0">

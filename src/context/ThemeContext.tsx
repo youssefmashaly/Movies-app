@@ -10,7 +10,7 @@
 // localStorage-persisted dark/light preference and the document-level hook
 // (`data-theme` on <html>) that a future pass can build a full light theme
 // on top of without touching the toggle mechanism itself.
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type Theme = "dark" | "light";
 
@@ -43,19 +43,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Phase 29 — fix for the reported "freeze"/hard-repaint on toggle.
-    // Flipping `data-theme` changes ~10 shared CSS custom properties that
-    // every neutral-*/white utility in the app resolves to, so the browser
-    // recomputes style for the entire DOM in one uninterrupted frame —
-    // perceptible as a freeze on pages with many cards/gradients/shadows.
-    // The fix isn't to shrink that recalculation (it's inherent to reusing
-    // one shared variable across the whole app, which is what makes the
-    // architecture scale to future pages with zero extra work) — it's to
-    // spread the *visible* change over a short, GPU-friendly transition
-    // instead of an instant flash. `.theme-transitioning` (see index.css)
-    // is added right before the flip and removed after the transition
-    // window closes, so normal hover/press interactions stay instant the
-    // rest of the time instead of permanently inheriting a 200ms delay.
+    // Task Y — root cause of the reported "freeze" was `.theme-transitioning`
+    // (see index.css) forcing background-color/border-color/color/box-shadow/
+    // fill/stroke/background-image transitions onto *every element and
+    // pseudo-element in the DOM* for 240ms. box-shadow and background-image
+    // are not compositor-only properties — animating them forces the browser
+    // to repaint on every frame, and with a few hundred movie cards on
+    // screen that repaint cost is what read as a freeze. The CSS rule has
+    // been trimmed to only the cheap, GPU-composited color properties and
+    // no longer touches ::before/::after, and the window below is shortened
+    // to match — the flip still cross-fades, it just does far less work
+    // per frame while doing it.
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!prefersReducedMotion) {
       root.classList.add("theme-transitioning");
@@ -71,14 +69,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (prefersReducedMotion) return;
     const timeout = window.setTimeout(() => {
       root.classList.remove("theme-transitioning");
-    }, 260);
+    }, 150);
     return () => window.clearTimeout(timeout);
   }, [theme]);
 
-  const setTheme = (next: Theme) => setThemeState(next);
-  const toggleTheme = () => setThemeState((prev) => (prev === "dark" ? "light" : "dark"));
+  // Stable function identities so consuming components (UserMenu previously,
+  // now SettingsPage) don't re-render just because some unrelated state
+  // higher up caused ThemeProvider itself to re-render.
+  const setTheme = useCallback((next: Theme) => setThemeState(next), []);
+  const toggleTheme = useCallback(() => setThemeState((prev) => (prev === "dark" ? "light" : "dark")), []);
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>{children}</ThemeContext.Provider>;
+  // The old inline object literal (`value={{ theme, toggleTheme, setTheme }}`)
+  // was a brand-new object on every ThemeProvider render, which — since
+  // ThemeProvider wraps the entire app in App.tsx — meant every consumer of
+  // useTheme() re-rendered on any app-wide state change, not just real theme
+  // changes. Memoizing against `theme` (the only value that actually varies)
+  // means consumers now only re-render when the theme itself changes.
+  const value = useMemo(() => ({ theme, toggleTheme, setTheme }), [theme, toggleTheme, setTheme]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
