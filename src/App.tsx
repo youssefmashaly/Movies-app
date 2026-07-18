@@ -1068,14 +1068,15 @@ export default function App() {
     setHeroIndex(((index % heroSlides.length) + heroSlides.length) % heroSlides.length);
   };
 
-  // Auto-advance every 7s while playing and more than one slide exists.
-  // Paused entirely (no timer at all) when heroPlaying is false, rather than
+  // Auto-advance every 3.5s while playing and more than one slide exists
+  // (Phase 32: doubled speed from the previous 7s interval). Paused
+  // entirely (no timer at all) when heroPlaying is false, rather than
   // just visually frozen — avoids any background work while paused.
   useEffect(() => {
     if (!heroPlaying || heroSlides.length <= 1) return;
     const id = setInterval(() => {
       setHeroIndex((i) => (i + 1) % heroSlides.length);
-    }, 7000);
+    }, 3500);
     return () => clearInterval(id);
   }, [heroPlaying, heroSlides.length]);
 
@@ -1245,7 +1246,7 @@ export default function App() {
                         initial={{ opacity: 0, scale: 1.06 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.02 }}
-                        transition={{ duration: 0.9, ease: "easeInOut" }}
+                        transition={{ duration: 0.45, ease: "easeInOut" }}
                         onError={(e) => { (e.target as HTMLImageElement).src = featuredMovie.posterPath; }}
                         className="absolute inset-0 h-full w-full object-cover brightness-[0.35]"
                       />
@@ -1281,7 +1282,7 @@ export default function App() {
                         initial="hidden"
                         animate="show"
                         exit={{ opacity: 0, y: -8, transition: { duration: 0.25 } }}
-                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } }}
+                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.045, delayChildren: 0.05 } } }}
                         className="relative z-10 p-8 md:p-12 text-left max-w-2xl"
                       >
                         <motion.div

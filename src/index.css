@@ -16,24 +16,32 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar — Phase 32: thin, always-visible, red accent thumb.
+   Applies globally (Explore, Movie Library, and every scrollable panel
+   e.g. the watchlist drawer) since these are unscoped element selectors,
+   not tied to any one page or component. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(229, 68, 68, 0.7) rgba(255, 255, 255, 0.05);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #030303;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f1f1f;
-  border-radius: 999px;
-  border: 2px solid #030303;
+  background: rgba(229, 68, 68, 0.7);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #dc2626;
+  background: rgba(229, 68, 68, 0.9);
 }
 
 /* Phase 21 — Theme Toggle foundation.
@@ -49,17 +57,21 @@ body {
   color: #171717;
 }
 
+:root[data-theme="light"] * {
+  scrollbar-color: rgba(220, 38, 38, 0.7) rgba(248, 248, 248, 0.8);
+}
+
 :root[data-theme="light"] ::-webkit-scrollbar-track {
-  background: #f5f5f4;
+  background: rgba(248, 248, 248, 0.8);
 }
 
 :root[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: #d4d4d4;
-  border-color: #f5f5f4;
+  background: rgba(220, 38, 38, 0.7);
+  border-color: rgba(248, 248, 248, 0.8);
 }
 
 :root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: #b91c1c;
+  background: rgba(220, 38, 38, 0.9);
 }
 
 /* Phase 29 — Theme-switch transition window (fixes the reported "freeze").

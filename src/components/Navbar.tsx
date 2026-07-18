@@ -269,11 +269,11 @@ export default function Navbar({
       id="main-navbar"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? "bg-neutral-950/90 border-b border-neutral-900 shadow-xl backdrop-blur-md py-3.5"
-          : "bg-transparent py-5"
+          ? "bg-neutral-950/90 border-b border-neutral-900 shadow-xl backdrop-blur-md py-5"
+          : "bg-transparent py-7"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between gap-8">
         {/* Logo and Brand */}
         <div
           id="navbar-logo"
@@ -333,7 +333,7 @@ export default function Navbar({
         </div>
 
         {/* Search Bar - Hide when in Oracle or Watchlist if desired, but general header is epic */}
-        <div className="flex-1 max-w-xs mx-4 hidden sm:block relative">
+        <div className="flex-1 max-w-xs mx-6 hidden sm:block relative">
           <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500 pointer-events-none">
             <Search className="h-4 w-4" />
