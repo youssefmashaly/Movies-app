@@ -410,7 +410,7 @@ export default function Navbar({
           where searching movies is actually useful; hidden on Settings,
           Dashboard, and View Profile. */}
       {(activeTab === "explore" || activeTab === "library") && (
-      <div className="max-w-7xl mx-auto px-6 md:px-8 mt-8 hidden sm:block">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 mt-8 hidden md:block">
         <div className="relative">
           <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>
           <span className="absolute inset-y-0 left-0 flex items-center pl-5 text-neutral-500 pointer-events-none">

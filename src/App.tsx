@@ -1177,7 +1177,7 @@ export default function App() {
       <main
         id="main-content"
         className={`relative z-10 pt-24 ${
-          activeTab === "explore" || activeTab === "library" ? "sm:pt-48" : "sm:pt-28"
+          activeTab === "explore" || activeTab === "library" ? "md:pt-48" : "md:pt-28"
         }`}
       >
         <AnimatePresence mode="wait">

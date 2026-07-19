@@ -262,14 +262,6 @@ export default function UserDashboard({
       .slice(0, 12);
   }, [primaryGenre, combinedMoviePool]);
 
-  const yourHighestRated = useMemo(() => {
-    const ratingMap = new Map(ratings.map((r) => [r.movie_id, r.rating]));
-    return combinedMoviePool
-      .filter((m) => ratingMap.has(m.id))
-      .sort((a, b) => (ratingMap.get(b.id) ?? 0) - (ratingMap.get(a.id) ?? 0))
-      .slice(0, 12);
-  }, [ratings, combinedMoviePool]);
-
   const hiddenGemsForYou = useMemo(() => {
     const genres = favoriteGenres.length ? favoriteGenres : mostWatchedGenres;
     return combinedMoviePool
@@ -447,22 +439,6 @@ export default function UserDashboard({
               icon={Heart}
               accent="red"
               movies={basedOnFavorites}
-              isLoading={false}
-              onMovieClick={onSelectMovie}
-              isSaved={isMovieSaved}
-              onToggleSave={onToggleSave}
-            />
-          )}
-
-          {/* ── YOUR HIGHEST RATED ── */}
-          {yourHighestRated.length >= 2 && (
-            <MovieRail
-              id="dash-highest-rated"
-              title="Your Highest Rated"
-              subtitle="Movies you personally loved"
-              icon={Star}
-              accent="amber"
-              movies={yourHighestRated}
               isLoading={false}
               onMovieClick={onSelectMovie}
               isSaved={isMovieSaved}
