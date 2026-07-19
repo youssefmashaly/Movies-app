@@ -283,7 +283,7 @@ export default function Navbar({
           aria-label="Movie Database, go to Explore"
           onClick={() => {
             setActiveTab("explore");
-            document.getElementById("navbar-search")?.focus();
+            setTimeout(() => document.getElementById("navbar-search")?.focus(), 0);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -405,7 +405,11 @@ export default function Navbar({
           input between the tabs and the account widget. Larger height,
           wider container, bigger centered icon, generous padding. Desktop
           only (sm:block) — the mobile drawer keeps its own compact search
-          input below, unaffected by this change. */}
+          input below, unaffected by this change.
+          Task 4 — only shown on Explore and Movie Library, the two pages
+          where searching movies is actually useful; hidden on Settings,
+          Dashboard, and View Profile. */}
+      {(activeTab === "explore" || activeTab === "library") && (
       <div className="max-w-7xl mx-auto px-6 md:px-8 mt-8 hidden sm:block">
         <div className="relative">
           <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>
@@ -579,6 +583,7 @@ export default function Navbar({
           </AnimatePresence>
         </div>
       </div>
+      )}
 
       {/* Mobile Drawer Navigation Menu */}
       <AnimatePresence>

@@ -359,6 +359,36 @@ export default function UserProfile({
 
   const MOVIES_BY_ID = useMemo(() => new Map(catalogMovies.map((m) => [m.id, m])), [catalogMovies]);
 
+  // Favorite decade / director — computed from every movie id this profile
+  // has touched (rated, reviewed, watchlisted, viewed), cross-referenced
+  // against the existing static catalog. No new tables or API calls.
+  //
+  // TASK 1 FIX: these two hooks used to live below the "guards" section
+  // (after the `if (!firebaseUser) return`, `if (profileLoading) return`,
+  // `if (profileError || !profile) return` early returns). That meant the
+  // very first render (profileLoading still true) never reached them, but
+  // the render right after the profile finished loading did — two extra
+  // hooks fired that hadn't fired on the previous render, which is a Rules
+  // of Hooks violation React reports as "Rendered more hooks than during
+  // the previous render." That thrown error is exactly what the app's
+  // ErrorBoundary was catching as "Something went wrong" every time View
+  // Profile finished loading. Hoisting them up here, beside this component's
+  // other unconditional hooks, means every render — loading, error, or
+  // loaded — calls the exact same hooks in the exact same order.
+  const allTouchedMovieIds = useMemo(() => {
+    const ids = new Set<string>();
+    ratings.forEach((r) => ids.add(r.movie_id));
+    reviews.forEach((r) => ids.add(r.movie_id));
+    watchlistMovies.forEach((w) => ids.add(w.movie_id));
+    recentlyViewed.forEach((v) => ids.add(v.movie_id));
+    return Array.from(ids);
+  }, [ratings, reviews, watchlistMovies, recentlyViewed]);
+
+  const { favoriteDecade, favoriteDirector } = useMemo(
+    () => computeFavoriteDecadeAndDirector(allTouchedMovieIds, MOVIES_BY_ID),
+    [allTouchedMovieIds, MOVIES_BY_ID]
+  );
+
   // Phase 21 — "Settings" in the account dropdown routes here with
   // initialEditMode=true so it opens straight into the edit form rather
   // than just the read view. Fires once profile data is actually loaded,
@@ -476,22 +506,15 @@ export default function UserProfile({
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
 
-  // Favorite decade / director — computed from every movie id this profile
-  // has touched (rated, reviewed, watchlisted, viewed), cross-referenced
-  // against the existing static catalog. No new tables or API calls.
-  const allTouchedMovieIds = useMemo(() => {
-    const ids = new Set<string>();
-    ratings.forEach((r) => ids.add(r.movie_id));
-    reviews.forEach((r) => ids.add(r.movie_id));
-    watchlistMovies.forEach((w) => ids.add(w.movie_id));
-    recentlyViewed.forEach((v) => ids.add(v.movie_id));
-    return Array.from(ids);
-  }, [ratings, reviews, watchlistMovies, recentlyViewed]);
-
-  const { favoriteDecade, favoriteDirector } = useMemo(
-    () => computeFavoriteDecadeAndDirector(allTouchedMovieIds, MOVIES_BY_ID),
-    [allTouchedMovieIds]
-  );
+  // Task 3 — "Favorite Movies": this profile's own highest-rated titles.
+  // Built entirely from data already in memory (ratings + the existing
+  // catalog lookup used above for favoriteDecade/favoriteDirector) — no new
+  // backend call, and no fabricated data. Falls back to no poster (handled
+  // by PosterStrip already) if a rated movie isn't in the loaded catalog.
+  const favoriteMovies = [...ratings]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 8)
+    .map(r => ({ key: r.id, title: r.movie_title, poster_path: MOVIES_BY_ID.get(r.movie_id)?.posterPath ?? null }));
 
   const tasteMatchPct = !isOwnProfile
     ? computeTasteMatchPct(myFavoriteGenres, favGenres)
@@ -763,6 +786,11 @@ export default function UserProfile({
           <section>
             <SectionTitle icon={Eye} title="Recently Watched" />
             <PosterStrip items={recentlyViewed.map(rv => ({ key: rv.id, title: rv.title, poster_path: rv.poster_path }))} />
+          </section>
+
+          <section>
+            <SectionTitle icon={Heart} title="Favorite Movies" />
+            <PosterStrip items={favoriteMovies} />
           </section>
 
           <section>

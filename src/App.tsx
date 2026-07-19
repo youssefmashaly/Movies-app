@@ -1174,7 +1174,12 @@ export default function App() {
       />
 
       {/* Responsive layout wrapper */}
-      <main id="main-content" className="relative pt-24 sm:pt-48 z-10">
+      <main
+        id="main-content"
+        className={`relative z-10 pt-24 ${
+          activeTab === "explore" || activeTab === "library" ? "sm:pt-48" : "sm:pt-28"
+        }`}
+      >
         <AnimatePresence mode="wait">
 
 
@@ -1820,7 +1825,17 @@ export default function App() {
                 </div>
               )}
 
-              {/* Main explore browse grid with sort controls */}
+              {/* Main explore browse grid with sort controls.
+                  Task 5 — this used to render unconditionally as a "Full Film
+                  Archive" full-catalog browse grid (with sort + advanced
+                  filters), duplicating Movie Library's entire job once that
+                  tab existed. Now gated behind an active search query: it
+                  only appears as search results when the person actually
+                  searches from Explore, which is expected search behavior,
+                  not a duplicate "browse everything" experience. Movie
+                  Library remains the one place to browse the full catalog
+                  with no search query. */}
+              {searchQuery && (
               <div className="max-w-[1600px] mx-auto px-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-neutral-900 gap-4 text-left">
                   <div>
@@ -2252,6 +2267,7 @@ export default function App() {
                   </div>
                 )}
               </div>
+              )}
             </motion.div>
           ) : activeTab === "watchlist" ? (
             /* 3. YOUR WATCHLIST VIEW */
@@ -2476,6 +2492,7 @@ export default function App() {
                   onToggleSave={handleQuickToggleWatchlist}
                   watchlistIds={watchlistIds}
                   onEditGenres={() => setShowGenreOnboarding(true)}
+                  onViewProfile={() => setActiveTab("profile")}
                 />
               </Suspense>
             </motion.div>

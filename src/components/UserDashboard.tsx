@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   Star, Eye, MessageSquare, BookMarked, TrendingUp,
-  Film, Heart, Award, Zap, Target, Loader2, ChevronRight,
+  Film, Heart, Award, Target, Loader2, ChevronRight,
   Users, Sparkles, Globe
 } from "lucide-react";
 import { auth } from "../firebase";
@@ -67,27 +67,6 @@ function StatBadge({ icon: Icon, label, value, color }: {
   );
 }
 
-function Achievement({ icon: Icon, label, desc, unlocked }: {
-  icon: React.ElementType; label: string; desc: string; unlocked: boolean;
-}) {
-  return (
-    <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
-      unlocked
-        ? "border-amber-500/30 bg-amber-500/10"
-        : "border-neutral-800 bg-neutral-900/40 opacity-50"
-    }`}>
-      <div className={`rounded-xl p-2 flex-shrink-0 ${unlocked ? "bg-amber-500/20 text-amber-400" : "bg-neutral-800 text-neutral-600"}`}>
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="min-w-0">
-        <p className={`text-xs font-semibold ${unlocked ? "text-amber-300" : "text-neutral-500"}`}>{label}</p>
-        <p className="text-[10px] text-neutral-400 leading-snug">{desc}</p>
-      </div>
-      {unlocked && <Zap className="h-3 w-3 text-amber-400 ml-auto flex-shrink-0" />}
-    </div>
-  );
-}
-
 function SectionLabel({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-4">
@@ -142,6 +121,9 @@ interface UserDashboardProps {
   onToggleSave: (movie: Movie) => void;
   watchlistIds: Set<string>;
   onEditGenres: () => void;
+  /** Task 2 — Dashboard no longer duplicates the achievements/reviews
+   *  showcase (that's View Profile's job now); this sends people there. */
+  onViewProfile: () => void;
 }
 
 export default function UserDashboard({
@@ -153,6 +135,7 @@ export default function UserDashboard({
   onToggleSave,
   watchlistIds,
   onEditGenres,
+  onViewProfile,
 }: UserDashboardProps) {
   const firebaseUser = auth.currentUser;
   const userId = firebaseUser?.uid ?? null;
@@ -300,17 +283,6 @@ export default function UserDashboard({
       .slice(0, 12);
   }, [favoriteGenres, mostWatchedGenres, combinedMoviePool, watchlistIds]);
 
-  const achievements = useMemo(() => [
-    { icon: MessageSquare, label: "First Review",   desc: "Write your first movie review",       unlocked: reviews.length >= 1 },
-    { icon: Star,          label: "Critic",         desc: "Rate 10 or more movies",              unlocked: ratings.length >= 10 },
-    { icon: BookMarked,    label: "Collector",      desc: "Add 25 movies to your watchlist",     unlocked: watchlistMovies.length >= 25 },
-    { icon: Film,          label: "Genre Explorer", desc: "Watch movies in 5 different genres",  unlocked: Object.keys(watchedGenreFreq).length >= 5 },
-    { icon: Eye,           label: "Cinephile",      desc: "Watch 20 or more movies",             unlocked: recentlyViewed.length >= 20 },
-    { icon: Award,         label: "Reviewer",       desc: "Write 5 or more reviews",             unlocked: reviews.length >= 5 },
-  ], [reviews.length, ratings.length, watchlistMovies.length, watchedGenreFreq, recentlyViewed.length]);
-
-  const unlockedCount = achievements.filter((a) => a.unlocked).length;
-
   // ─── unauthenticated guard ────────────────────────────────────────────────
 
   if (!firebaseUser) {
@@ -357,10 +329,14 @@ export default function UserDashboard({
               <Heart className="h-3.5 w-3.5 text-red-400" aria-hidden="true" />
               {favoriteGenres.length > 0 ? "Edit Favorite Genres" : "Pick Favorite Genres"}
             </button>
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <Award className="h-4 w-4 text-amber-400" />
-              <span>{unlockedCount}/{achievements.length} achievements unlocked</span>
-            </div>
+            <button
+              type="button"
+              onClick={onViewProfile}
+              className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+            >
+              <Award className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+              View Full Profile
+            </button>
           </div>
         )}
       </div>
@@ -624,47 +600,12 @@ export default function UserDashboard({
             />
           )}
 
-          {/* ── ACHIEVEMENTS ── */}
-          <section>
-            <SectionLabel icon={Award} title={`Achievements · ${unlockedCount}/${achievements.length}`} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {achievements.map((a) => (
-                <Achievement key={a.label} {...a} />
-              ))}
-            </div>
-          </section>
-
-          {/* ── RECENTLY REVIEWED ── */}
-          {reviews.length > 0 ? (
-            <section>
-              <SectionLabel icon={MessageSquare} title="Recently Reviewed" />
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 divide-y divide-neutral-800/60">
-                {reviews.slice(0, 5).map((r) => (
-                  <div key={r.id} className="py-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-neutral-200 truncate pr-4">{r.movie_title}</span>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                        <span className="text-xs font-semibold text-white">{r.rating}/10</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed">{r.comment}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : (
-            <section>
-              <SectionLabel icon={MessageSquare} title="Recently Reviewed" />
-              <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 py-10 px-6 text-center">
-                <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto mb-3" />
-                <p className="text-xs text-neutral-500 max-w-sm mx-auto leading-relaxed">
-                  You haven't reviewed anything yet. Share your thoughts on a movie you've watched and it'll show up here.
-                </p>
-              </div>
-            </section>
-          )}
-
+          {/* ── RECOMMENDED FOR YOU (community-driven, closes out Dashboard's
+              recommendation rails) — Achievements and Recently Reviewed used
+              to duplicate content that now lives exclusively on View Profile
+              (Task 2): a fuller achievements showcase and the same review
+              list. Dashboard stays focused on watchlist/genre/account
+              management and personalized discovery rails. */}
           </>
       )}
     </motion.div>
