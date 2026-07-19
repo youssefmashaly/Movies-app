@@ -326,7 +326,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             onClick={handleToggleWatchlist}
             disabled={watchlistLoading}
             aria-pressed={isInWatchlist}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all shadow-lg backdrop-blur-md border cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all shadow-lg backdrop-blur-md border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-red-500 ${
               isInWatchlist
                 ? "bg-red-500/20 border-red-500/50 text-red-300"
                 : "bg-neutral-900/80 border-neutral-800 text-white hover:bg-neutral-800"
@@ -603,7 +603,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                     onClick={handleDeleteReview}
                     disabled={submitLoading}
                     aria-label="Delete your review"
-                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete
@@ -662,7 +662,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                     id="submit-review-btn"
                     type="submit"
                     disabled={submitLoading}
-                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-[#ffffff] shadow hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
+                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-[#ffffff] shadow hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
                   >
                     {submitLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#ffffff] border-t-transparent" />

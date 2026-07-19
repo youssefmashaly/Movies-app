@@ -195,7 +195,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 id="auth-submit-btn"
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-[#ffffff] shadow-lg hover:from-red-500 hover:to-amber-505 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-400"
+                className="w-full mt-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-3 font-semibold text-[#ffffff] shadow-lg hover:from-red-500 hover:to-amber-505 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-400"
               >
                 {loading ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#ffffff] border-t-transparent" />
