@@ -315,7 +315,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
           <button
             id="movie-detail-back-btn"
             onClick={onBack}
-            className="flex items-center gap-2 rounded-full bg-neutral-900/80 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md border border-neutral-800 shadow-lg hover:bg-neutral-800 hover:text-red-400 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+            className="flex items-center gap-2 rounded-full bg-neutral-900/70 px-4 py-2 text-sm font-semibold text-white backdrop-blur-xl border border-white/[0.1] shadow-lg hover:bg-neutral-800/80 hover:text-red-400 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to movies
@@ -326,10 +326,10 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             onClick={handleToggleWatchlist}
             disabled={watchlistLoading}
             aria-pressed={isInWatchlist}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all shadow-lg backdrop-blur-md border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-red-500 ${
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all backdrop-blur-xl border cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-red-500 ${
               isInWatchlist
-                ? "bg-red-500/20 border-red-500/50 text-red-300"
-                : "bg-neutral-900/80 border-neutral-800 text-white hover:bg-neutral-800"
+                ? "bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_8px_30px_-8px_rgba(220,38,38,0.5)]"
+                : "bg-neutral-900/70 border-white/[0.1] text-white shadow-lg hover:bg-neutral-800/80"
             }`}
           >
             {isInWatchlist ? (
@@ -365,11 +365,12 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
 
         {/* Ambient Overlay Shade */}
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/50 via-transparent to-transparent" />
 
         {/* Short specs panel on bottom left */}
         <div className="absolute bottom-0 left-0 right-0 p-8 max-w-[1600px] mx-auto flex flex-col md:flex-row items-end gap-8 z-10 w-full">
           {/* Flat Poster Card */}
-          <div className="hidden md:block w-48 shrink-0 rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl bg-neutral-950 aspect-[2/3]">
+          <div className="hidden md:block w-48 shrink-0 rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] bg-neutral-950 aspect-[2/3]">
             {!posterError && movie.posterPath ? (
               <img
                 src={movie.posterPath}
@@ -471,7 +472,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   {movie.genres.map((g, idx) => (
                     <span
                       key={`${movie.id}-genpage-${idx}`}
-                      className="rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-200"
+                      className="rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-1.5 text-sm font-medium text-neutral-200"
                     >
                       {g}
                     </span>
@@ -494,16 +495,23 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: Math.min(castIdx, 8) * 0.05 }}
                       whileHover={{ y: -4 }}
-                      className="rounded-2xl border border-neutral-900 bg-neutral-900/30 p-3 text-center flex flex-col items-center transition-colors hover:border-neutral-700 hover:bg-neutral-900/60"
+                      className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 text-center flex flex-col items-center transition-all hover:border-white/[0.14] hover:bg-white/[0.05] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]"
                     >
-                      <img
-                        src={c.profilePath}
-                        alt={c.name}
-                        referrerPolicy="no-referrer"
-                        loading="lazy"
-                        decoding="async"
-                        className="h-24 w-24 rounded-full object-cover mb-3 border border-neutral-800 shadow-md grayscale hover:grayscale-0 transition-all duration-300"
-                      />
+                      {!failedCastIds.has(c.id) && c.profilePath ? (
+                        <img
+                          src={c.profilePath}
+                          alt={c.name}
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          decoding="async"
+                          onError={() => setFailedCastIds((prev) => new Set(prev).add(c.id))}
+                          className="h-24 w-24 rounded-full object-cover mb-3 border border-white/[0.08] shadow-md grayscale hover:grayscale-0 transition-all duration-300"
+                        />
+                      ) : (
+                        <div className="h-24 w-24 rounded-full mb-3 border border-white/[0.08] shadow-md bg-neutral-800 flex items-center justify-center text-sm font-bold text-neutral-400">
+                          {c.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()}
+                        </div>
+                      )}
                       <h4 className="text-sm font-semibold text-white leading-snug truncate w-full">
                         {c.name}
                       </h4>
@@ -516,30 +524,43 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               </div>
             )}
 
-            {/* Embedded video Trailer section if present */}
-            {movie.trailerUrl && (
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-neutral-900 mb-5 uppercase text-neutral-400 flex items-center gap-2">
-                  <PlayIcon className="h-5 w-5 text-red-500" />
-                  Official Trailer
-                </h2>
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-neutral-950 shadow-2xl bg-black">
+            {/* Embedded video Trailer section — Task 3: loading state + fallback
+                when unavailable, instead of the whole section silently vanishing */}
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-neutral-900 mb-5 uppercase text-neutral-400 flex items-center gap-2">
+                <PlayIcon className="h-5 w-5 text-red-500" />
+                Official Trailer
+              </h2>
+              {movie.trailerUrl ? (
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.06] shadow-[0_30px_70px_-20px_rgba(0,0,0,0.7)] bg-black">
+                  {!trailerLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-red-500" aria-hidden="true" />
+                    </div>
+                  )}
                   <iframe
                     src={movie.trailerUrl}
                     title={`${movie.title} Trailer`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
+                    onLoad={() => setTrailerLoaded(true)}
                     className="absolute inset-0 h-full w-full"
                   />
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="aspect-video w-full rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] flex flex-col items-center justify-center gap-2 text-center px-6">
+                  <PlayIcon className="h-8 w-8 text-neutral-700" aria-hidden="true" />
+                  <p className="text-sm font-semibold text-neutral-400">No trailer available yet</p>
+                  <p className="text-xs text-neutral-500 max-w-xs">We don't have a trailer on file for this title right now.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right sidebar: User rating widget & Custom reviews list */}
           <div className="space-y-8">
             {/* Quick Facts panel — surfaces metadata already on the Movie object */}
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
               <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Info className="h-4 w-4 text-neutral-500" aria-hidden="true" />
                 Quick Facts
@@ -654,7 +675,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       rows={4}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-800 bg-neutral-950 p-3 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 transition-all resize-none"
+                      className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 p-3 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 transition-all resize-none"
                     />
                   </div>
 
@@ -662,7 +683,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                     id="submit-review-btn"
                     type="submit"
                     disabled={submitLoading}
-                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-[#ffffff] shadow hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
+                    className="w-full rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 py-2.5 text-sm font-semibold text-[#ffffff] shadow-[0_10px_30px_-8px_rgba(220,38,38,0.5)] hover:shadow-[0_14px_36px_-8px_rgba(220,38,38,0.65)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:ring-red-400"
                   >
                     {submitLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#ffffff] border-t-transparent" />
@@ -680,14 +701,14 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   </button>
                 </form>
               ) : (
-                <div className="rounded-xl border border-dashed border-neutral-800 p-4 text-center">
+                <div className="rounded-xl border border-dashed border-white/[0.1] bg-white/[0.02] p-4 text-center">
                   <p className="text-xs text-neutral-400 mb-3">
                     Sign in to share your critical film analysis with the community.
                   </p>
                   <button
                     id="auth-trigger-detail-btn"
                     onClick={onOpenAuth}
-                    className="rounded-lg bg-neutral-800 px-4 py-2 text-xs font-semibold text-red-400 border border-neutral-700/50 hover:bg-neutral-700 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="rounded-lg bg-white/[0.05] px-4 py-2 text-xs font-semibold text-red-400 border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Sign in here
                   </button>
@@ -712,7 +733,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               {reviewsLoading ? (
                 <div className="space-y-3">
                   {[1, 2].map((i) => (
-                    <div key={i} className="rounded-xl border border-neutral-900 bg-neutral-950 p-4 space-y-3 animate-pulse">
+                    <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3 animate-pulse">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-neutral-800 shrink-0" />
                         <div className="flex-1 space-y-1.5">
@@ -729,12 +750,20 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   ))}
                 </div>
               ) : reviews.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-neutral-800 px-4 py-8 text-center space-y-2">
+                <div className="rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.02] px-4 py-8 text-center space-y-2">
                   <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto" />
                   <p className="text-sm font-semibold text-neutral-400">No reviews yet</p>
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-neutral-400 mb-1">
                     {user ? "Be the first to review this film." : "Sign in to leave the first review."}
                   </p>
+                  {!user && (
+                    <button
+                      onClick={onOpenAuth}
+                      className="rounded-lg bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-red-400 border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      Sign in
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
@@ -748,7 +777,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                         className={`rounded-xl border p-4 space-y-3 text-sm text-left transition-colors ${
                           isOwn
                             ? "border-red-500/20 bg-red-500/5"
-                            : "border-neutral-900 bg-neutral-950"
+                            : "border-white/[0.06] bg-white/[0.02]"
                         }`}
                       >
                         {/* Reviewer row */}

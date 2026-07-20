@@ -65,7 +65,7 @@ function genreFreq(items: { genres?: string[] | null }[]): Record<string, number
 
 function Stat({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px]">
+    <div className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 min-w-[88px]">
       <Icon className="h-4 w-4 text-red-500 mb-0.5" aria-hidden="true" />
       <span className="text-2xl font-bold text-white tabular-nums">{value}</span>
       <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{label}</span>
@@ -665,7 +665,7 @@ export default function UserProfile({
                         {isFollowing ? "Following" : "Follow"}
                       </button>
                       {tasteMatchPct !== null && (
-                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-neutral-800 bg-neutral-900/60">
+                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03]">
                           <Gauge className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
                           <span className="text-xs font-semibold text-white">{tasteMatchPct}%</span>
                           <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Taste Match</span>
@@ -687,7 +687,7 @@ export default function UserProfile({
           <Stat icon={Eye}           label="Viewed"    value={recentlyViewed.length} />
           <button
             onClick={() => openSocialPanel("followers")}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
           >
             <Users className="h-4 w-4 text-red-500 mb-0.5" aria-hidden="true" />
             <span className="text-2xl font-bold text-white tabular-nums">{followCounts.followers}</span>
@@ -695,7 +695,7 @@ export default function UserProfile({
           </button>
           <button
             onClick={() => openSocialPanel("following")}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 min-w-[88px] hover:border-red-600/40 transition-colors cursor-pointer"
           >
             <UserPlus className="h-4 w-4 text-red-500 mb-0.5" aria-hidden="true" />
             <span className="text-2xl font-bold text-white tabular-nums">{followCounts.following}</span>
@@ -752,7 +752,7 @@ export default function UserProfile({
                           }
                         }}
                         disabled={!onViewProfile}
-                        className="w-full flex items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 text-left hover:border-red-600/40 transition-colors cursor-pointer disabled:cursor-default disabled:hover:border-neutral-800"
+                        className="w-full flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-left hover:border-red-600/40 transition-colors cursor-pointer disabled:cursor-default disabled:hover:border-neutral-800"
                       >
                         <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-400 text-xs flex-shrink-0 overflow-hidden">
                           {u.avatar_url
@@ -801,7 +801,7 @@ export default function UserProfile({
           <section>
             <SectionTitle icon={Star} title="Recently Rated" />
             {ratings.length === 0 ? <Empty msg={isOwnProfile ? "You haven't rated any movies yet." : "No ratings yet."} /> : (
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 divide-y divide-neutral-800/60">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 divide-y divide-neutral-800/60">
                 {ratings.slice(0, 8).map(r => (
                   <div key={r.id} className="flex items-center justify-between py-2.5">
                     <span className="text-sm text-neutral-300 truncate pr-4">{r.movie_title}</span>
@@ -818,7 +818,7 @@ export default function UserProfile({
           <section>
             <SectionTitle icon={MessageSquare} title="Recently Reviewed" />
             {reviews.length === 0 ? <Empty msg={isOwnProfile ? "You haven't written any reviews yet." : "No reviews yet."} /> : (
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 divide-y divide-neutral-800/60">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 divide-y divide-neutral-800/60">
                 {reviews.slice(0, 6).map(r => (
                   <div key={r.id} className="py-3">
                     <div className="flex items-center justify-between mb-1">
@@ -860,7 +860,7 @@ export default function UserProfile({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="h-4 w-4 text-yellow-400" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Avg. Rating Given</span>
@@ -871,7 +871,7 @@ export default function UserProfile({
                 }
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <Heart className="h-4 w-4 text-red-500" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Review Likes Received</span>
@@ -879,7 +879,7 @@ export default function UserProfile({
                 <div className="flex items-end gap-1"><span className="text-4xl font-bold text-white">{reviewLikeTotal}</span></div>
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Film className="h-4 w-4 text-red-400" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Most Watched Genres</span>
@@ -890,7 +890,7 @@ export default function UserProfile({
                 }
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Star className="h-4 w-4 text-yellow-400" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Highest Rated Genres</span>
@@ -911,7 +911,7 @@ export default function UserProfile({
                 }
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <Heart className="h-4 w-4 text-red-500" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Favorite Genres</span>
@@ -924,7 +924,7 @@ export default function UserProfile({
                 }
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <Clapperboard className="h-4 w-4 text-neutral-400" aria-hidden="true" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Favorite Decade &amp; Director</span>

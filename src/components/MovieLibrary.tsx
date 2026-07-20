@@ -198,14 +198,17 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
         <WelcomeModal onClose={() => setShowWelcome(false)} movieCount={catalog.length || 500} />
       )}
 
-      <div className="flex flex-col gap-1 mb-6">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <LibraryBig className="h-7 w-7 text-red-500" aria-hidden="true" />
-          Movie Library
-        </h1>
-        <p className="text-sm text-neutral-400">
-          {catalogLoading ? "Loading the full catalog…" : `Browse all ${catalog.length} movies — search, filter, and sort at your own pace.`}
-        </p>
+      <div className="flex items-start gap-3 mb-6">
+        <span className="hidden sm:block h-9 w-1 rounded-full bg-gradient-to-b from-red-500 to-red-700 mt-1.5" aria-hidden="true" />
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+            <LibraryBig className="h-7 w-7 text-red-500" aria-hidden="true" />
+            Movie Library
+          </h1>
+          <p className="text-sm text-neutral-400">
+            {catalogLoading ? "Loading the full catalog…" : `Browse all ${catalog.length} movies — search, filter, and sort at your own pace.`}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -220,7 +223,7 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, director, actor, or year…"
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-900/60 py-3 pl-10 pr-4 text-sm text-white placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:border-red-500 transition-colors"
+            className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-neutral-500 shadow-[0_15px_40px_-20px_rgba(0,0,0,0.6)] focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:border-red-500/40 transition-all"
           />
         </div>
 
@@ -233,7 +236,7 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
             id="library-genre-select"
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
-            className="rounded-xl border border-neutral-800 bg-neutral-900/60 py-3 px-4 text-sm text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-3 px-4 text-sm text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,0.6)] focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
           >
             <option value="all">All Genres</option>
             {genres.map((g) => (
@@ -272,9 +275,22 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
           ))}
         </div>
       ) : filteredSorted.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-800 py-20 text-center">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] py-20 text-center">
+          <Search className="h-8 w-8 text-neutral-700 mx-auto mb-3" aria-hidden="true" />
           <p className="text-sm font-semibold text-neutral-400">No movies match your search.</p>
-          <p className="text-xs text-neutral-500 mt-1">Try a different title, genre, or clearing your filters.</p>
+          <p className="text-xs text-neutral-500 mt-1 mb-4">Try a different title, genre, or clearing your filters.</p>
+          {(searchQuery || selectedGenre !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedGenre("all");
+              }}
+              className="rounded-lg bg-white/[0.05] px-4 py-2 text-xs font-semibold text-red-400 border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <>

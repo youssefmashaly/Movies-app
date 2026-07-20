@@ -93,7 +93,7 @@ export default function AIMatchmaker({
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 text-neutral-100 text-left">
       {/* Intro Hero banner */}
-      <div className="mb-12 relative overflow-hidden rounded-3xl border border-neutral-800 bg-gradient-to-tr from-neutral-950 via-neutral-900 to-neutral-950 p-8 md:p-12 shadow-2xl">
+      <div className="mb-12 relative overflow-hidden rounded-3xl border border-white/[0.06] bg-gradient-to-tr from-neutral-950 via-neutral-900 to-neutral-950 p-8 md:p-12 shadow-[0_30px_80px_-25px_rgba(0,0,0,0.7)]">
         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
           <Film className="h-64 w-64" />
         </div>
@@ -115,7 +115,7 @@ export default function AIMatchmaker({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Left Side Form controls */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/30 p-6 shadow-xl backdrop-blur-md">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] backdrop-blur-xl">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-red-500" />
               Describe your mood
@@ -133,7 +133,7 @@ export default function AIMatchmaker({
                   value={mood}
                   onChange={(e) => setMood(e.target.value)}
                   placeholder="e.g. A rainy Saturday afternoon with hot coffee, searching for deep, heartwarming stories..."
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 p-3.5 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all resize-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 p-3.5 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all resize-none"
                 />
               </div>
 
@@ -145,7 +145,7 @@ export default function AIMatchmaker({
                   id="ai-genre-select"
                   value={genre}
                   onChange={(e) => setGenre(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 p-3.5 text-sm text-white outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
+                  className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 p-3.5 text-sm text-white outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
                 >
                   {ALL_GENRES.map((g) => (
                     <option key={`match-gen-${g}`} value={g} className="bg-neutral-950">
@@ -207,7 +207,7 @@ export default function AIMatchmaker({
           )}
 
           {/* Quick preset suggestions */}
-          <div className="rounded-2xl border border-neutral-900 bg-neutral-950/40 p-6">
+          <div className="rounded-2xl border border-white/[0.05] bg-white/[0.015] p-6">
             <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
               <HelpCircle className="h-3.5 w-3.5" />
               Stuck? Try a sample preset
@@ -241,7 +241,7 @@ export default function AIMatchmaker({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="rounded-3xl border border-neutral-800 border-dashed p-12 text-center flex flex-col items-center justify-center h-full min-h-[400px] space-y-4"
+                className="rounded-3xl border border-white/[0.08] border-dashed p-12 text-center flex flex-col items-center justify-center h-full min-h-[400px] space-y-4"
               >
                 <Loader2 className="h-10 w-10 text-red-500 animate-spin" />
                 <h3 className="text-lg font-bold tracking-tight text-white">Consulting the CinemaOracle</h3>
@@ -319,7 +319,7 @@ export default function AIMatchmaker({
                 key="oracle-empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="rounded-3xl border border-neutral-900 bg-neutral-950/20 p-12 text-center flex flex-col items-center justify-center h-full min-h-[400px]"
+                className="rounded-3xl border border-white/[0.06] bg-white/[0.015] p-12 text-center flex flex-col items-center justify-center h-full min-h-[400px]"
               >
                 <Sparkles className="h-10 w-10 text-neutral-600 mb-4" />
                 <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400">The Oracle Awaits</h3>

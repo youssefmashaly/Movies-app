@@ -2279,15 +2279,18 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               className="max-w-[1600px] mx-auto px-6 text-left"
             >
-              <div className="mb-8 pb-5 border-b border-neutral-900 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-extrabold text-white flex items-center gap-2 uppercase tracking-wide">
-                    <Bookmark className="h-6 w-6 text-red-500" />
-                    Your Personal Cine-Watchlist
-                  </h1>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Keep tabs on premium releases you want to review and analyze. Synced securely to your account.
-                  </p>
+              <div className="mb-8 pb-5 border-b border-white/[0.06] flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <span className="hidden sm:block h-8 w-1 rounded-full bg-gradient-to-b from-red-500 to-red-700 mt-1" aria-hidden="true" />
+                  <div>
+                    <h1 className="text-2xl font-extrabold text-white flex items-center gap-2 uppercase tracking-wide">
+                      <Bookmark className="h-6 w-6 text-red-500" />
+                      Your Personal Cine-Watchlist
+                    </h1>
+                    <p className="text-xs text-neutral-500 mt-1">
+                      Keep tabs on premium releases you want to review and analyze. Synced securely to your account.
+                    </p>
+                  </div>
                 </div>
 
                 {!watchlistLoading && watchlistMovies.length > 0 && (
@@ -2297,7 +2300,7 @@ export default function App() {
                       id="watchlist-sorting"
                       value={watchlistSortBy}
                       onChange={(e) => setWatchlistSortBy(e.target.value)}
-                      className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                      className="rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                     >
                       <option value="dateAdded">Recently Added</option>
                       <option value="rating">Rating</option>
@@ -2328,7 +2331,7 @@ export default function App() {
               {/* Watchlist statistics: pure aggregation over data already in memory */}
               {watchlistStats && (
                 <div className="flex flex-wrap gap-3 mb-8 -mt-4">
-                  <div className="flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-2.5">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5">
                     <Bookmark className="h-4 w-4 text-red-400" aria-hidden="true" />
                     <span className="text-sm font-bold text-white">{watchlistStats.count}</span>
                     <span className="text-xs text-neutral-500">{watchlistStats.count === 1 ? "movie saved" : "movies saved"}</span>
@@ -2355,7 +2358,7 @@ export default function App() {
                   ))}
                 </div>
               ) : watchlistMovies.length === 0 ? (
-                <div className="rounded-3xl border border-neutral-800 border-dashed p-12 text-center max-w-md mx-auto mt-12 space-y-4">
+                <div className="rounded-3xl border border-white/[0.08] border-dashed p-12 text-center max-w-md mx-auto mt-12 space-y-4">
                   <Bookmark className="h-10 w-10 text-neutral-700 mx-auto" />
                   <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400">Your Watchlist is empty</h3>
                   <p className="text-xs text-neutral-500 leading-relaxed max-w-xs mx-auto">
@@ -2364,13 +2367,13 @@ export default function App() {
                   <button
                     id="watchlist-to-explore"
                     onClick={() => setActiveTab("explore")}
-                    className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="rounded-lg bg-white/[0.05] border border-white/[0.08] px-4 py-2 text-xs font-semibold hover:bg-white/[0.08] text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Browse Explore
                   </button>
                 </div>
               ) : visibleWatchlistMovies.length === 0 ? (
-                <div className="rounded-3xl border border-neutral-900 py-16 text-center mt-8 px-6">
+                <div className="rounded-3xl border border-white/[0.06] py-16 text-center mt-8 px-6">
                   <HelpCircle className="h-10 w-10 text-neutral-600 mx-auto mb-3" />
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">No saved films in this genre</h3>
                   <p className="text-xs text-neutral-500 mt-2 max-w-sm mx-auto leading-relaxed">
@@ -2378,7 +2381,7 @@ export default function App() {
                   </p>
                   <button
                     onClick={() => setWatchlistGenreFilter("All")}
-                    className="mt-5 rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="mt-5 rounded-lg bg-white/[0.05] border border-white/[0.08] px-4 py-2 text-xs font-semibold hover:bg-white/[0.08] text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     Reset genre filter
                   </button>

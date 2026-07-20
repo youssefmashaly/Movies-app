@@ -59,7 +59,7 @@ function StatBadge({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: number | string; color: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 min-w-[88px]">
+    <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 min-w-[88px]">
       <Icon className={`h-4 w-4 ${color} mb-0.5`} />
       <span className="text-2xl font-bold text-white tabular-nums">{value}</span>
       <span className="text-[10px] text-neutral-500 uppercase tracking-wider text-center">{label}</span>
@@ -316,7 +316,7 @@ export default function UserDashboard({
             <button
               type="button"
               onClick={onEditGenres}
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
             >
               <Heart className="h-3.5 w-3.5 text-red-400" aria-hidden="true" />
               {favoriteGenres.length > 0 ? "Edit Favorite Genres" : "Pick Favorite Genres"}
@@ -324,7 +324,7 @@ export default function UserDashboard({
             <button
               type="button"
               onClick={onViewProfile}
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
             >
               <Award className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
               View Full Profile
@@ -508,7 +508,7 @@ export default function UserDashboard({
                     const max = Math.max(...Object.values(watchedGenreFreq));
                     const pct = Math.round((count / max) * 100);
                     return (
-                      <div key={genre} className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
+                      <div key={genre} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-semibold text-white">{genre}</span>
                           <span className="text-[10px] text-neutral-500">{count} film{count !== 1 ? "s" : ""}</span>
