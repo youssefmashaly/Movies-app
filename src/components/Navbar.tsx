@@ -268,10 +268,10 @@ export default function Navbar({
   return (
     <nav
       id="main-navbar"
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-xl border-b ${
         scrolled
-          ? "bg-neutral-950/90 border-b border-neutral-900 shadow-xl backdrop-blur-md py-5"
-          : "bg-transparent py-7"
+          ? "bg-neutral-950/90 border-neutral-900 shadow-xl py-5"
+          : "bg-neutral-950/50 border-white/[0.06] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] py-7"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between gap-8">
@@ -303,7 +303,7 @@ export default function Navbar({
 
         {/* Desktop Navigation Tabs — Phase 21: wider gaps/padding for a less
             crowded feel, same colors/radius/visual language as before. */}
-        <div className="hidden md:flex items-center gap-2.5 bg-neutral-900/60 p-1.5 rounded-xl border border-neutral-800">
+        <div className="hidden md:flex items-center gap-2.5 bg-white/[0.03] backdrop-blur-xl p-1.5 rounded-2xl border border-white/[0.06]">
           {menuItems.map((item) => {
             const Icon = item.icon;
             // Hide Watchlist tab if not logged in, or let them click and prompt log in inside App?
@@ -320,9 +320,9 @@ export default function Navbar({
                     setActiveTab(item.id);
                   }
                 }}
-                className={`flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
+                className={`flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isActive
-                    ? "bg-red-650 text-[#ffffff] shadow-md font-extrabold"
+                    ? "bg-gradient-to-r from-red-650 to-red-600 text-[#ffffff] shadow-[0_4px_20px_-4px_rgba(220,38,38,0.6)] font-extrabold"
                     : "text-neutral-400 hover:text-white"
                 }`}
               >
@@ -443,7 +443,7 @@ export default function Navbar({
                 setActiveTab("explore");
               }
             }}
-            className="w-full text-sm font-medium rounded-2xl border border-neutral-800 bg-neutral-900/50 py-4 pl-14 pr-14 text-white placeholder-neutral-500 outline-none focus:border-red-500/50 focus:bg-neutral-950 transition-all"
+            className="w-full text-sm font-medium rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl py-4 pl-14 pr-14 text-white placeholder-neutral-500 outline-none shadow-[0_20px_50px_-15px_rgba(0,0,0,0.6)] focus:border-red-500/40 focus:shadow-[0_20px_60px_-12px_rgba(220,38,38,0.25)] transition-all"
           />
           <span className="absolute inset-y-0 right-0 flex items-center pr-4">
             {searchLoading ? (

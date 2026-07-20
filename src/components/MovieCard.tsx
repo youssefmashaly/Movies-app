@@ -102,7 +102,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
   return (
     <motion.div
       id={`movie-card-${movie.id}`}
-      whileHover={{ y: -8, scale: 1.02 }}
+      whileHover={{ y: -10, scale: 1.03 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index, 10) * 0.04 }}
@@ -110,7 +110,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
       onMouseLeave={() => cancelPrefetch(movie.id)}
       onFocus={() => prefetchMovieDetail(movie.id)}
       onBlur={() => cancelPrefetch(movie.id)}
-      className="group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-neutral-800/80 bg-neutral-900 shadow-xl transition-[box-shadow,transform] duration-300 ease-out hover:shadow-2xl hover:shadow-red-950/20 focus-within:shadow-2xl focus-within:shadow-red-950/30 focus-within:-translate-y-2 focus-within:scale-[1.02] motion-reduce:transition-none"
+      className="group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-900 shadow-xl transition-[box-shadow,transform] duration-300 ease-out hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] hover:shadow-red-950/20 focus-within:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] focus-within:shadow-red-950/30 focus-within:-translate-y-2 focus-within:scale-[1.02] motion-reduce:transition-none"
     >
       {/* Background Poster Image */}
       {!posterError && movie.posterPath ? (

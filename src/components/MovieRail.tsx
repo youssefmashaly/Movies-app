@@ -139,17 +139,20 @@ function MovieRailComponent({
       className="max-w-[1600px] mx-auto px-6"
     >
       <div className="flex items-end justify-between mb-4 gap-4">
-        <div>
-          <h2
-            id={`${id}-heading`}
-            className="flex items-center gap-2 text-lg sm:text-xl font-extrabold tracking-tight text-white"
-          >
-            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border ${palette.bg} ${palette.border}`}>
-              <Icon className={`h-3.5 w-3.5 ${palette.text}`} />
-            </span>
-            {title}
-          </h2>
-          {subtitle && <p className="text-xs text-neutral-500 mt-1 ml-9">{subtitle}</p>}
+        <div className="flex items-start gap-3">
+          <span className="hidden sm:block h-8 w-1 rounded-full bg-gradient-to-b from-red-500 to-red-700 mt-0.5" aria-hidden="true" />
+          <div>
+            <h2
+              id={`${id}-heading`}
+              className="flex items-center gap-2 text-xl sm:text-2xl font-extrabold tracking-tight text-white"
+            >
+              <span className={`flex h-7 w-7 items-center justify-center rounded-lg border ${palette.bg} ${palette.border}`}>
+                <Icon className={`h-3.5 w-3.5 ${palette.text}`} />
+              </span>
+              {title}
+            </h2>
+            {subtitle && <p className="text-xs text-neutral-500 mt-1 ml-9">{subtitle}</p>}
+          </div>
         </div>
 
         {/* Desktop scroll controls */}
@@ -159,7 +162,7 @@ function MovieRailComponent({
             aria-label={`Scroll ${title} left`}
             disabled={!canScrollLeft}
             onClick={() => scrollBy(-1)}
-            className="rounded-full border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white hover:border-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="rounded-full border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-2 text-neutral-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -168,7 +171,7 @@ function MovieRailComponent({
             aria-label={`Scroll ${title} right`}
             disabled={!canScrollRight}
             onClick={() => scrollBy(1)}
-            className="rounded-full border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white hover:border-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="rounded-full border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-2 text-neutral-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

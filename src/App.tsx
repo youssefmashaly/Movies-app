@@ -1229,13 +1229,14 @@ export default function App() {
                   onMouseEnter={() => setHeroPlaying(false)}
                   onMouseLeave={() => setHeroPlaying(true)}
                 >
-                  <div className="relative rounded-3xl overflow-hidden border border-neutral-800 bg-neutral-950 h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
+                  <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] bg-neutral-950 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.8)] h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
                     {/* Soft ambient glow behind the featured art, cross-fades with the slide */}
                     <div
                       aria-hidden="true"
                       className="absolute inset-0 opacity-60 blur-3xl scale-110 transition-opacity duration-700"
                       style={{
-                        background: "radial-gradient(circle at 30% 40%, rgba(220,38,38,0.25), transparent 60%)",
+                        background:
+                          "radial-gradient(circle at 30% 40%, rgba(220,38,38,0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(120,53,15,0.14), transparent 60%)",
                       }}
                     />
 
@@ -1303,7 +1304,7 @@ export default function App() {
 
                         <motion.h1
                           variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
-                          className="text-3xl md:text-6xl font-black tracking-tight text-white leading-[1.05]"
+                          className="text-3xl md:text-6xl font-black tracking-tight text-white leading-[1.05] [text-shadow:0_2px_40px_rgba(220,38,38,0.25),0_1px_3px_rgba(0,0,0,0.85)]"
                         >
                           {featuredMovie.title}
                         </motion.h1>
@@ -1312,7 +1313,7 @@ export default function App() {
                           variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                           className="flex flex-wrap items-center gap-2 mt-4 text-xs text-neutral-300"
                         >
-                          <span className="flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/10">
+                          <span className="flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 backdrop-blur-md px-2 py-1 rounded-lg border border-amber-500/10">
                             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                             {featuredMovie.voteAverage.toFixed(1)}
                           </span>
@@ -1349,7 +1350,7 @@ export default function App() {
                             onClick={() => handleSelectMovie(featuredMovie)}
                             whileHover={{ scale: 1.035 }}
                             whileTap={{ scale: 0.97 }}
-                            className="flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#ffffff] shadow-xl shadow-red-950/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
+                            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-red-650 to-red-600 hover:from-red-600 hover:to-red-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#ffffff] shadow-[0_10px_40px_-8px_rgba(220,38,38,0.7)] hover:shadow-[0_14px_50px_-8px_rgba(220,38,38,0.9)] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400"
                           >
                             {featuredMovie.trailerUrl ? <PlayCircle className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                             {featuredMovie.trailerUrl ? "Watch Trailer" : "View Details"}
@@ -1360,7 +1361,7 @@ export default function App() {
                             aria-pressed={watchlistIds.has(featuredMovie.id)}
                             whileHover={{ scale: 1.035 }}
                             whileTap={{ scale: 0.97 }}
-                            className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                            className="flex items-center gap-2 rounded-2xl bg-white/[0.07] border border-white/15 backdrop-blur-md px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-white/[0.12] hover:border-white/25 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                           >
                             <Bookmark className={`h-4.5 w-4.5 ${watchlistIds.has(featuredMovie.id) ? "fill-red-400 text-red-400" : ""}`} />
                             {watchlistIds.has(featuredMovie.id) ? "In Watchlist" : "Add to Watchlist"}
