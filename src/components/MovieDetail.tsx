@@ -90,6 +90,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
   const [posterError, setPosterError] = useState(false);
+  const [failedCastIds, setFailedCastIds] = useState<Set<string>>(new Set());
+  const [trailerLoaded, setTrailerLoaded] = useState(false);
   const [overviewExpanded, setOverviewExpanded] = useState(false);
 
   // Reviews state
@@ -613,7 +615,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             </div>
 
             {/* Write a review box */}
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 backdrop-blur-sm self-start">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] self-start">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-amber-400" />
