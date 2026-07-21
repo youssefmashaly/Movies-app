@@ -70,7 +70,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
 
   if (isLoading || !movie) {
     return (
-      <div className="skeleton-shimmer relative aspect-[2/3] w-full rounded-2xl border border-neutral-800/50">
+      <div className="skeleton-shimmer relative aspect-[2/3] w-full rounded-2xl border border-white/[0.06]">
         <div className="absolute inset-0 flex flex-col justify-end p-4 space-y-2">
           <div className="h-5 w-2/3 rounded bg-neutral-800/80" />
           <div className="h-4 w-1/3 rounded bg-neutral-800/80" />
@@ -199,7 +199,7 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
           {movie.genres.slice(0, 2).map((g, idx) => (
             <span
               key={`${movie.id}-gen-${idx}`}
-              className="rounded-md bg-neutral-900/80 px-2 py-0.5 text-[10px] font-medium tracking-wide text-red-400 backdrop-blur-sm border border-neutral-800/50"
+              className="rounded-md bg-neutral-900/80 px-2 py-0.5 text-[10px] font-medium tracking-wide text-red-400 backdrop-blur-sm border border-white/[0.08]"
             >
               {g}
             </span>

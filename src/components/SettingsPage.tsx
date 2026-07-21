@@ -50,7 +50,7 @@ export default function SettingsPage() {
       {/* ── APPEARANCE ── */}
       <section
         aria-labelledby="appearance-heading"
-        className="rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8"
+        className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8"
       >
         <div className="flex items-start gap-3 mb-6">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-650/15 border border-red-650/20 text-red-400">
@@ -70,7 +70,7 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Theme</span>
           <span
-            className="inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900/60 px-3 py-1 text-[11px] font-semibold text-neutral-300"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold text-neutral-300"
             aria-live="polite"
           >
             {theme === "dark" ? <Moon className="h-3 w-3 text-red-400" aria-hidden="true" /> : <Sun className="h-3 w-3 text-amber-400" aria-hidden="true" />}
@@ -92,12 +92,12 @@ export default function SettingsPage() {
                 className={`relative flex items-start gap-3 rounded-2xl border p-4 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isSelected
                     ? "border-red-650 bg-red-650/10 shadow-md shadow-red-950/10"
-                    : "border-neutral-800 bg-neutral-950/40 hover:border-neutral-700"
+                    : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14]"
                 }`}
               >
                 <div
                   className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border ${
-                    isSelected ? "bg-red-650 border-red-650 text-[#ffffff]" : "bg-neutral-900 border-neutral-800 text-neutral-400"
+                    isSelected ? "bg-red-650 border-red-650 text-[#ffffff]" : "bg-white/[0.03] border-white/[0.06] text-neutral-400"
                   }`}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />

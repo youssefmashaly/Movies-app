@@ -438,7 +438,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
           <div className="lg:col-span-2 space-y-10">
             {/* Overview section */}
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-neutral-900 mb-4 uppercase text-neutral-400">
+              <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-white/[0.06] mb-4 uppercase text-neutral-400">
                 Plot Overview
               </h2>
               {hasOverview ? (
@@ -484,7 +484,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             {/* Principal Cast actors present */}
             {movie.cast && movie.cast.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-neutral-900 mb-5 uppercase text-neutral-400">
+                <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-white/[0.06] mb-5 uppercase text-neutral-400">
                   Principal Cast
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -527,7 +527,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
             {/* Embedded video Trailer section — Task 3: loading state + fallback
                 when unavailable, instead of the whole section silently vanishing */}
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-neutral-900 mb-5 uppercase text-neutral-400 flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight text-white pb-3 border-b border-white/[0.06] mb-5 uppercase text-neutral-400 flex items-center gap-2">
                 <PlayIcon className="h-5 w-5 text-red-500" />
                 Official Trailer
               </h2>

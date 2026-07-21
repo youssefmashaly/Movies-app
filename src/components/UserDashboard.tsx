@@ -102,7 +102,7 @@ function DashboardEmptyRail({
           {subtitle && <p className="text-xs text-neutral-500 mt-1 ml-9">{subtitle}</p>}
         </div>
       </div>
-      <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 py-10 px-6 text-center">
+      <div className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] py-10 px-6 text-center">
         <Icon className="h-7 w-7 text-neutral-700 mx-auto mb-3" />
         <p className="text-xs text-neutral-500 max-w-sm mx-auto leading-relaxed">{message}</p>
       </div>

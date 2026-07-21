@@ -58,7 +58,7 @@ export default function TrailerModal({ movie, onClose }: TrailerModalProps) {
               <X className="h-3.5 w-3.5" />
               Close
             </button>
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl bg-black">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
               <iframe
                 src={movie.trailerUrl}
                 title={`${movie.title} Trailer`}

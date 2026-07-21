@@ -69,7 +69,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-controls="notification-dropdown"
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-transparent text-neutral-400 hover:text-white hover:border-neutral-800 hover:bg-neutral-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-all cursor-pointer"
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-transparent text-neutral-400 hover:text-white hover:border-white/[0.1] hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-all cursor-pointer"
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
@@ -90,9 +90,9 @@ export default function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-white/[0.08] bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800/80">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
               <p className="text-xs font-bold uppercase tracking-wider text-white">Notifications</p>
               {unreadCount > 0 && (
                 <span className="rounded-full bg-red-650/15 border border-red-650/20 px-2 py-0.5 text-[10px] font-semibold text-red-400">
@@ -109,7 +109,7 @@ export default function NotificationBell() {
                     role="menuitem"
                     className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-neutral-900 transition-colors"
                   >
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-red-400">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06] text-red-400">
                       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">

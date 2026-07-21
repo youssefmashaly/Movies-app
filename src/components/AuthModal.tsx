@@ -89,7 +89,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl outline-none"
+            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.08] bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl outline-none"
           >
             {/* Top graphic accent */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-amber-500 to-indigo-600" />
@@ -145,7 +145,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       placeholder="Christopher Nolan"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
+                      className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
                     />
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     placeholder="you@cinema.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
+                    className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all-2xl border border-white/[0.06] overflow-hidden"
                   />
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
+                    className="w-full rounded-xl border border-white/[0.08] bg-neutral-950/60 py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-600 outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all-2xl border border-white/[0.06] overflow-hidden"
                   />
                 </div>
               </div>

@@ -84,7 +84,7 @@ function SectionTitle({ icon: Icon, title }: { icon: React.ElementType; title: s
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-800/60 py-8 text-center">
+    <div className="rounded-2xl border border-white/[0.06] py-8 text-center">
       <Film className="h-7 w-7 text-neutral-700 mx-auto mb-2" aria-hidden="true" />
       <p className="text-xs text-neutral-500">{msg}</p>
     </div>
@@ -150,7 +150,7 @@ function AchievementBadge({ badge, unlocked }: { badge: Badge; unlocked: boolean
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-opacity ${
-        unlocked ? colorClass : "bg-neutral-900/40 border-neutral-800/60 text-neutral-400 opacity-50"
+        unlocked ? colorClass : "bg-white/[0.02] border-white/[0.06] text-neutral-400 opacity-50"
       }`}
       title={badge.description}
     >
@@ -549,7 +549,7 @@ export default function UserProfile({
       )}
 
       {/* ── HEADER CARD ── */}
-      <div className="rounded-3xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-sm p-6 sm:p-8">
+      <div className="rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
 
           {/* avatar */}
@@ -680,7 +680,7 @@ export default function UserProfile({
         </div>
 
         {/* stats row */}
-        <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t border-neutral-800">
+        <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t border-white/[0.06]">
           <Stat icon={BookMarked}    label="Watchlist" value={watchlistMovies.length} />
           <Stat icon={Star}          label="Ratings"   value={ratings.length} />
           <Stat icon={MessageSquare} label="Reviews"   value={reviews.length} />
@@ -722,7 +722,7 @@ export default function UserProfile({
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30 }}
-                className="w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-3xl p-6 max-h-[70vh] flex flex-col"
+                className="w-full max-w-md bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 max-h-[70vh] flex flex-col"
                 onClick={e => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-5">
@@ -752,7 +752,7 @@ export default function UserProfile({
                           }
                         }}
                         disabled={!onViewProfile}
-                        className="w-full flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-left hover:border-red-600/40 transition-colors cursor-pointer disabled:cursor-default disabled:hover:border-neutral-800"
+                        className="w-full flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-left hover:border-red-600/40 transition-colors cursor-pointer disabled:cursor-default disabled:hover:border-white/[0.06]"
                       >
                         <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-400 text-xs flex-shrink-0 overflow-hidden">
                           {u.avatar_url

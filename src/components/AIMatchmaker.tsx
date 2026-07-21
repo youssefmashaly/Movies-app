@@ -219,7 +219,7 @@ export default function AIMatchmaker({
                   onClick={() => {
                     setMood(sample.text);
                   }}
-                  className="w-full text-left rounded-xl border border-neutral-800/60 bg-neutral-900/20 p-3 hover:border-red-500/30 hover:bg-neutral-900/50 transition-all text-xs cursor-pointer group focus-visible:ring-2 focus-visible:ring-red-500"
+                  className="w-full text-left rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 hover:border-red-500/30 hover:bg-white/[0.05] transition-all text-xs cursor-pointer group focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   <div className="font-semibold text-neutral-300 flex items-center justify-between group-hover:text-red-400">
                     {sample.label}

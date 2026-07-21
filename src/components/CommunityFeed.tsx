@@ -77,7 +77,7 @@ function ReviewCard({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-3"
+      className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 space-y-3"
     >
       {/* header */}
       <div className="flex items-center justify-between gap-3">
@@ -157,7 +157,7 @@ function ReviewerCard({
 }) {
   const displayName = profile.display_name ?? "Anonymous";
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3">
+    <div className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
       <Avatar url={profile.avatar_url} name={displayName} size="md" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white truncate">{displayName}</p>
@@ -338,7 +338,7 @@ export default function CommunityFeed() {
 
   const renderReviewList = (list: CommunityReview[], emptyIcon: React.ReactNode, emptyMsg: string, emptyHint?: string) =>
     list.length === 0 ? (
-      <div className="rounded-2xl border border-neutral-800 py-16 text-center">
+      <div className="rounded-2xl border border-white/[0.08] py-16 text-center">
         <div className="flex justify-center mb-3">{emptyIcon}</div>
         <p className="text-sm text-neutral-400">{emptyMsg}</p>
         {emptyHint && <p className="text-xs text-neutral-400 mt-1">{emptyHint}</p>}
@@ -379,7 +379,7 @@ export default function CommunityFeed() {
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -397,7 +397,7 @@ export default function CommunityFeed() {
           <div className="lg:col-span-2 space-y-4">
 
             {/* Feed tab switcher */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800 w-fit mb-2">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] w-fit mb-2">
               {([
                 { key: "everyone",  label: "Everyone",  icon: Users },
                 { key: "trending",  label: "Trending",  icon: Flame },
@@ -445,14 +445,14 @@ export default function CommunityFeed() {
           <div className="space-y-5">
 
             {!firebaseUser && (
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 text-center space-y-2">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-center space-y-2">
                 <User className="h-7 w-7 text-neutral-600 mx-auto" />
                 <p className="text-xs text-neutral-400 font-medium">Sign in to like reviews and follow members</p>
               </div>
             )}
 
             {/* Community stats */}
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Users className="h-4 w-4 text-red-500" />
                 <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-400">Community</h2>
@@ -470,7 +470,7 @@ export default function CommunityFeed() {
             </div>
 
             {/* Sidebar tab switcher */}
-            <div className="flex gap-1 p-1 rounded-2xl bg-neutral-900 border border-neutral-800">
+            <div className="flex gap-1 p-1 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.06]">
               {([
                 { key: "active",      label: "Active",   icon: TrendingUp },
                 { key: "suggested",   label: "For You",  icon: Sparkles },
@@ -510,12 +510,12 @@ export default function CommunityFeed() {
             {sidebarTab === "suggested" && (
               <div className="space-y-2">
                 {!userId ? (
-                  <div className="rounded-2xl border border-neutral-800 py-8 text-center">
+                  <div className="rounded-2xl border border-white/[0.08] py-8 text-center">
                     <Sparkles className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
                     <p className="text-xs text-neutral-500">Sign in to discover users with similar taste.</p>
                   </div>
                 ) : suggestedUsers.length === 0 ? (
-                  <div className="rounded-2xl border border-neutral-800 py-8 text-center">
+                  <div className="rounded-2xl border border-white/[0.08] py-8 text-center">
                     <Sparkles className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
                     <p className="text-xs text-neutral-500">Set favorite genres in your profile to get suggestions.</p>
                   </div>
@@ -524,7 +524,7 @@ export default function CommunityFeed() {
                     key={u.id}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 space-y-2"
+                    className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 space-y-2"
                   >
                     <div className="flex items-center gap-2.5">
                       <Avatar url={u.avatar_url} name={u.display_name} size="md" />
@@ -568,8 +568,8 @@ export default function CommunityFeed() {
 
             {/* Leaderboard */}
             {sidebarTab === "leaderboard" && (
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
-                <div className="px-4 py-3 border-b border-neutral-800 flex items-center gap-2">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
                   <Trophy className="h-3.5 w-3.5 text-amber-400" />
                   <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Most Reviews</span>
                 </div>

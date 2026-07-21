@@ -1217,7 +1217,7 @@ export default function App() {
               {/* Cinematic hero skeleton while the first fetch is in flight */}
               {!searchQuery && moviesLoading && !featuredMovie && (
                 <div className="max-w-[1600px] mx-auto px-6 mt-4">
-                  <div className="skeleton-shimmer relative rounded-3xl border border-neutral-800 h-[380px] sm:h-[430px] md:h-[480px]" />
+                  <div className="skeleton-shimmer relative rounded-3xl border border-white/[0.06] h-[380px] sm:h-[430px] md:h-[480px]" />
                 </div>
               )}
 
@@ -1838,7 +1838,7 @@ export default function App() {
                   with no search query. */}
               {searchQuery && (
               <div className="max-w-[1600px] mx-auto px-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-neutral-900 gap-4 text-left">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-white/[0.06] gap-4 text-left">
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2 uppercase text-neutral-400">
                       <Film className="h-5 w-5 text-neutral-500" />
@@ -1911,7 +1911,7 @@ export default function App() {
 
                     <button
                       onClick={() => setFilterPanelOpen(true)}
-                      className="flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:border-red-500/40 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                      className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2 text-xs font-bold text-white hover:border-red-500/40 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                     >
                       <SlidersHorizontal className="h-3.5 w-3.5" />
                       More Filters
@@ -1949,10 +1949,10 @@ export default function App() {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "tween", duration: 0.25 }}
-                        className="h-full w-full sm:w-[420px] bg-neutral-950 border-l border-neutral-800 overflow-y-auto"
+                        className="h-full w-full sm:w-[420px] bg-neutral-950 border-l border-white/[0.08] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-neutral-800 bg-neutral-950/95 backdrop-blur-md">
+                        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-neutral-950/95 backdrop-blur-md">
                           <h2 className="text-sm font-bold uppercase tracking-widest text-white flex items-center gap-2">
                             <SlidersHorizontal className="h-4 w-4 text-red-500" />
                             Advanced Filters
@@ -1969,7 +1969,7 @@ export default function App() {
                         <div className="p-6 space-y-3">
 
                           {/* Genres (multi-select) */}
-                          <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                          <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
                             <button
                               onClick={() => setFilterSection(filterSection === "genres" ? null : "genres")}
                               className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
@@ -1989,7 +1989,7 @@ export default function App() {
                                       className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                         isSelected
                                           ? "bg-red-650 border-red-650 text-[#ffffff]"
-                                          : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                          : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:text-white"
                                       }`}
                                     >
                                       {g}
@@ -2001,7 +2001,7 @@ export default function App() {
                           </div>
 
                           {/* Decade */}
-                          <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                          <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
                             <button
                               onClick={() => setFilterSection(filterSection === "decade" ? null : "decade")}
                               className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
@@ -2017,7 +2017,7 @@ export default function App() {
                                   className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                     selectedDecade === "All"
                                       ? "bg-red-650 border-red-650 text-[#ffffff]"
-                                      : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                      : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:text-white"
                                   }`}
                                 >
                                   Any
@@ -2030,7 +2030,7 @@ export default function App() {
                                     className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                                       selectedDecade === String(d)
                                         ? "bg-red-650 border-red-650 text-[#ffffff]"
-                                        : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                                        : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:text-white"
                                     }`}
                                   >
                                     {d}s
@@ -2042,7 +2042,7 @@ export default function App() {
 
                           {/* Director */}
                           {availableDirectors.length > 0 && (
-                            <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                            <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
                               <button
                                 onClick={() => setFilterSection(filterSection === "director" ? null : "director")}
                                 className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
@@ -2057,7 +2057,7 @@ export default function App() {
                                     id="director-filter"
                                     value={selectedDirector}
                                     onChange={(e) => setSelectedDirector(e.target.value)}
-                                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                                   >
                                     <option value="All">Any Director</option>
                                     {availableDirectors.map((d) => (
@@ -2071,7 +2071,7 @@ export default function App() {
 
                           {/* Actor */}
                           {availableActors.length > 0 && (
-                            <div className="rounded-2xl border border-neutral-800 overflow-hidden">
+                            <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
                               <button
                                 onClick={() => setFilterSection(filterSection === "actor" ? null : "actor")}
                                 className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
@@ -2086,7 +2086,7 @@ export default function App() {
                                     id="actor-filter"
                                     value={selectedActor}
                                     onChange={(e) => setSelectedActor(e.target.value)}
-                                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus:border-red-500/50"
                                   >
                                     <option value="All">Any Actor</option>
                                     {availableActors.map((a) => (
@@ -2100,10 +2100,10 @@ export default function App() {
 
                         </div>
 
-                        <div className="sticky bottom-0 flex items-center gap-3 px-6 py-4 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur-md">
+                        <div className="sticky bottom-0 flex items-center gap-3 px-6 py-4 border-t border-white/[0.06] bg-neutral-950/95 backdrop-blur-md">
                           <button
                             onClick={clearAllFilters}
-                            className="flex-1 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer"
+                            className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-3 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-all cursor-pointer"
                           >
                             Clear All
                           </button>
@@ -2131,7 +2131,7 @@ export default function App() {
                         className={`shrink-0 rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
                           isSelected
                             ? "bg-red-650 border-red-650 text-[#ffffff] shadow-lg shadow-red-950/20 font-extrabold"
-                            : "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
+                            : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:text-white"
                         }`}
                       >
                         {g}
@@ -2222,7 +2222,7 @@ export default function App() {
                     ))}
                   </div>
                 ) : filteredMovies.length === 0 ? (
-                  <div className="rounded-3xl border border-neutral-900 py-16 text-center mt-8 px-6">
+                  <div className="rounded-3xl border border-white/[0.06] py-16 text-center mt-8 px-6">
                     <HelpCircle className="h-10 w-10 text-neutral-600 mx-auto mb-3" />
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                       {searchQuery ? `No results for "${searchQuery}"` : "No matching films found"}
@@ -2238,7 +2238,7 @@ export default function App() {
                       {searchQuery && (
                         <button
                           onClick={() => setSearchQuery("")}
-                          className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          className="rounded-lg bg-white/[0.05] border border-white/[0.08] px-4 py-2 text-xs font-semibold hover:bg-white/[0.08] text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Clear search
                         </button>
@@ -2246,7 +2246,7 @@ export default function App() {
                       {activeFilterCount > 0 && (
                         <button
                           onClick={clearAllFilters}
-                          className="rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2 text-xs font-semibold hover:bg-neutral-800 text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                          className="rounded-lg bg-white/[0.05] border border-white/[0.08] px-4 py-2 text-xs font-semibold hover:bg-white/[0.08] text-red-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
                         >
                           Reset all filters
                         </button>

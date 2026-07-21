@@ -71,7 +71,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
             </button>
             <button
               onClick={this.handleRefresh}
-              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-white/[0.05] border border-white/[0.08] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               Refresh Page

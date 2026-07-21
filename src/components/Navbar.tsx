@@ -270,7 +270,7 @@ export default function Navbar({
       id="main-navbar"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-xl border-b ${
         scrolled
-          ? "bg-neutral-950/90 border-neutral-900 shadow-xl py-5"
+          ? "bg-neutral-950/90 border-white/[0.08] shadow-xl py-5"
           : "bg-neutral-950/50 border-white/[0.06] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] py-7"
       }`}
     >
@@ -393,7 +393,7 @@ export default function Navbar({
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu-drawer"
-            className="md:hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-2 text-neutral-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+            className="md:hidden rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-2 text-neutral-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -471,7 +471,7 @@ export default function Navbar({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
+                className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-white/[0.08] bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
               >
                 {showingHistory ? (
                   <>
@@ -525,7 +525,7 @@ export default function Navbar({
                             key={g}
                             type="button"
                             onMouseDown={() => commitSearch(g)}
-                            className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2.5 py-1 text-[10px] font-semibold text-neutral-300 hover:border-red-500/40 hover:text-white transition-colors cursor-pointer"
+                            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[10px] font-semibold text-neutral-300 hover:border-red-500/40 hover:text-white transition-colors cursor-pointer"
                           >
                             {g}
                           </button>
@@ -593,7 +593,7 @@ export default function Navbar({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-neutral-900 bg-neutral-950 px-6 py-4 space-y-4 shadow-2xl"
+            className="md:hidden border-t border-white/[0.06] bg-neutral-950 px-6 py-4 space-y-4 shadow-2xl"
           >
             {/* Mobile Search */}
             <div className="relative">
@@ -612,7 +612,7 @@ export default function Navbar({
                     setActiveTab("explore");
                   }
                 }}
-                className="w-full text-xs font-medium rounded-xl border border-neutral-800 bg-neutral-900/50 py-2.5 pl-9 pr-9 text-white outline-none focus:border-red-500/50"
+                className="w-full text-xs font-medium rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 pl-9 pr-9 text-white outline-none focus:border-red-500/50"
               />
               {searchQuery && (
                 <button

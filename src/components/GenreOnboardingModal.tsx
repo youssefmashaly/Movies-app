@@ -96,7 +96,7 @@ export default function GenreOnboardingModal({
                     className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-red-500 ${
                       isSelected
                         ? "bg-red-650 border-red-650 text-[#ffffff] shadow-md"
-                        : "bg-neutral-900/60 border-neutral-800 text-neutral-400 hover:text-white"
+                        : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:text-white"
                     }`}
                   >
                     {g}

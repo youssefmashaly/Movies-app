@@ -151,7 +151,7 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
         aria-expanded={open}
         aria-controls="user-menu-dropdown"
         aria-label="Open account menu"
-        className="flex items-center gap-1.5 rounded-xl border border-transparent p-1 pr-1.5 hover:border-neutral-800 hover:bg-neutral-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-all cursor-pointer"
+        className="flex items-center gap-1.5 rounded-xl border border-transparent p-1 pr-1.5 hover:border-white/[0.1] hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-all cursor-pointer"
       >
         <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-xs shadow overflow-hidden flex-shrink-0">
           {user.photoURL ? (
@@ -179,9 +179,9 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             onKeyDown={handleMenuKeyDown}
-            className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-white/[0.08] bg-neutral-950/95 backdrop-blur-md shadow-2xl overflow-hidden z-50"
           >
-            <div className="px-4 py-3 border-b border-neutral-800/80">
+            <div className="px-4 py-3 border-b border-white/[0.06]">
               <p className="text-xs font-semibold text-white truncate">{user.displayName || "Movie Critic"}</p>
               <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
             </div>

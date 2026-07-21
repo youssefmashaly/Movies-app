@@ -57,7 +57,7 @@ function WelcomeModal({ onClose, movieCount }: { onClose: () => void; movieCount
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl outline-none"
+          className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.08] bg-neutral-900/90 p-8 text-neutral-100 shadow-2xl backdrop-blur-xl outline-none"
         >
           <button
             type="button"
