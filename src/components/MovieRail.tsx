@@ -181,6 +181,7 @@ function MovieRailComponent({
       <div
         ref={trackRef}
         role="list"
+        onKeyDown={handleTrackKeyDown}
         className="rail-track no-scrollbar flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scroll-smooth"
       >
         {isLoading

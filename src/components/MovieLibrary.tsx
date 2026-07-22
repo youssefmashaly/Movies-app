@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, SlidersHorizontal, X, LibraryBig, Loader2 } from "lucide-react";
 import MovieCard from "./MovieCard";

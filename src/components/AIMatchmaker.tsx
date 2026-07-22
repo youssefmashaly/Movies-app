@@ -10,7 +10,6 @@ import type { UserPreferenceProfile } from "../services/recommendations";
 interface AIMatchmakerProps {
   onSelectMovie: (movie: Movie) => void;
   userId?: string;
-  watchlistId?: string | null;
   favoriteGenres?: string[];
   watchlistMovies?: Movie[];
   recentlyViewedMovies?: Movie[];
@@ -25,7 +24,6 @@ const CONFIDENCE_STYLES: Record<string, { label: string; classes: string }> = {
 export default function AIMatchmaker({
   onSelectMovie,
   userId,
-  watchlistId = null,
   favoriteGenres = [],
   watchlistMovies = [],
   recentlyViewedMovies = []
@@ -52,7 +50,7 @@ export default function AIMatchmaker({
 
     try {
       const builtProfile = userId
-        ? await buildUserPreferenceProfile(userId, watchlistId, favoriteGenres, watchlistMovies, recentlyViewedMovies)
+        ? await buildUserPreferenceProfile(userId, favoriteGenres, watchlistMovies, recentlyViewedMovies)
         : null;
       setProfile(builtProfile);
 

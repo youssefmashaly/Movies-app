@@ -71,11 +71,21 @@ npm start
 
 ## ☁️ Deployment
 
-**Important:** this app is a Node/Express server, not a static single-page app — `server.ts` hosts live API routes (`/api/movies/*`) and serves the built frontend itself. That means the deployment story differs from a typical Vite SPA:
+**Important:** this app is a Node/Express server, not a static single-page app — `server.ts` hosts live API routes (`/api/movies/*`) and serves the built frontend itself. That means the deployment story differs from a typical Vite SPA.
 
-**Recommended (zero code changes):** any host that runs a persistent Node process — **Render**, **Railway**, **Fly.io**, or **Google Cloud Run** (this project's `APP_URL` env var convention suggests it was originally scaffolded for Cloud Run). For any of these: set the build command to `npm run build`, the start command to `npm start`, and configure the environment variables above.
+**Render / Railway / Fly.io / Cloud Run (zero code changes):** any host that runs a persistent Node process works out of the box. Set the build command to `npm run build`, the start command to `npm start`, and configure the environment variables above.
 
-**Vercel / Netlify:** both platforms are serverless-function-first, not persistent-Node-server-first. Deploying this exact `server.ts` as-is is **not zero-config** on either — it would need the Express routes split into individual serverless functions (or wrapped with an adapter like `serverless-http`), since neither platform runs a long-lived `app.listen()` process. This is a legitimate follow-up task, not yet implemented — flagged here rather than claimed as working.
+**Vercel:** supported via [`api/index.ts`](api/index.ts) and [`vercel.json`](vercel.json), which route `/api/*` to a serverless handler built from the same `createApp()` factory `server.ts` exports — no Express-route rewrite needed, since an Express app is itself a valid request handler under Vercel's Node runtime.
+
+**Netlify:** supported via [`netlify/functions/api.ts`](netlify/functions/api.ts) and [`netlify.toml`](netlify.toml), which wrap that same `createApp()` factory with [`serverless-http`](https://www.npmjs.com/package/serverless-http) (Netlify Functions use an `(event, context)` handler signature, not Express's `(req, res)`, so this adapter is genuinely required — unlike Vercel).
+
+In all cases, the underlying Express app and its routes are defined once in `server.ts`; the platform-specific files just adapt how it's invoked.
+
+## 🙏 Acknowledgements
+
+- Movie data and artwork from [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
+- Icons by [Lucide](https://lucide.dev/).
+- Built with [React](https://react.dev/), [Vite](https://vite.dev/), [Tailwind CSS](https://tailwindcss.com/), [Supabase](https://supabase.com/), [Firebase](https://firebase.google.com/), and [Google Gemini](https://ai.google.dev/).
 
 ## 📊 Analytics & Monitoring (optional)
 

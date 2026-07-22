@@ -16,7 +16,8 @@ let aiClient: GoogleGenAI | null = null;
 function getAI() {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
-    if (key && key !== "MY_GEMINI_API_KEY" && key.trim() !== "") {
+    const isPlaceholder = key === "your-gemini-api-key" || key === "MY_GEMINI_API_KEY";
+    if (key && !isPlaceholder && key.trim() !== "") {
       aiClient = new GoogleGenAI({ apiKey: key });
     }
   }
@@ -86,12 +87,12 @@ export async function createApp() {
   // --- API ROUTES ---
 
   // Health check
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", mode: process.env.NODE_ENV || "development" });
   });
 
   // Get trending movies
-  app.get("/api/movies/trending", (req, res) => {
+  app.get("/api/movies/trending", (_req, res) => {
     try {
       res.json(PRESET_MOVIES);
     } catch (err: any) {
@@ -100,7 +101,7 @@ export async function createApp() {
   });
 
   // Get latest movies (by release date descending)
-  app.get("/api/movies/latest", (req, res) => {
+  app.get("/api/movies/latest", (_req, res) => {
     try {
       const sorted = [...PRESET_MOVIES].sort((a, b) => {
         return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
@@ -409,7 +410,7 @@ Provide ONLY the raw JSON structure, with no markdown tick marks or wrapping.`;
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

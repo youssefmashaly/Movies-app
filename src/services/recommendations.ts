@@ -6,8 +6,6 @@
 
 import { Movie } from "../types";
 import { getUserRating } from "./supabase/ratings";
-import { listRecentlyViewed } from "./supabase/recentlyViewed";
-import { listWatchlistMovies } from "./supabase/watchlists";
 import { isSupabaseConfigured } from "../supabase";
 
 export interface UserPreferenceProfile {
@@ -68,7 +66,6 @@ function buildPrimaryReason(profile: Omit<UserPreferenceProfile, "primaryReason"
 
 export async function buildUserPreferenceProfile(
   userId: string,
-  watchlistId: string | null,
   favoriteGenres: string[],
   watchlistMovies: Movie[],
   recentlyViewedMovies: Movie[]

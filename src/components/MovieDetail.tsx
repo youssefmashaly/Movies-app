@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Movie, Review } from "../types";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import MovieRail from "./MovieRail";
 import { listMovieReviews, getUserReview, createReview, updateReview, deleteReview } from "../services/supabase/reviews";
-import { getUserRating, setUserRating, deleteRating } from "../services/supabase/ratings";
+import { setUserRating, deleteRating } from "../services/supabase/ratings";
 import { useToast } from "../context/ToastContext";
 
 // Pure helpers — cheap, no allocation beyond a single Date parse per call.

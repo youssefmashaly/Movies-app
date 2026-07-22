@@ -2413,7 +2413,6 @@ export default function App() {
                 <AIMatchmaker
                   onSelectMovie={handleSelectMovie}
                   userId={user?.uid}
-                  watchlistId={defaultWatchlistId}
                   favoriteGenres={favoriteGenres}
                   watchlistMovies={watchlistMovies}
                   recentlyViewedMovies={recentlyViewed}
