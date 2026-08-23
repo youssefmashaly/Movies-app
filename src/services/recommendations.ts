@@ -60,7 +60,7 @@ function buildPrimaryReason(profile: Omit<UserPreferenceProfile, "primaryReason"
   if (profile.watchlistTitles.length > 0)
     return `Similar to movies in your watchlist`;
   if (profile.recentlyViewedTitles.length > 0)
-    return `Based on what you've been watching`;
+    return `Based on movies you've recently viewed`;
   return "Curated for you";
 }
 

@@ -784,7 +784,7 @@ export default function UserProfile({
         <div className="space-y-10">
 
           <section>
-            <SectionTitle icon={Eye} title="Recently Watched" />
+            <SectionTitle icon={Eye} title="Recently Viewed" />
             <PosterStrip items={recentlyViewed.map(rv => ({ key: rv.id, title: rv.title, poster_path: rv.poster_path }))} />
           </section>
 
@@ -882,11 +882,11 @@ export default function UserProfile({
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Film className="h-4 w-4 text-red-400" aria-hidden="true" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Most Watched Genres</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Most Viewed Genres</span>
                 </div>
                 {topWatched.length > 0
                   ? <div className="space-y-2.5">{topWatched.map(([g, c]) => <GenreBar key={g} genre={g} count={c} max={maxWatched} />)}</div>
-                  : <p className="text-xs text-neutral-400">Watch some movies to see this.</p>
+                  : <p className="text-xs text-neutral-400">View some movies to see this.</p>
                 }
               </div>
 

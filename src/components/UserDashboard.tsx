@@ -207,17 +207,17 @@ export default function UserDashboard({
   const mostWatchedGenres = useMemo(() => topGenres(watchedGenreFreq, 3), [watchedGenreFreq]);
   const primaryGenre = mostWatchedGenres[0] ?? favoriteGenres[0] ?? null;
 
-  const lastWatched = recentlyViewed[0] ?? null;
+  const lastViewed = recentlyViewed[0] ?? null;
 
-  const becauseYouWatched = useMemo(() => {
-    if (!lastWatched) return [];
+  const becauseYouViewed = useMemo(() => {
+    if (!lastViewed) return [];
     const ranked = combinedMoviePool
-      .filter((m) => m.id !== lastWatched.id && m.genres?.some((g) => lastWatched.genres?.includes(g)))
+      .filter((m) => m.id !== lastViewed.id && m.genres?.some((g) => lastViewed.genres?.includes(g)))
       .sort((a, b) => b.voteAverage - a.voteAverage);
     // Widen past the display count, then seeded-shuffle just that widened set —
     // same relevance tier, less repetition of the exact same top-N every time.
     return seededShuffle(ranked.slice(0, 24), sessionSeed).slice(0, 12);
-  }, [lastWatched, combinedMoviePool, sessionSeed]);
+  }, [lastViewed, combinedMoviePool, sessionSeed]);
 
   // ── Collaborative discovery rails: map aggregated signals onto full Movie
   // objects using the pool already in memory — no extra network calls. ──
@@ -306,7 +306,7 @@ export default function UserDashboard({
           </h1>
           {primaryGenre && (
             <p className="text-sm text-neutral-400 mt-1">
-              Your most-watched genre:{" "}
+              Your most-viewed genre:{" "}
               <span className="text-white font-medium">{primaryGenre}</span>
             </p>
           )}
@@ -337,7 +337,7 @@ export default function UserDashboard({
       <section>
         <SectionLabel icon={TrendingUp} title="Your Activity" />
         <div className="flex flex-wrap gap-3">
-          <StatBadge icon={Eye}           label="Watched"    value={recentlyViewed.length}  color="text-teal-400" />
+          <StatBadge icon={Eye}           label="Viewed"     value={recentlyViewed.length}  color="text-teal-400" />
           <StatBadge icon={BookMarked}    label="Watchlist"  value={watchlistMovies.length} color="text-red-400" />
           <StatBadge icon={Star}          label="Rated"      value={ratings.length}         color="text-amber-400" />
           <StatBadge icon={MessageSquare} label="Reviews"    value={reviews.length}         color="text-indigo-400" />
@@ -353,11 +353,11 @@ export default function UserDashboard({
         </div>
       ) : (
         <>
-          {/* ── CONTINUE WATCHING ── */}
+          {/* ── CONTINUE BROWSING ── */}
           {recentlyViewed.length > 0 ? (
             <MovieRail
               id="dash-recently-viewed"
-              title="Continue Watching"
+              title="Continue Browsing"
               subtitle="Pick up where you left off"
               icon={Eye}
               accent="teal"
@@ -370,21 +370,21 @@ export default function UserDashboard({
           ) : (
             <DashboardEmptyRail
               icon={Eye}
-              title="Continue Watching"
+              title="Continue Browsing"
               subtitle="Pick up where you left off"
               message="Nothing here yet. Open any movie's page and it'll show up in this row so you can jump back in later."
             />
           )}
 
-          {/* ── BECAUSE YOU WATCHED ── */}
-          {lastWatched && becauseYouWatched.length >= 4 ? (
+          {/* ── BECAUSE YOU VIEWED ── */}
+          {lastViewed && becauseYouViewed.length >= 4 ? (
             <MovieRail
-              id="dash-because-watched"
-              title={`Because You Watched ${lastWatched.title}`}
+              id="dash-because-viewed"
+              title={`Because You Viewed ${lastViewed.title}`}
               subtitle="Movies with a similar feel"
               icon={ChevronRight}
               accent="red"
-              movies={becauseYouWatched}
+              movies={becauseYouViewed}
               isLoading={false}
               onMovieClick={onSelectMovie}
               isSaved={isMovieSaved}
@@ -393,12 +393,12 @@ export default function UserDashboard({
           ) : (
             <DashboardEmptyRail
               icon={ChevronRight}
-              title="Because You Watched..."
+              title="Because You Viewed..."
               subtitle="Movies with a similar feel"
               message={
-                lastWatched
-                  ? `We don't have enough similar titles to ${lastWatched.title} yet. Explore a few more genres to unlock this row.`
-                  : "Watch a movie first and we'll build a row of similar picks based on it."
+                lastViewed
+                  ? `We don't have enough similar titles to ${lastViewed.title} yet. Explore a few more genres to unlock this row.`
+                  : "View a movie's page first and we'll build a row of similar picks based on it."
               }
             />
           )}
@@ -434,7 +434,7 @@ export default function UserDashboard({
               subtitle={
                 favoriteGenres.length > 0
                   ? `Picked for your love of ${favoriteGenres.slice(0, 2).join(" & ")}`
-                  : "Curated from your most-watched genres"
+                  : "Curated from your most-viewed genres"
               }
               icon={Heart}
               accent="red"
@@ -451,7 +451,7 @@ export default function UserDashboard({
             <MovieRail
               id="dash-trending-genre"
               title={`Trending in ${primaryGenre}`}
-              subtitle="The most-watched films in your favourite genre"
+              subtitle="The most-viewed films in your favourite genre"
               icon={TrendingUp}
               accent="teal"
               movies={trendingInGenre}
@@ -464,11 +464,11 @@ export default function UserDashboard({
             <DashboardEmptyRail
               icon={TrendingUp}
               title="Trending in Your Favorite Genres"
-              subtitle="The most-watched films in your favourite genre"
+              subtitle="The most-viewed films in your favourite genre"
               message={
                 primaryGenre
-                  ? `Not enough trending titles in ${primaryGenre} yet. Check back after watching a few more movies.`
-                  : "Pick a few favorite genres in your profile, or watch some movies, to see what's trending in your favorites."
+                  ? `Not enough trending titles in ${primaryGenre} yet. Check back after viewing a few more movies.`
+                  : "Pick a few favorite genres in your profile, or view a few movies, to see what's trending in your favorites."
               }
             />
           )}
@@ -492,7 +492,7 @@ export default function UserDashboard({
               icon={Film}
               title="Hidden Gems For You"
               subtitle="Underrated picks that match your taste"
-              message="We need a bit more signal to surface hidden gems. Save a few favorite genres or watch some movies to unlock this row."
+              message="We need a bit more signal to surface hidden gems. Save a few favorite genres or view a few movies to unlock this row."
             />
           )}
 

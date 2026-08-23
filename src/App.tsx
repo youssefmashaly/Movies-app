@@ -1489,7 +1489,7 @@ export default function App() {
                   <MovieRail
                     id="rail-trending"
                     title="Trending Now"
-                    subtitle="What everyone's watching this week"
+                    subtitle="What everyone's discovering this week"
                     icon={TrendingUp}
                     accent="red"
                     movies={trendingMovies}

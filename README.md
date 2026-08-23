@@ -2,6 +2,8 @@
 
 > A full-stack movie discovery and social platform built with **React, TypeScript, Firebase, Supabase, Express, and Google Gemini AI**.
 
+Discover movies, watch official trailers, get personalized recommendations, build watchlists, rate and review films, and connect with other movie fans. Movies App is a discovery and social platform — it does not host or stream full movies.
+
 <p align="center">
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
@@ -75,8 +77,8 @@ Example:
 
 - Genre onboarding
 - Personal dashboard
-- Continue Watching
-- Because You Watched
+- Continue Browsing
+- Because You Viewed
 - Recommendation engine
 - Favourite genres
 - Favourite directors
@@ -296,7 +298,7 @@ This project demonstrates experience with:
 
 # 🙏 Acknowledgements
 
-- TMDB
+- Movie data and artwork from [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 - Firebase
 - Supabase
 - Google Gemini
