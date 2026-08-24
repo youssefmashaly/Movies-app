@@ -60,6 +60,7 @@ const MovieDetail = lazy(() => import("./components/MovieDetail"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 const UserProfile = lazy(() => import("./components/UserProfile"));
 const SettingsPage = lazy(() => import("./components/SettingsPage"));
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 // Icons
 import {
@@ -112,6 +113,16 @@ export default function App() {
     new URLSearchParams(window.location.search).get("profile")
   );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
+  // Task 4 (Phase 42) — without this, the browser keeps whatever scroll
+  // position you were at on the previous tab/view, so navigating away from a
+  // deep-scrolled page (e.g. Movie Library after infinite-scrolling) lands
+  // you mid-page on the new view instead of at the top. Keyed on the movie's
+  // id (not the whole object) so re-enriching selectedMovie in place after
+  // its detail fetch resolves doesn't re-trigger this.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab, selectedMovie?.id]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [authOpen, setAuthOpen] = useState<boolean>(false);
   // Phase 22 — AuthModal is rendered unconditionally today (isOpen just
@@ -1176,6 +1187,7 @@ export default function App() {
       {/* Responsive layout wrapper */}
       <main
         id="main-content"
+        tabIndex={-1}
         className={`relative z-10 pt-24 ${
           activeTab === "explore" || activeTab === "library" ? "md:pt-48" : "md:pt-28"
         }`}
@@ -2504,6 +2516,7 @@ export default function App() {
       </main>
 
       <TrailerModal movie={trailerMovie} onClose={() => setTrailerMovie(null)} />
+      <ScrollToTopButton />
     </div>
     </MovieCardPreferencesProvider>
     </ThemeProvider>

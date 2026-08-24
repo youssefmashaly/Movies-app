@@ -239,9 +239,11 @@ export default function AIMatchmaker({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                role="status"
+                aria-live="polite"
                 className="rounded-3xl border border-white/[0.08] border-dashed p-12 text-center flex flex-col items-center justify-center h-full min-h-[400px] space-y-4"
               >
-                <Loader2 className="h-10 w-10 text-red-500 animate-spin" />
+                <Loader2 className="h-10 w-10 text-red-500 animate-spin" aria-hidden="true" />
                 <h3 className="text-lg font-bold tracking-tight text-white">Consulting the CinemaOracle</h3>
                 <p className="text-sm text-neutral-400 max-w-sm">
                   We are formulating your bespoke watchlist and synthesizing critical reviews based on your specific vibe profile. Please wait!
@@ -252,6 +254,7 @@ export default function AIMatchmaker({
                 key="oracle-error"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                role="alert"
                 className="rounded-3xl border border-red-500/20 bg-red-500/5 p-12 text-center max-w-md mx-auto space-y-4"
               >
                 <div className="text-red-500 font-bold mb-2">Notice</div>
