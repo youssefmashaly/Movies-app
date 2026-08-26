@@ -24,6 +24,37 @@ function getAI() {
   return aiClient;
 }
 
+// Task 43 — "Where to Watch" real availability.
+// Deliberately reads TMDB_API_KEY (server-only, no VITE_ prefix), matching
+// the same convention already used by the offline artwork/id-repair scripts
+// (scripts/repair-tmdb-ids.mjs, fetch-tmdb-artwork.mjs). This is NOT the
+// same variable as VITE_TMDB_API_KEY in .env.example — that one is
+// Vite-exposed to the client bundle by the VITE_ prefix convention, so
+// reusing it here would leak the key into the frontend. A server-only
+// route calling TMDB is the only place this key is ever read.
+function getTmdbKey(): string | null {
+  const key = process.env.TMDB_API_KEY;
+  return key && key.trim() !== "" ? key : null;
+}
+
+interface WatchProviderEntry {
+  id: number;
+  name: string;
+  logoUrl: string | null;
+}
+
+interface WatchProviders {
+  region: string;
+  link: string | null;
+  streaming: WatchProviderEntry[];
+  rent: WatchProviderEntry[];
+  buy: WatchProviderEntry[];
+}
+
+function emptyProviders(region: string): WatchProviders {
+  return { region, link: null, streaming: [], rent: [], buy: [] };
+}
+
 // Memory cache for generated AI movies, now with a configurable TTL,
 // automatic/lazy expiration on read, and dev-only hit/miss tracking.
 // Same get()/set() shape as the old plain Map, so every existing call site
@@ -34,6 +65,11 @@ class TTLCache<K, V> {
   private store = new Map<K, { value: V; expiresAt: number }>();
   private hits = 0;
   private misses = 0;
+  private ttlMs: number;
+
+  constructor(ttlMs: number = AI_CACHE_TTL_MS) {
+    this.ttlMs = ttlMs;
+  }
 
   get(key: K): V | undefined {
     const entry = this.store.get(key);
@@ -53,7 +89,7 @@ class TTLCache<K, V> {
   }
 
   set(key: K, value: V): void {
-    this.store.set(key, { value, expiresAt: Date.now() + AI_CACHE_TTL_MS });
+    this.store.set(key, { value, expiresAt: Date.now() + this.ttlMs });
   }
 
   get size(): number {
@@ -61,11 +97,18 @@ class TTLCache<K, V> {
   }
 
   getStats() {
-    return { hits: this.hits, misses: this.misses, size: this.store.size, ttlMs: AI_CACHE_TTL_MS };
+    return { hits: this.hits, misses: this.misses, size: this.store.size, ttlMs: this.ttlMs };
   }
 }
 
 const aiMoviesCache = new TTLCache<string, Movie>();
+
+// Watch-provider availability changes far less often than AI-generated
+// content, so it gets its own, longer-lived cache instance (same TTLCache
+// class — no parallel caching system) rather than sharing the 30-minute
+// AI_CACHE_TTL_MS.
+const PROVIDERS_CACHE_TTL_MS = Number(process.env.PROVIDERS_CACHE_TTL_MS) || 24 * 60 * 60 * 1000; // 24h default
+const providersCache = new TTLCache<string, WatchProviders>(PROVIDERS_CACHE_TTL_MS);
 
 // Builds and returns a fully configured Express app WITHOUT starting a
 // listener — safe to import from serverless entry points (Vercel/Netlify)
@@ -216,6 +259,97 @@ Respond ONLY with a single JSON object. No markdown wrappers, no backticks, no m
     } catch (err: any) {
       console.error("Gemini detail generation failed:", err);
       res.status(500).json({ error: "Could not retrieve movie details.", details: err.message });
+    }
+  });
+
+  // Where to Watch — real TMDB watch-provider availability (Task 43).
+  // Only ever returns data TMDB actually reports for a real tmdbId; movies
+  // without one (AI-Gemini fallback generations for unrecognized ids) get a
+  // graceful empty result, never fabricated providers.
+  app.get("/api/movies/:id/providers", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const region = (typeof req.query.region === "string" && /^[A-Z]{2}$/.test(req.query.region))
+        ? req.query.region
+        : "US";
+
+      const movie = PRESET_MOVIES_BY_ID.get(id);
+      if (!movie) {
+        res.status(404).json({ error: "Movie not found." });
+        return;
+      }
+
+      // No real tmdbId (e.g. an AI-Gemini-generated fallback movie for an
+      // id outside the static catalog) — there is no real availability
+      // data that could exist for it, so return an honest empty result
+      // rather than erroring or fabricating anything.
+      if (!movie.tmdbId) {
+        res.json(emptyProviders(region));
+        return;
+      }
+
+      const cacheKey = `${movie.tmdbId}:${region}`;
+      const cached = providersCache.get(cacheKey);
+      if (cached) {
+        res.json(cached);
+        return;
+      }
+
+      const tmdbKey = getTmdbKey();
+      if (!tmdbKey) {
+        // TMDB key not configured server-side — graceful degradation, not
+        // an error the user needs to see. The UI treats this the same as
+        // "no data for this title."
+        res.json(emptyProviders(region));
+        return;
+      }
+
+      const tmdbRes = await fetch(
+        `https://api.themoviedb.org/3/movie/${movie.tmdbId}/watch/providers`,
+        { headers: { Authorization: `Bearer ${tmdbKey}`, accept: "application/json" } }
+      );
+
+      if (!tmdbRes.ok) {
+        // A failed upstream call is a real, if temporary, problem — but it
+        // still shouldn't break the page. Return the empty shape; the
+        // client renders this exactly like "no data available."
+        console.error(`TMDB watch/providers request failed: ${tmdbRes.status}`);
+        res.json(emptyProviders(region));
+        return;
+      }
+
+      const tmdbData = await tmdbRes.json();
+      const regionData = tmdbData?.results?.[region];
+
+      const toEntries = (list: any[] | undefined): WatchProviderEntry[] =>
+        (list ?? [])
+          .slice()
+          .sort((a, b) => (a.display_priority ?? 0) - (b.display_priority ?? 0))
+          .map((p) => ({
+            id: p.provider_id,
+            name: p.provider_name,
+            logoUrl: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null,
+          }));
+
+      const result: WatchProviders = regionData
+        ? {
+            region,
+            link: regionData.link ?? null,
+            streaming: toEntries(regionData.flatrate),
+            rent: toEntries(regionData.rent),
+            buy: toEntries(regionData.buy),
+          }
+        : emptyProviders(region);
+
+      providersCache.set(cacheKey, result);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Watch-provider lookup failed:", err);
+      // Same principle as above: this is discovery-page metadata, not
+      // critical functionality — fail soft with the empty shape rather
+      // than a 500 that could surface as a broken/alarming UI state.
+      const region = typeof req.query.region === "string" ? req.query.region : "US";
+      res.json(emptyProviders(region));
     }
   });
 

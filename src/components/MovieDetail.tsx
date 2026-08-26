@@ -8,6 +8,7 @@ import {
   MessageSquare, Send, Film as PlayIcon, Sparkles, CheckCircle2, Info, Compass, Pencil, Trash2
 } from "lucide-react";
 import MovieRail from "./MovieRail";
+import WhereToWatch from "./WhereToWatch";
 import { listMovieReviews, getUserReview, createReview, updateReview, deleteReview } from "../services/supabase/reviews";
 import { setUserRating, deleteRating } from "../services/supabase/ratings";
 import { useToast } from "../context/ToastContext";
@@ -561,6 +562,9 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
 
           {/* Right sidebar: User rating widget & Custom reviews list */}
           <div className="space-y-8">
+            {/* Where to Watch — Task 43: real external availability, sourced from TMDB */}
+            <WhereToWatch movieId={movie.id} />
+
             {/* Quick Facts panel — surfaces metadata already on the Movie object */}
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]">
               <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
