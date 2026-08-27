@@ -1,6 +1,6 @@
 // src/components/WhereToWatch.tsx
 //
-// Task 43 — "Where to Watch" real external availability. Fetches real TMDB
+// Phase 43 — "Where to Watch" real external availability. Fetches real TMDB
 // watch-provider data through our own server (never calls TMDB directly
 // from the client — see server.ts's /api/movies/:id/providers route and
 // getTmdbKey()). Purely informational: provider badges are not clickable
@@ -8,9 +8,21 @@
 // only a single aggregate attribution link to TMDB's own watch page, which
 // is what "View more options on TMDB" below points to when present. This
 // section never implies playback happens inside Movies App.
-import { useEffect, useState } from "react";
-import { Tv, ShoppingCart, Clapperboard, ExternalLink, Globe2 } from "lucide-react";
+//
+// Phase 44 — added a user-selectable availability region. The region
+// selector is rendered inline in the section header. The preference is
+// persisted to localStorage via regionPreference.ts (same pattern as
+// ThemeContext) and works identically for authenticated and logged-out users.
+import { useEffect, useRef, useState } from "react";
+import { Tv, ShoppingCart, Clapperboard, ExternalLink, Globe2, ChevronDown } from "lucide-react";
 import { dedupedFetch } from "../lib/requestDedup";
+import {
+  getRegion,
+  getSavedRegion,
+  saveRegion,
+  regionDisplayName,
+  TMDB_REGIONS,
+} from "../lib/regionPreference";
 
 interface WatchProviderEntry {
   id: number;
@@ -28,29 +40,6 @@ interface WatchProvidersResponse {
 
 interface WhereToWatchProps {
   movieId: string;
-}
-
-// Best-effort region guess from the browser's own locale (e.g. "en-GB" →
-// "GB"). This is a sensible, zero-config default — not a real region
-// preference system — and is passed as an explicit ?region= query param so
-// a future per-user setting could override it without changing the API.
-function guessRegion(): string {
-  try {
-    const locale = navigator.language || "en-US";
-    const parts = locale.split("-");
-    const region = parts[1]?.toUpperCase();
-    return region && /^[A-Z]{2}$/.test(region) ? region : "US";
-  } catch {
-    return "US";
-  }
-}
-
-function regionDisplayName(region: string): string {
-  try {
-    return new Intl.DisplayNames(["en"], { type: "region" }).of(region) ?? region;
-  } catch {
-    return region;
-  }
 }
 
 function ProviderBadge({ provider }: { provider: WatchProviderEntry }) {
@@ -75,7 +64,7 @@ function ProviderBadge({ provider }: { provider: WatchProviderEntry }) {
       )}
       {/* Provider name is always shown as real text, not just in the logo's
           alt attribute — logos alone shouldn't be the only way to identify
-          a provider (Task 6). */}
+          a provider. */}
       <span className="text-xs font-semibold text-neutral-200 whitespace-nowrap">{provider.name}</span>
     </div>
   );
@@ -98,16 +87,93 @@ function ProviderCategory({ icon: Icon, label, providers }: { icon: React.Elemen
   );
 }
 
+// ---------------------------------------------------------------------------
+// Region selector — compact inline <select> styled to match glass-morphism.
+// ---------------------------------------------------------------------------
+
+interface RegionSelectorProps {
+  value: string;
+  onChange: (region: string) => void;
+}
+
+function RegionSelector({ value, onChange }: RegionSelectorProps) {
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  return (
+    <div className="relative flex items-center">
+      {/* Visible label for screen readers — visually expressed by the globe
+          icon and the position within the "Where to Watch" section header. */}
+      <label
+        htmlFor="wtw-region-select"
+        className="sr-only"
+      >
+        Availability region
+      </label>
+
+      <Globe2
+        className="absolute left-2 h-3 w-3 text-neutral-500 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      <select
+        id="wtw-region-select"
+        ref={selectRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        // Tailwind doesn't have great cross-browser <select> support; we
+        // use appearance-none + inline style for the right padding so the
+        // ChevronDown icon doesn't overlap the text.
+        className={[
+          "appearance-none",
+          "pl-6 pr-5 py-1",
+          "text-[11px] font-semibold text-neutral-300",
+          "bg-white/[0.04] border border-white/[0.08]",
+          "rounded-lg",
+          "cursor-pointer",
+          "transition-colors",
+          "hover:border-white/[0.16] hover:bg-white/[0.07]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+          // Dark-mode-safe: <select> background on light theme
+          "[color-scheme:dark]",
+        ].join(" ")}
+        aria-label="Availability region"
+      >
+        {TMDB_REGIONS.map((r) => (
+          <option key={r.code} value={r.code}>
+            {r.name}
+          </option>
+        ))}
+      </select>
+
+      <ChevronDown
+        className="absolute right-1.5 h-2.5 w-2.5 text-neutral-500 pointer-events-none"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 export default function WhereToWatch({ movieId }: WhereToWatchProps) {
+  // Initialise from persisted preference (or browser locale fallback).
+  const [region, setRegionState] = useState<string>(() => getRegion());
   const [data, setData] = useState<WatchProvidersResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
+  // Whether the current region was explicitly saved or is auto-detected.
+  // Used only to know the initial value accurately on mount — updated when
+  // the user makes a selection.
+  const [isExplicit, setIsExplicit] = useState<boolean>(() => getSavedRegion() !== undefined);
+
+  // Re-fetch whenever movieId or region changes.
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
     setData(null);
 
-    const region = guessRegion();
     dedupedFetch(`/api/movies/${movieId}/providers?region=${region}`)
       .then(async (res) => {
         if (cancelled) return;
@@ -125,7 +191,13 @@ export default function WhereToWatch({ movieId }: WhereToWatchProps) {
     return () => {
       cancelled = true;
     };
-  }, [movieId]);
+  }, [movieId, region]);
+
+  function handleRegionChange(newRegion: string) {
+    saveRegion(newRegion);
+    setIsExplicit(true);
+    setRegionState(newRegion);
+  }
 
   const hasAnyProviders = !!data && (data.streaming.length > 0 || data.rent.length > 0 || data.buy.length > 0);
 
@@ -134,19 +206,30 @@ export default function WhereToWatch({ movieId }: WhereToWatchProps) {
       aria-labelledby="where-to-watch-heading"
       className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]"
     >
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h3 id="where-to-watch-heading" className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+      {/* ── HEADER ── */}
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <h3
+          id="where-to-watch-heading"
+          className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2"
+        >
           <Tv className="h-4 w-4 text-neutral-500" aria-hidden="true" />
           Where to Watch
         </h3>
-        {data && (
-          <span className="flex items-center gap-1 text-[10px] font-semibold text-neutral-500" title={`Availability shown for ${regionDisplayName(data.region)}`}>
-            <Globe2 className="h-3 w-3" aria-hidden="true" />
-            {regionDisplayName(data.region)}
-          </span>
-        )}
+
+        {/* Region selector — always visible, not gated on data being loaded */}
+        <RegionSelector value={region} onChange={handleRegionChange} />
       </div>
 
+      {/* Auto-detected notice — shown only when no explicit preference has
+          been saved, so users understand where the default comes from and
+          that they can change it. */}
+      {!isExplicit && (
+        <p className="text-[10px] text-neutral-600 mb-3 -mt-1">
+          Region auto-detected from your browser. Use the selector above to change it.
+        </p>
+      )}
+
+      {/* ── PROVIDER LIST ── */}
       <div className="min-h-[72px]">
         {status === "loading" ? (
           <div className="space-y-3" role="status" aria-live="polite" aria-label="Loading availability">
@@ -162,7 +245,7 @@ export default function WhereToWatch({ movieId }: WhereToWatchProps) {
           </p>
         ) : !hasAnyProviders ? (
           <p className="text-xs text-neutral-500">
-            No streaming, rental, or purchase information is currently available for this title in your region.
+            No streaming, rental, or purchase information is currently available for this title in {regionDisplayName(region)}.
           </p>
         ) : (
           <div className="space-y-4">
@@ -173,6 +256,7 @@ export default function WhereToWatch({ movieId }: WhereToWatchProps) {
         )}
       </div>
 
+      {/* ── FOOTER ── */}
       <p className="text-[10px] text-neutral-600 mt-5 pt-4 border-t border-white/[0.05] leading-relaxed">
         Availability provided by TMDB and shown for informational purposes only — these are external services, not part of Movies App. Streaming options may vary by region and change over time.
         {data?.link && (

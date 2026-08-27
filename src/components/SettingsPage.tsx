@@ -10,10 +10,20 @@
 // truth for reading/changing theme is still ThemeContext (via useTheme()),
 // this component is presentation only, exactly like GenreOnboardingModal is
 // for favorite genres.
-import React from "react";
+//
+// Phase 44 — added "Where to Watch" section for region preference.
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Settings as SettingsIcon, Sun, Moon, Check, Palette } from "lucide-react";
+import { Settings as SettingsIcon, Sun, Moon, Check, Palette, Globe2, ChevronDown } from "lucide-react";
 import { useTheme, type Theme } from "../context/ThemeContext";
+import {
+  getRegion,
+  getSavedRegion,
+  saveRegion,
+  clearSavedRegion,
+  regionDisplayName,
+  TMDB_REGIONS,
+} from "../lib/regionPreference";
 
 interface ThemeOption {
   value: Theme;
@@ -29,6 +39,27 @@ const THEME_OPTIONS: ThemeOption[] = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+
+  // Region preference — mirrors the state in WhereToWatch but is also
+  // surfaced here so power users can adjust it without opening a movie.
+  const [savedRegion, setSavedRegionState] = useState<string | undefined>(
+    () => getSavedRegion()
+  );
+  // Active region (saved or auto-detected)
+  const [activeRegion, setActiveRegionState] = useState<string>(() => getRegion());
+
+  function handleRegionChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const code = e.target.value;
+    if (code === "__auto__") {
+      clearSavedRegion();
+      setSavedRegionState(undefined);
+      setActiveRegionState(getRegion()); // re-derive from browser locale
+    } else {
+      saveRegion(code);
+      setSavedRegionState(code);
+      setActiveRegionState(code);
+    }
+  }
 
   return (
     <motion.div
@@ -115,6 +146,92 @@ export default function SettingsPage() {
             );
           })}
         </div>
+      </section>
+
+      {/* ── WHERE TO WATCH ── */}
+      <section
+        aria-labelledby="wtw-settings-heading"
+        className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8"
+      >
+        <div className="flex items-start gap-3 mb-6">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-650/15 border border-red-650/20 text-red-400">
+            <Globe2 className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 id="wtw-settings-heading" className="text-base font-bold text-white">
+              Where to Watch
+            </h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Choose the country used when looking up streaming, rental, and purchase availability. The selector on each movie page uses this preference.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            Availability region
+          </span>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] font-semibold text-neutral-300"
+            aria-live="polite"
+          >
+            <Globe2 className="h-3 w-3 text-red-400" aria-hidden="true" />
+            {savedRegion
+              ? regionDisplayName(savedRegion)
+              : `Auto-detected (${regionDisplayName(activeRegion)})`}
+          </span>
+        </div>
+
+        <div className="relative w-full sm:w-72">
+          <label htmlFor="settings-wtw-region" className="sr-only">
+            Availability region
+          </label>
+          <Globe2
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 pointer-events-none"
+            aria-hidden="true"
+          />
+          <select
+            id="settings-wtw-region"
+            value={savedRegion ?? "__auto__"}
+            onChange={handleRegionChange}
+            className={[
+              "w-full appearance-none",
+              "pl-9 pr-9 py-2.5",
+              "text-sm font-medium text-neutral-200",
+              "bg-white/[0.04] border border-white/[0.08]",
+              "rounded-xl",
+              "cursor-pointer",
+              "transition-colors",
+              "hover:border-white/[0.16] hover:bg-white/[0.07]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+              "[color-scheme:dark]",
+            ].join(" ")}
+          >
+            <option value="__auto__">Auto-detect from browser</option>
+            <optgroup label="Select a region">
+              {TMDB_REGIONS.map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.name}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          <ChevronDown
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 pointer-events-none"
+            aria-hidden="true"
+          />
+        </div>
+
+        {savedRegion && (
+          <p className="text-[11px] text-neutral-600 mt-3">
+            Showing availability for{" "}
+            <span className="text-neutral-400 font-semibold">
+              {regionDisplayName(savedRegion)}
+            </span>
+            {". "}
+            Select "Auto-detect from browser" above to revert to automatic region detection.
+          </p>
+        )}
       </section>
     </motion.div>
   );
