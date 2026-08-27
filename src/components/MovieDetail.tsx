@@ -379,6 +379,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                 src={movie.posterPath}
                 alt={movie.title}
                 referrerPolicy="no-referrer"
+                loading="lazy"
                 decoding="async"
                 onError={() => setPosterError(true)}
                 className="w-full h-full object-cover"

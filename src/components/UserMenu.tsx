@@ -155,7 +155,7 @@ export default function UserMenu({ user, onNavigate, onOpenSettings, onLogout }:
       >
         <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-xs shadow overflow-hidden flex-shrink-0">
           {user.photoURL ? (
-            <img src={user.photoURL} alt="" className="h-full w-full object-cover" />
+            <img src={user.photoURL} alt="" decoding="async" className="h-full w-full object-cover" />
           ) : initials ? (
             initials
           ) : (

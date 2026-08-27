@@ -105,7 +105,7 @@ function PosterStrip({ items }: { items: { key: string; title: string; poster_pa
         >
           <div className="aspect-[2/3] rounded-xl overflow-hidden bg-neutral-800 border border-neutral-700/40">
             {item.poster_path
-              ? <img src={item.poster_path} alt={item.title} className="w-full h-full object-cover" />
+              ? <img src={item.poster_path} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center"><Film className="h-5 w-5 text-neutral-600" aria-hidden="true" /></div>
             }
           </div>
@@ -555,7 +555,7 @@ export default function UserProfile({
           {/* avatar */}
           <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-red-600/50 bg-neutral-800 flex items-center justify-center flex-shrink-0">
             {avatarUrl
-              ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ? <img src={avatarUrl} alt={displayName} decoding="async" className="w-full h-full object-cover" />
               : <User className="h-10 w-10 text-neutral-500" aria-hidden="true" />
             }
           </div>
@@ -756,7 +756,7 @@ export default function UserProfile({
                       >
                         <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-neutral-400 text-xs flex-shrink-0 overflow-hidden">
                           {u.avatar_url
-                            ? <img src={u.avatar_url} alt={u.display_name ?? ""} className="w-full h-full object-cover" />
+                            ? <img src={u.avatar_url} alt={u.display_name ?? ""} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                             : (u.display_name?.trim() ? u.display_name.trim()[0].toUpperCase() : "?")
                           }
                         </div>
