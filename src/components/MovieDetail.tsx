@@ -14,6 +14,12 @@ import { setUserRating, deleteRating } from "../services/supabase/ratings";
 import { useToast } from "../context/ToastContext";
 
 // Pure helpers — cheap, no allocation beyond a single Date parse per call.
+// Phase 47 — reviews are already fetched in a single query (see reviews.ts);
+// this constant only controls how many are rendered into the DOM at once.
+// "Load more" reveals additional already-fetched reviews with no extra
+// network round-trip.
+const REVIEWS_PAGE_SIZE = 6;
+
 function formatReleaseDate(dateStr?: string): string {
   if (!dateStr) return "Release date unknown";
   const d = new Date(dateStr);
@@ -98,6 +104,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [visibleReviewCount, setVisibleReviewCount] = useState(REVIEWS_PAGE_SIZE);
   const [newRating, setNewRating] = useState(10);
   const [newComment, setNewComment] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -117,11 +125,14 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   useEffect(() => {
     let cancelled = false;
     setReviewsLoading(true);
+    setReviewsError(null);
+    setVisibleReviewCount(REVIEWS_PAGE_SIZE);
 
     listMovieReviews(movie.id).then((result) => {
       if (cancelled) return;
       if (result.error) {
         console.error("Failed to load reviews:", result.error);
+        setReviewsError(result.error);
         setReviewsLoading(false);
         return;
       }
@@ -538,7 +549,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               {movie.trailerUrl ? (
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.06] shadow-[0_30px_70px_-20px_rgba(0,0,0,0.7)] bg-black">
                   {!trailerLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
+                    <div className="absolute inset-0 flex items-center justify-center bg-neutral-950" role="status" aria-label="Loading trailer">
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-red-500" aria-hidden="true" />
                     </div>
                   )}
@@ -738,7 +749,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
               </div>
 
               {reviewsLoading ? (
-                <div className="space-y-3">
+                <div className="space-y-3" role="status" aria-label="Loading reviews">
                   {[1, 2].map((i) => (
                     <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3 animate-pulse">
                       <div className="flex items-center gap-3">
@@ -755,6 +766,41 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : reviewsError ? (
+                <div role="alert" className="rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.02] px-4 py-8 text-center space-y-3">
+                  <MessageSquare className="h-7 w-7 text-neutral-700 mx-auto" />
+                  <p className="text-sm font-semibold text-neutral-400">Couldn't load reviews</p>
+                  <p className="text-xs text-neutral-500 max-w-xs mx-auto">{reviewsError}</p>
+                  <button
+                    onClick={() => {
+                      setReviewsLoading(true);
+                      setReviewsError(null);
+                      listMovieReviews(movie.id).then((result) => {
+                        if (result.error) {
+                          setReviewsError(result.error);
+                          setReviewsLoading(false);
+                          return;
+                        }
+                        const mapped: Review[] = (result.data ?? []).map((r) => ({
+                          id: r.id,
+                          movieId: r.movie_id,
+                          userId: r.user_id,
+                          userEmail: r.profiles?.display_name || r.user_id,
+                          displayName: r.profiles?.display_name ?? null,
+                          avatarUrl: r.profiles?.avatar_url ?? null,
+                          rating: r.rating ?? 0,
+                          comment: r.comment,
+                          createdAt: new Date(r.created_at).getTime()
+                        }));
+                        setReviews(mapped);
+                        setReviewsLoading(false);
+                      });
+                    }}
+                    className="rounded-lg bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-red-400 border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    Try again
+                  </button>
                 </div>
               ) : reviews.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.02] px-4 py-8 text-center space-y-2">
@@ -773,8 +819,8 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   )}
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                  {reviews.map((rev) => {
+                <div className="space-y-3 pr-1">
+                  {reviews.slice(0, visibleReviewCount).map((rev) => {
                     const isOwn = rev.userId === user?.uid;
                     const initials = (rev.displayName || rev.userEmail || "?")
                       .split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -834,6 +880,15 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       </div>
                     );
                   })}
+                  {visibleReviewCount < reviews.length && (
+                    <button
+                      onClick={() => setVisibleReviewCount((prev) => prev + REVIEWS_PAGE_SIZE)}
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-white/[0.16] hover:bg-white/[0.04] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
+                      aria-label={`Load ${Math.min(REVIEWS_PAGE_SIZE, reviews.length - visibleReviewCount)} more reviews`}
+                    >
+                      Load more reviews ({reviews.length - visibleReviewCount} remaining)
+                    </button>
+                  )}
                 </div>
               )}
             </div>
