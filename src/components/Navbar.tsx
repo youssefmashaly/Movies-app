@@ -110,6 +110,10 @@ interface NavbarProps {
   /** Phase 21 — "Settings" entry in the account dropdown. Falls back to
    *  just switching to the Profile tab if the parent doesn't supply one. */
   onOpenSettings?: () => void;
+  /** Phase 46 — opens the Notification Center tab. */
+  onViewNotifications?: () => void;
+  /** Phase 46 — external unread count override after mark-all-read. */
+  notificationUnreadCount?: number;
 }
 
 export default function Navbar({
@@ -121,7 +125,9 @@ export default function Navbar({
   searchLoading = false,
   suggestionPool = [],
   onSelectMovie,
-  onOpenSettings
+  onOpenSettings,
+  onViewNotifications,
+  notificationUnreadCount
 }: NavbarProps) {
   const [user, setUser] = useState(auth.currentUser);
   const [scrolled, setScrolled] = useState(false);
@@ -357,7 +363,11 @@ export default function Navbar({
                 {/* Task Z — Notifications bell, positioned beside the
                     account avatar per the reference layout. Frontend-only
                     placeholder dropdown for now (see NotificationBell.tsx). */}
-                <NotificationBell />
+                <NotificationBell
+                  userId={user?.uid}
+                  onViewAll={onViewNotifications}
+                  externalUnreadCount={notificationUnreadCount}
+                />
 
                 {/* Phase 21 — avatar now opens the account dropdown menu
                     (View Profile / My Dashboard / Settings / Logout)

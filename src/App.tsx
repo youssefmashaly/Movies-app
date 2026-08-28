@@ -60,6 +60,7 @@ const MovieDetail = lazy(() => import("./components/MovieDetail"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 const UserProfile = lazy(() => import("./components/UserProfile"));
 const SettingsPage = lazy(() => import("./components/SettingsPage"));
+const NotificationCenter = lazy(() => import("./components/NotificationCenter"));
 import ScrollToTopButton from "./components/ScrollToTopButton";
 
 // Icons
@@ -109,6 +110,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>(() =>
     new URLSearchParams(window.location.search).get("profile") ? "profile" : "explore"
   ); // explore, watchlist, oracle, profile, ...
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState<number>(0);
   const [viewedProfileUserId, setViewedProfileUserId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get("profile")
   );
@@ -1155,6 +1157,12 @@ export default function App() {
           setSelectedMovie(null);
           setViewedProfileUserId(null);
         }}
+        onViewNotifications={() => {
+          setActiveTab("notifications");
+          setSelectedMovie(null);
+          setViewedProfileUserId(null);
+        }}
+        notificationUnreadCount={notificationUnreadCount}
       />
 
       {/* Auth Modal Overlay Popup — Phase 22: only mounted after first open (see hasOpenedAuth above) */}
@@ -2476,6 +2484,35 @@ export default function App() {
                   onToggleSave={handleQuickToggleWatchlist}
                 />
               </Suspense>
+            </motion.div>
+          ) : activeTab === "notifications" ? (
+            /* 6.5 NOTIFICATIONS — Phase 46: Notification Center */
+            <motion.div
+              key="notifications-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              {user ? (
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <NotificationCenter
+                    userId={user.uid}
+                    onSelectMovie={(movieId) => {
+                      const movie = combinedMoviePool.find((m) => m.id === movieId);
+                      if (movie) handleSelectMovie(movie);
+                    }}
+                    onViewProfile={(userId) => {
+                      setViewedProfileUserId(userId);
+                      setActiveTab("profile");
+                    }}
+                    onUnreadCountChange={setNotificationUnreadCount}
+                  />
+                </Suspense>
+              ) : (
+                <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+                  <p className="text-neutral-500 text-sm">Sign in to view your notifications.</p>
+                </div>
+              )}
             </motion.div>
           ) : activeTab === "settings" ? (
             /* 6.75 SETTINGS — Task Y: dedicated Settings page (Appearance/theme) */
