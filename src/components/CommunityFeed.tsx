@@ -234,6 +234,16 @@ export default function UserProfile({
 
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Phase 48 — guards loadProfile/loadActivity/loadSocial/openSocialPanel
+  // against out-of-order responses. Navigating between profiles quickly
+  // (e.g. clicking through a followers list, or a Phase 46 notification)
+  // changes targetUserId while a slower earlier request may still be
+  // in flight; without this guard that stale response could overwrite
+  // the newer profile's already-rendered data. This is a plain ref-based
+  // "latest request wins" check — no AbortController plumbing needed
+  // since these are simple Supabase reads, not cancelable fetches.
+  const requestIdRef = React.useRef(0);
+
   // edit (self-mode only)
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
@@ -244,9 +254,11 @@ export default function UserProfile({
 
   const loadProfile = useCallback(async () => {
     if (!targetUserId) return;
+    const myRequestId = requestIdRef.current;
     setProfileLoading(true);
     setProfileError(null);
     const res = await getProfileWithGenres(targetUserId);
+    if (requestIdRef.current !== myRequestId) return; // superseded by a newer profile navigation
     if (res.error || !res.data) {
       setProfileError(res.error ?? "Could not load profile.");
     } else {
@@ -263,7 +275,9 @@ export default function UserProfile({
 
   const loadSocial = useCallback(async () => {
     if (!targetUserId) return;
+    const myRequestId = requestIdRef.current;
     const res = await getFollowCounts(targetUserId);
+    if (requestIdRef.current !== myRequestId) return; // superseded by a newer profile navigation
     if (res.data) setFollowCounts(res.data);
 
     if (!isOwnProfile && myUserId) {
@@ -271,6 +285,7 @@ export default function UserProfile({
         checkIsFollowing(myUserId, targetUserId),
         getPublicProfile(myUserId),
       ]);
+      if (requestIdRef.current !== myRequestId) return; // superseded by a newer profile navigation
       setIsFollowing(followingRes.data ?? false);
       setMyFavoriteGenres(myProfileRes.data?.favorite_genres ?? []);
     }
@@ -278,22 +293,26 @@ export default function UserProfile({
 
   const openSocialPanel = async (type: "followers" | "following") => {
     if (!targetUserId) return;
+    const requestedFor = targetUserId; // captured so a fast Followers→Following toggle, or a profile navigation mid-fetch, can't apply the wrong list
     setSocialPanel(type);
     setSocialLoading(true);
     setSocialList([]);
     const res = type === "followers" ? await listFollowers(targetUserId) : await listFollowing(targetUserId);
+    if (requestedFor !== targetUserId) return; // targetUserId changed while this was in flight
     setSocialList(res.data ?? []);
     setSocialLoading(false);
   };
 
   const loadActivity = useCallback(async () => {
     if (!targetUserId) return;
+    const myRequestId = requestIdRef.current;
     setActivityLoading(true);
     const [ratRes, revRes, rvRes] = await Promise.all([
       listUserRatings(targetUserId, 20),
       listUserReviews(targetUserId, 20),
       listRecentlyViewed(targetUserId, 12),
     ]);
+    if (requestIdRef.current !== myRequestId) return; // superseded by a newer profile navigation
     setRatings(ratRes.data ?? []);
     setReviews(revRes.data ?? []);
     setRecentlyViewed(rvRes.data ?? []);
@@ -303,15 +322,19 @@ export default function UserProfile({
     // behalf just because their profile was opened — read-only lookup only.
     if (isOwnProfile) {
       const wlRes = await getOrCreateDefaultWatchlist(targetUserId);
+      if (requestIdRef.current !== myRequestId) return;
       if (!wlRes.error && wlRes.data) {
         const movRes = await listWatchlistMovies(wlRes.data.id);
+        if (requestIdRef.current !== myRequestId) return;
         setWatchlistMovies(movRes.data ?? []);
       }
     } else {
       const listsRes = await listWatchlists(targetUserId);
+      if (requestIdRef.current !== myRequestId) return;
       const firstList = listsRes.data?.[0];
       if (firstList) {
         const movRes = await listWatchlistMovies(firstList.id);
+        if (requestIdRef.current !== myRequestId) return;
         setWatchlistMovies(movRes.data ?? []);
       } else {
         setWatchlistMovies([]);
@@ -323,6 +346,7 @@ export default function UserProfile({
     // getReviewLikeCounts is already used elsewhere (community feed).
     if (revRes.data && revRes.data.length > 0) {
       const likeCountsRes = await getReviewLikeCounts(revRes.data.map((r) => r.id));
+      if (requestIdRef.current !== myRequestId) return;
       const total = Object.values(likeCountsRes.data ?? {}).reduce((sum, n) => sum + n, 0);
       setReviewLikeTotal(total);
     } else {
@@ -331,6 +355,14 @@ export default function UserProfile({
 
     setActivityLoading(false);
   }, [targetUserId, isOwnProfile]);
+
+  // Bumps the generation counter whenever the displayed profile changes, so
+  // loadProfile/loadActivity/loadSocial (and any in-flight retry) can tell
+  // a stale response apart from a current one. Declared before the loading
+  // effect below so it always runs first for a given targetUserId change.
+  useEffect(() => {
+    requestIdRef.current += 1;
+  }, [targetUserId]);
 
   useEffect(() => { loadProfile(); loadActivity(); loadSocial(); }, [loadProfile, loadActivity, loadSocial]);
 
