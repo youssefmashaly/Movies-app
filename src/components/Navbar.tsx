@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Trash2,
   SearchX,
-  LibraryBig
+  LibraryBig,
+  Users
 } from "lucide-react";
 import type { Movie } from "../types";
 import { searchMovies, highlightMatch, MovieSearchResult } from "../lib/movieSearch";
@@ -268,6 +269,7 @@ export default function Navbar({
     { id: "explore", label: "Explore", icon: Film },
     { id: "library", label: "Movie Library", icon: LibraryBig },
     { id: "watchlist", label: "Watchlist", icon: Bookmark, authRequired: true },
+    { id: "community", label: "Community", icon: Users },
     { id: "oracle", label: "AI Matchmaker", icon: Sparkles }
   ];
 

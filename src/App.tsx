@@ -2466,7 +2466,17 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
             >
               <Suspense fallback={<TabLoadingFallback />}>
-                <CommunityFeed />
+                <CommunityFeed
+                  combinedMoviePool={combinedMoviePool}
+                  onSelectMovie={handleSelectMovie}
+                  onToggleSave={handleQuickToggleWatchlist}
+                  watchlistIds={watchlistIds}
+                  onViewProfile={(userId) => {
+                    setViewedProfileUserId(userId);
+                    setActiveTab("profile");
+                  }}
+                  onOpenAuth={() => setAuthOpen(true)}
+                />
               </Suspense>
             </motion.div>
           ) : activeTab === "library" ? (
