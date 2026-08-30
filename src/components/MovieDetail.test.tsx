@@ -174,6 +174,108 @@ describe("MovieDetail — reviews section (Phase 47)", () => {
   });
 });
 
+describe("MovieDetail — review sort control (Phase 51)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("defaults to Newest, matching the server's own created_at DESC order", async () => {
+    const data = [
+      makeReview("old", { rating: 9, created_at: new Date(2024, 0, 1).toISOString() }),
+      makeReview("new", { rating: 3, created_at: new Date(2024, 5, 1).toISOString() }),
+    ];
+    // listMovieReviews already returns newest-first from the server.
+    mockListReviews.mockResolvedValue({ data: [data[1], data[0]], error: null });
+
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByText(/review text new$/i)).toBeInTheDocument());
+
+    const select = screen.getByLabelText(/sort reviews/i) as HTMLSelectElement;
+    expect(select.value).toBe("newest");
+
+    const cards = screen.getAllByText(/review text (new|old)$/i);
+    expect(cards[0]).toHaveTextContent("Review text new");
+    expect(cards[1]).toHaveTextContent("Review text old");
+  });
+
+  it("re-sorts to Highest Rated without triggering another fetch", async () => {
+    const data = [
+      makeReview("low", { rating: 3, created_at: new Date(2024, 5, 1).toISOString() }),
+      makeReview("high", { rating: 9, created_at: new Date(2024, 0, 1).toISOString() }),
+    ];
+    // Server returns newest-first: "low" (June) before "high" (January).
+    mockListReviews.mockResolvedValue({ data, error: null });
+
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByText(/review text low$/i)).toBeInTheDocument());
+    expect(mockListReviews).toHaveBeenCalledTimes(1);
+
+    const select = screen.getByLabelText(/sort reviews/i);
+    await userEvent.selectOptions(select, "highest");
+
+    const cards = screen.getAllByText(/review text (low|high)$/i);
+    expect(cards[0]).toHaveTextContent("Review text high");
+    expect(cards[1]).toHaveTextContent("Review text low");
+
+    // Purely client-side — no second network call.
+    expect(mockListReviews).toHaveBeenCalledTimes(1);
+  });
+
+  it("resets the visible page to the first REVIEWS_PAGE_SIZE when the sort order changes", async () => {
+    const many = Array.from({ length: 9 }, (_, i) =>
+      makeReview(`r${i + 1}`, { rating: i + 1, created_at: new Date(2024, 0, i + 1).toISOString() })
+    );
+    mockListReviews.mockResolvedValue({ data: many, error: null });
+
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByText(/review text r1$/i)).toBeInTheDocument());
+
+    // Load everything into view first.
+    await userEvent.click(screen.getByRole("button", { name: /load \d+ more reviews/i }));
+    await waitFor(() => expect(screen.getByText(/review text r9$/i)).toBeInTheDocument());
+
+    // Switching sort should return to a fresh first page, not keep all 9 visible.
+    const select = screen.getByLabelText(/sort reviews/i);
+    await userEvent.selectOptions(select, "highest");
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /load \d+ more reviews/i })).toBeInTheDocument()
+    );
+  });
+
+  it("keeps sorting and pagination consistent — only 6 of the highest-rated reviews show initially", async () => {
+    const many = Array.from({ length: 9 }, (_, i) =>
+      makeReview(`r${i + 1}`, { rating: i + 1, created_at: new Date(2024, 0, i + 1).toISOString() })
+    );
+    mockListReviews.mockResolvedValue({ data: many, error: null });
+
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByText(/review text r1$/i)).toBeInTheDocument());
+
+    const select = screen.getByLabelText(/sort reviews/i);
+    await userEvent.selectOptions(select, "highest");
+
+    // Highest rated is r9 (rating 9) down to r4 (rating 4) for the first page of 6.
+    await waitFor(() => expect(screen.getByText(/review text r9$/i)).toBeInTheDocument());
+    expect(screen.getByText(/review text r4$/i)).toBeInTheDocument();
+    expect(screen.queryByText(/review text r3$/i)).not.toBeInTheDocument();
+  });
+
+  it("does not show the sort control when there are no reviews", async () => {
+    mockListReviews.mockResolvedValue({ data: [], error: null });
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByText(/no reviews yet/i)).toBeInTheDocument());
+    expect(screen.queryByLabelText(/sort reviews/i)).not.toBeInTheDocument();
+  });
+
+  it("preserves the error state independent of the sort control", async () => {
+    mockListReviews.mockResolvedValue({ data: null, error: "Network unreachable" });
+    render(<MovieDetail movie={interstellar} onBack={noop} onOpenAuth={noop} />);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.queryByLabelText(/sort reviews/i)).not.toBeInTheDocument();
+  });
+});
+
 describe("MovieDetail — trailer & related movies (smoke checks, Phase 47)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

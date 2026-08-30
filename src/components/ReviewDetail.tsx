@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
-  ArrowLeft, Star, Heart, ThumbsUp, Film, AlertCircle, RefreshCw, SearchX,
+  ArrowLeft, Star, Heart, ThumbsUp, Film, AlertCircle, RefreshCw, SearchX, Loader2,
 } from "lucide-react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -334,7 +334,11 @@ export default function ReviewDetail({
                 isLiked ? "text-red-400 bg-red-500/10 border border-red-500/20" : "text-neutral-400 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06]"
               }`}
             >
-              <Heart className={`h-4 w-4 ${isLiked ? "fill-red-400" : ""}`} aria-hidden="true" />
+              {likeBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Heart className={`h-4 w-4 ${isLiked ? "fill-red-400" : ""}`} aria-hidden="true" />
+              )}
               {likeCount > 0 ? `${likeCount} ${likeCount === 1 ? "Like" : "Likes"}` : "Like"}
             </button>
 
@@ -347,7 +351,11 @@ export default function ReviewDetail({
                 isHelpful ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" : "text-neutral-400 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06]"
               }`}
             >
-              <ThumbsUp className={`h-4 w-4 ${isHelpful ? "fill-emerald-400" : ""}`} aria-hidden="true" />
+              {helpfulBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <ThumbsUp className={`h-4 w-4 ${isHelpful ? "fill-emerald-400" : ""}`} aria-hidden="true" />
+              )}
               {helpfulCount > 0 ? `${helpfulCount} found helpful` : "Mark helpful"}
             </button>
           </div>

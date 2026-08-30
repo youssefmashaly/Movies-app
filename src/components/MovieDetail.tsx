@@ -106,6 +106,12 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [visibleReviewCount, setVisibleReviewCount] = useState(REVIEWS_PAGE_SIZE);
+  // Phase 51 — review sort control. Purely client-side: all reviews for a
+  // movie are already fetched in a single query (see listMovieReviews), so
+  // changing sort order never triggers a new network request. "Newest" is
+  // the server's own default order (created_at DESC), so that branch is a
+  // no-op passthrough rather than a redundant re-sort.
+  const [reviewSort, setReviewSort] = useState<"newest" | "highest">("newest");
   const [newRating, setNewRating] = useState(10);
   const [newComment, setNewComment] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -153,6 +159,26 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
 
     return () => { cancelled = true; };
   }, [movie.id]);
+
+  // Phase 51 — derives the displayed order from the already-fetched
+  // `reviews` array. "newest" is a passthrough (the server already returns
+  // created_at DESC); "highest" does a stable client-side re-sort by
+  // rating, ties falling back to the original (newest-first) order. No
+  // network request is made when this changes.
+  const sortedReviews = useMemo(() => {
+    if (reviewSort === "highest") {
+      return [...reviews].sort((a, b) => b.rating - a.rating);
+    }
+    return reviews;
+  }, [reviews, reviewSort]);
+
+  function handleReviewSortChange(next: "newest" | "highest") {
+    setReviewSort(next);
+    // A different order means the first page should show that order's
+    // actual top results, not whatever had already been paged into view
+    // under the previous order.
+    setVisibleReviewCount(REVIEWS_PAGE_SIZE);
+  }
 
   // Load current user's own review so form pre-fills for editing
   useEffect(() => {
@@ -742,9 +768,24 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                   Community Reviews
                 </h3>
                 {reviews.length > 0 && (
-                  <span className="text-xs font-bold text-neutral-400 bg-neutral-800 border border-neutral-700 px-2.5 py-1 rounded-full">
-                    {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="review-sort-select" className="sr-only">
+                      Sort reviews
+                    </label>
+                    <select
+                      id="review-sort-select"
+                      value={reviewSort}
+                      onChange={(e) => handleReviewSortChange(e.target.value as "newest" | "highest")}
+                      className="text-[11px] font-semibold text-neutral-300 bg-neutral-900 border border-neutral-700 rounded-lg px-2 py-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 hover:border-neutral-600 transition-colors"
+                      aria-label="Sort reviews"
+                    >
+                      <option value="newest">Newest</option>
+                      <option value="highest">Highest Rated</option>
+                    </select>
+                    <span className="text-xs font-bold text-neutral-400 bg-neutral-800 border border-neutral-700 px-2.5 py-1 rounded-full">
+                      {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                    </span>
+                  </div>
                 )}
               </div>
 
@@ -820,7 +861,7 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                 </div>
               ) : (
                 <div className="space-y-3 pr-1">
-                  {reviews.slice(0, visibleReviewCount).map((rev) => {
+                  {sortedReviews.slice(0, visibleReviewCount).map((rev) => {
                     const isOwn = rev.userId === user?.uid;
                     const initials = (rev.displayName || rev.userEmail || "?")
                       .split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -880,13 +921,13 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
                       </div>
                     );
                   })}
-                  {visibleReviewCount < reviews.length && (
+                  {visibleReviewCount < sortedReviews.length && (
                     <button
                       onClick={() => setVisibleReviewCount((prev) => prev + REVIEWS_PAGE_SIZE)}
                       className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:border-white/[0.16] hover:bg-white/[0.04] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
-                      aria-label={`Load ${Math.min(REVIEWS_PAGE_SIZE, reviews.length - visibleReviewCount)} more reviews`}
+                      aria-label={`Load ${Math.min(REVIEWS_PAGE_SIZE, sortedReviews.length - visibleReviewCount)} more reviews`}
                     >
-                      Load more reviews ({reviews.length - visibleReviewCount} remaining)
+                      Load more reviews ({sortedReviews.length - visibleReviewCount} remaining)
                     </button>
                   )}
                 </div>

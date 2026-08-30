@@ -260,6 +260,58 @@ describe("ReviewDetail (Phase 50)", () => {
     expect(mockLikeReview).toHaveBeenCalledWith("r1", "me");
   });
 
+  it("disables the like button while the like request is in flight (Phase 51)", async () => {
+    mockGetReview.mockResolvedValue({ data: makeReview(), error: null });
+    let resolveLike!: (v: unknown) => void;
+    mockLikeReview.mockReturnValue(new Promise((res) => { resolveLike = res; }));
+
+    render(
+      <ReviewDetail
+        reviewId="r1"
+        combinedMoviePool={[]}
+        onBack={noop}
+        onSelectMovie={noop}
+        onViewProfile={noop}
+        onOpenAuth={noop}
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Alice")).toBeInTheDocument());
+
+    const likeButton = screen.getByRole("button", { name: /like this review/i });
+    await userEvent.click(likeButton);
+
+    expect(likeButton).toBeDisabled();
+
+    resolveLike({ data: null, error: null });
+    await waitFor(() => expect(likeButton).not.toBeDisabled());
+  });
+
+  it("disables the helpful button while the vote request is in flight (Phase 51)", async () => {
+    mockGetReview.mockResolvedValue({ data: makeReview(), error: null });
+    let resolveVote!: (v: unknown) => void;
+    mockVoteHelpful.mockReturnValue(new Promise((res) => { resolveVote = res; }));
+
+    render(
+      <ReviewDetail
+        reviewId="r1"
+        combinedMoviePool={[]}
+        onBack={noop}
+        onSelectMovie={noop}
+        onViewProfile={noop}
+        onOpenAuth={noop}
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Alice")).toBeInTheDocument());
+
+    const helpfulButton = screen.getByRole("button", { name: /mark as helpful/i });
+    await userEvent.click(helpfulButton);
+
+    expect(helpfulButton).toBeDisabled();
+
+    resolveVote({ data: null, error: null });
+    await waitFor(() => expect(helpfulButton).not.toBeDisabled());
+  });
+
   it("calls unlikeReview when the like button is clicked while already liked", async () => {
     mockGetReview.mockResolvedValue({ data: makeReview(), error: null });
     const { getUserLikes } = await import("../services/supabase/social");

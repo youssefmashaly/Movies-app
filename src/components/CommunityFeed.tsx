@@ -103,14 +103,18 @@ interface ReviewCardProps {
   review: CommunityReview;
   likeCount: number;
   isLiked: boolean;
-  canInteract: boolean;
+  /** Phase 51 — true while a like/unlike request for this specific review
+   *  is in flight. Previously this was a hardcoded `canInteract: true` that
+   *  never actually disabled the button during the async call, so rapid
+   *  double-clicks could race the optimistic update. */
+  isBusy: boolean;
   onToggleLike: (review: CommunityReview) => void;
   onViewProfile: (userId: string) => void;
   onSelectMovieById: (movieId: string, title: string) => void;
   onOpenReview: (reviewId: string) => void;
 }
 
-function ReviewCard({ review, likeCount, isLiked, canInteract, onToggleLike, onViewProfile, onSelectMovieById, onOpenReview }: ReviewCardProps) {
+function ReviewCard({ review, likeCount, isLiked, isBusy, onToggleLike, onViewProfile, onSelectMovieById, onOpenReview }: ReviewCardProps) {
   const name = review.profiles?.display_name ?? "Anonymous";
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3 text-sm">
@@ -169,14 +173,18 @@ function ReviewCard({ review, likeCount, isLiked, canInteract, onToggleLike, onV
 
       <button
         onClick={() => onToggleLike(review)}
-        disabled={!canInteract}
+        disabled={isBusy}
         aria-pressed={isLiked}
         aria-label={isLiked ? `Unlike this review (${likeCount} likes)` : `Like this review (${likeCount} likes)`}
         className={`inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-lg px-2 py-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50 ${
           isLiked ? "text-red-400 bg-red-500/10" : "text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.04]"
         }`}
       >
-        <Heart className={`h-3 w-3 ${isLiked ? "fill-red-400" : ""}`} aria-hidden="true" />
+        {isBusy ? (
+          <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+        ) : (
+          <Heart className={`h-3 w-3 ${isLiked ? "fill-red-400" : ""}`} aria-hidden="true" />
+        )}
         {likeCount > 0 ? likeCount : "Like"}
       </button>
     </div>
@@ -239,6 +247,9 @@ export default function CommunityFeed({
   const [feedLimit, setFeedLimit] = useState(FEED_PAGE_SIZE);
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  // Phase 51 — tracks which review ids have an in-flight like/unlike
+  // request, mirroring the existing followBusyIds pattern below.
+  const [likeBusyIds, setLikeBusyIds] = useState<Set<string>>(new Set());
 
   // ── Secondary sections ───────────────────────────────────────────────────
   const [followingReviews, setFollowingReviews] = useState<CommunityReview[]>([]);
@@ -310,6 +321,9 @@ export default function CommunityFeed({
 
   async function handleToggleLike(review: CommunityReview) {
     if (!userId) { onOpenAuth(); return; }
+    if (likeBusyIds.has(review.id)) return; // already in flight — ignore rapid re-clicks
+    setLikeBusyIds((prev) => new Set(prev).add(review.id));
+
     const wasLiked = likedIds.has(review.id);
     // Optimistic update
     setLikedIds((prev) => {
@@ -330,6 +344,12 @@ export default function CommunityFeed({
       setLikeCounts((prev) => ({ ...prev, [review.id]: Math.max(0, (prev[review.id] ?? 0) + (wasLiked ? 1 : -1)) }));
       showToast("Couldn't update like — please try again.", "error");
     }
+
+    setLikeBusyIds((prev) => {
+      const next = new Set(prev);
+      next.delete(review.id);
+      return next;
+    });
   }
 
   async function handleToggleFollow(targetId: string) {
@@ -373,7 +393,7 @@ export default function CommunityFeed({
     review,
     likeCount: likeCounts[review.id] ?? review.like_count ?? 0,
     isLiked: likedIds.has(review.id),
-    canInteract: true,
+    isBusy: likeBusyIds.has(review.id),
     onToggleLike: handleToggleLike,
     onViewProfile,
     onSelectMovieById,
@@ -406,10 +426,11 @@ export default function CommunityFeed({
           {/* Following reviews — only shown when it has real content */}
           {followingReviews.length > 0 && (
             <section aria-labelledby="following-reviews-heading">
-              <h2 id="following-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest mb-4">
+              <h2 id="following-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest">
                 <UserCheck className="h-4 w-4 text-neutral-500" aria-hidden="true" />
                 From People You Follow
               </h2>
+              <p className="text-xs text-neutral-500 mt-1 mb-4">Latest reviews from reviewers you follow.</p>
               <div className="space-y-3">
                 {followingReviews.slice(0, 4).map((r) => (
                   <ReviewCard key={r.id} {...reviewCardProps(r)} />
@@ -421,10 +442,11 @@ export default function CommunityFeed({
           {/* Trending this week */}
           {trending.length > 0 && (
             <section aria-labelledby="trending-reviews-heading">
-              <h2 id="trending-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest mb-4">
+              <h2 id="trending-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest">
                 <TrendingUp className="h-4 w-4 text-neutral-500" aria-hidden="true" />
                 Trending This Week
               </h2>
+              <p className="text-xs text-neutral-500 mt-1 mb-4">The most-liked reviews from the last 7 days, across the whole community.</p>
               <div className="space-y-3">
                 {trending.slice(0, 4).map((r) => (
                   <ReviewCard key={r.id} {...reviewCardProps(r)} />
@@ -435,10 +457,11 @@ export default function CommunityFeed({
 
           {/* Recent community reviews — the main paginated feed */}
           <section aria-labelledby="recent-reviews-heading">
-            <h2 id="recent-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest mb-4">
+            <h2 id="recent-reviews-heading" className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest">
               <MessageSquare className="h-4 w-4 text-neutral-500" aria-hidden="true" />
               Recent Reviews
             </h2>
+            <p className="text-xs text-neutral-500 mt-1 mb-4">Every new review, newest first — not filtered by who you follow.</p>
 
             {feedStatus === "loading" ? (
               <div className="space-y-3" role="status" aria-label="Loading community reviews">
@@ -486,10 +509,11 @@ export default function CommunityFeed({
           {/* People to discover — signed-in only, real taste/activity data */}
           {userId && (
             <section aria-labelledby="discover-people-heading" className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-              <h2 id="discover-people-heading" className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest mb-4">
+              <h2 id="discover-people-heading" className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest">
                 <UserPlus className="h-3.5 w-3.5 text-neutral-500" aria-hidden="true" />
                 People to Discover
               </h2>
+              <p className="text-[11px] text-neutral-500 mt-1 mb-4">Recently active reviewers you don't yet follow.</p>
               {secondaryLoading ? (
                 <div className="space-y-3" role="status" aria-label="Loading people to discover">
                   {[1, 2, 3].map((i) => (
@@ -554,10 +578,11 @@ export default function CommunityFeed({
 
           {/* Top reviewers leaderboard — always shown, pure aggregate data */}
           <section aria-labelledby="leaderboard-heading" className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-            <h2 id="leaderboard-heading" className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest mb-4">
+            <h2 id="leaderboard-heading" className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest">
               <Trophy className="h-3.5 w-3.5 text-neutral-500" aria-hidden="true" />
               Top Reviewers
             </h2>
+            <p className="text-[11px] text-neutral-500 mt-1 mb-4">Ranked by total reviews written.</p>
             {secondaryLoading ? (
               <div className="space-y-3" role="status" aria-label="Loading top reviewers">
                 {[1, 2, 3].map((i) => (

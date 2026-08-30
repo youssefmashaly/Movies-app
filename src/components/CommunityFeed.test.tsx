@@ -215,6 +215,36 @@ describe("CommunityFeed (Phase 49)", () => {
     expect(mockLikeReview).toHaveBeenCalledWith("r1", "me");
   });
 
+  it("disables the like button and ignores a second click while a like request is in flight (Phase 51)", async () => {
+    mockListReviews.mockResolvedValue({ data: [makeReview("r1")], error: null });
+    let resolveLike!: (v: unknown) => void;
+    mockLikeReview.mockReturnValue(new Promise((res) => { resolveLike = res; }));
+
+    render(
+      <CommunityFeed
+        combinedMoviePool={[]}
+        onSelectMovie={noop}
+        onToggleSave={noop}
+        watchlistIds={new Set()}
+        onViewProfile={noop}
+        onOpenAuth={noop}
+        onOpenReview={noop}
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
+    const likeButton = screen.getByRole("button", { name: /like this review/i });
+
+    await userEvent.click(likeButton);
+    expect(likeButton).toBeDisabled();
+
+    // A rapid second click while busy must not fire a second request.
+    await userEvent.click(likeButton);
+    expect(mockLikeReview).toHaveBeenCalledTimes(1);
+
+    resolveLike({ data: null, error: null });
+    await waitFor(() => expect(likeButton).not.toBeDisabled());
+  });
+
   it("calls unlikeReview when an already-liked review's like button is clicked", async () => {
     mockListReviews.mockResolvedValue({ data: [makeReview("r1")], error: null });
     const { getUserLikes } = await import("../services/supabase/social");
