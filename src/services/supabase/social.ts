@@ -62,6 +62,31 @@ export async function listCommunityReviews(limit = 20): Promise<SupabaseResult<C
   }
 }
 
+// Phase 50 — fetches a single review for the focused Review Detail page.
+// Mirrors listCommunityReviews' exact select shape (same joined profile
+// fields) so ReviewDetail can reuse the same CommunityReview type and the
+// same ReviewCard-adjacent rendering logic, without ever needing to fetch
+// or filter the whole community feed just to show one review.
+export async function getReviewById(reviewId: string): Promise<SupabaseResult<CommunityReview | null>> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  try {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("id, user_id, movie_id, movie_title, rating, comment, created_at, profiles(display_name, avatar_url)")
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (error) return { data: null, error: error.message };
+    if (!data) return { data: null, error: null }; // review genuinely doesn't exist — not an error
+    const normalized = {
+      ...data,
+      profiles: Array.isArray((data as any).profiles) ? ((data as any).profiles[0] ?? null) : (data as any).profiles,
+    } as CommunityReview;
+    return { data: normalized, error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : "Failed to fetch review." };
+  }
+}
+
 // ── Review Likes ──────────────────────────────────────────────────────────────
 
 export async function likeReview(reviewId: string, userId: string): Promise<SupabaseResult<null>> {

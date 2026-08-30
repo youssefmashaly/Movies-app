@@ -61,6 +61,7 @@ const AuthModal = lazy(() => import("./components/AuthModal"));
 const UserProfile = lazy(() => import("./components/UserProfile"));
 const SettingsPage = lazy(() => import("./components/SettingsPage"));
 const NotificationCenter = lazy(() => import("./components/NotificationCenter"));
+const ReviewDetail = lazy(() => import("./components/ReviewDetail"));
 import ScrollToTopButton from "./components/ScrollToTopButton";
 
 // Icons
@@ -107,12 +108,21 @@ export default function App() {
   // Phase 19 — shareable public profile URLs (?profile=<uid>). No router
   // dependency added — plain History API, consistent with this app's
   // existing tab-based navigation (activeTab already drives everything).
-  const [activeTab, setActiveTab] = useState<string>(() =>
-    new URLSearchParams(window.location.search).get("profile") ? "profile" : "explore"
-  ); // explore, watchlist, oracle, profile, ...
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("review")) return "review";
+    if (params.get("profile")) return "profile";
+    return "explore";
+  }); // explore, watchlist, oracle, profile, review, ...
   const [notificationUnreadCount, setNotificationUnreadCount] = useState<number>(0);
   const [viewedProfileUserId, setViewedProfileUserId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get("profile")
+  );
+  // Phase 50 — mirrors viewedProfileUserId's pattern exactly: which review
+  // is currently open in the focused Review Detail experience, with the
+  // same ?review=<id> shareable-URL sync below.
+  const [viewedReviewId, setViewedReviewId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("review")
   );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
@@ -433,6 +443,18 @@ export default function App() {
     }
     window.history.replaceState({}, "", url.toString());
   }, [activeTab, viewedProfileUserId]);
+
+  // Phase 50 — same shareable-link treatment for the focused Review Detail
+  // view: keep ?review=<id> in sync with whichever review is open.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeTab === "review" && viewedReviewId) {
+      url.searchParams.set("review", viewedReviewId);
+    } else {
+      url.searchParams.delete("review");
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [activeTab, viewedReviewId]);
 
   useEffect(() => {
     localStorage.setItem(GENRE_ONBOARDING_SEEN_KEY, JSON.stringify(genreOnboardingSeen));
@@ -2471,6 +2493,36 @@ export default function App() {
                   onSelectMovie={handleSelectMovie}
                   onToggleSave={handleQuickToggleWatchlist}
                   watchlistIds={watchlistIds}
+                  onViewProfile={(userId) => {
+                    setViewedProfileUserId(userId);
+                    setActiveTab("profile");
+                  }}
+                  onOpenAuth={() => setAuthOpen(true)}
+                  onOpenReview={(reviewId) => {
+                    setViewedReviewId(reviewId);
+                    setActiveTab("review");
+                  }}
+                />
+              </Suspense>
+            </motion.div>
+          ) : activeTab === "review" && viewedReviewId ? (
+            /* 6.25 REVIEW DETAIL — Phase 50: focused single-review view,
+               reached from Community's "Read full review" affordance. */
+            <motion.div
+              key="review-detail-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ReviewDetail
+                  reviewId={viewedReviewId}
+                  combinedMoviePool={combinedMoviePool}
+                  onBack={() => {
+                    setViewedReviewId(null);
+                    setActiveTab("community");
+                  }}
+                  onSelectMovie={handleSelectMovie}
                   onViewProfile={(userId) => {
                     setViewedProfileUserId(userId);
                     setActiveTab("profile");

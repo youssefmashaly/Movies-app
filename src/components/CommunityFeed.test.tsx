@@ -5,6 +5,9 @@
 // loading/empty/error states, and that interactions (like, follow, movie
 // navigation, profile navigation) call the right functions with the right
 // arguments. No fabricated content should ever appear.
+//
+// Phase 50 — added onOpenReview prop to every render call, plus a new
+// test confirming the review text opens the focused Review Detail view.
 
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -98,6 +101,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     expect(screen.getByRole("status", { name: /loading community reviews/i })).toBeInTheDocument();
@@ -113,6 +117,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText(/no reviews yet/i)).toBeInTheDocument());
@@ -128,6 +133,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
@@ -144,6 +150,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
@@ -162,6 +169,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Movie r1")).toBeInTheDocument());
@@ -180,6 +188,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={onViewProfile}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
@@ -197,6 +206,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
@@ -218,6 +228,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
@@ -241,6 +252,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
 
@@ -265,6 +277,7 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
 
@@ -282,11 +295,32 @@ describe("CommunityFeed (Phase 49)", () => {
         watchlistIds={new Set()}
         onViewProfile={noop}
         onOpenAuth={noop}
+        onOpenReview={noop}
       />
     );
     await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
     // No hardcoded/example names should ever appear
     expect(screen.queryByText(/john doe/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/jane smith/i)).not.toBeInTheDocument();
+  });
+
+  it("calls onOpenReview with the review id when the review text is clicked (Phase 50)", async () => {
+    mockListReviews.mockResolvedValue({ data: [makeReview("r1")], error: null });
+    const onOpenReview = vi.fn();
+    render(
+      <CommunityFeed
+        combinedMoviePool={[]}
+        onSelectMovie={noop}
+        onToggleSave={noop}
+        watchlistIds={new Set()}
+        onViewProfile={noop}
+        onOpenAuth={noop}
+        onOpenReview={onOpenReview}
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Reviewer r1")).toBeInTheDocument());
+    const reviewButton = screen.getByRole("button", { name: /read full review by reviewer r1/i });
+    await userEvent.click(reviewButton);
+    expect(onOpenReview).toHaveBeenCalledWith("r1");
   });
 });
