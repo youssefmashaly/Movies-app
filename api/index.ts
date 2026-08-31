@@ -4,7 +4,7 @@
 // createApp() is cached across warm invocations to avoid rebuilding the
 // Express app (and re-registering routes) on every request.
 import type { IncomingMessage, ServerResponse } from "http";
-import { createApp } from "../server";
+import { createApp } from "../server.js";
 
 let appPromise: ReturnType<typeof createApp> | null = null;
 
