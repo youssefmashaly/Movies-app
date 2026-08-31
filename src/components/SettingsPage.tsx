@@ -210,7 +210,7 @@ export default function SettingsPage() {
             <option value="__auto__">Auto-detect from browser</option>
             <optgroup label="Select a region">
               {TMDB_REGIONS.map((r) => (
-                <option key={r.code} value={r.code}>
+                <option key={r.code} value={r.code} style={{ backgroundColor: "#171717", color: "#ffffff" }}>
                   {r.name}
                 </option>
               ))}

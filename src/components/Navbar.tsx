@@ -421,7 +421,7 @@ export default function Navbar({
           Task 4 — only shown on Explore and Movie Library, the two pages
           where searching movies is actually useful; hidden on Settings,
           Dashboard, and View Profile. */}
-      {(activeTab === "explore" || activeTab === "library") && (
+      {activeTab === "explore" && (
       <div className="max-w-7xl mx-auto px-6 md:px-8 mt-8 hidden md:block">
         <div className="relative">
           <label htmlFor="navbar-search" className="sr-only">Search movies, actors, directors, genres, or year</label>

@@ -139,7 +139,7 @@ function RegionSelector({ value, onChange }: RegionSelectorProps) {
         aria-label="Availability region"
       >
         {TMDB_REGIONS.map((r) => (
-          <option key={r.code} value={r.code}>
+          <option key={r.code} value={r.code} style={{ backgroundColor: "#171717", color: "#ffffff" }}>
             {r.name}
           </option>
         ))}
