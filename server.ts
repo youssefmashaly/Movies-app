@@ -1,6 +1,6 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
+
 import { GoogleGenAI } from "@google/genai";
 import { PRESET_MOVIES } from "./src/movies-data.js";
 import { Movie } from "./src/types.js";
@@ -534,8 +534,13 @@ Provide ONLY the raw JSON structure, with no markdown tick marks or wrapping.`;
   });
 
   // --- VITE INTEGRATION ---
-
+  // Vite (and its Rollup dependency) must only ever be imported here, inside
+  // this dev-only branch — never as a top-level import — so that a
+  // production serverless bundle (e.g. on Vercel) never needs to resolve
+  // Vite/Rollup at all, avoiding native-binary/optional-dependency issues
+  // in that environment.
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
