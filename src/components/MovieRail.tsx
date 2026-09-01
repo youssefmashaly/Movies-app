@@ -61,9 +61,45 @@ function MovieRailComponent({
   onToggleSave,
 }: MovieRailProps) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const palette = ACCENTS[accent];
+
+  // Mobile-crash fix — a page with 20+ rails was mounting every single
+  // MovieCard in every rail immediately, all at once, on first paint
+  // (hundreds of animated component instances competing for the main
+  // thread — this is what froze Safari on iPhone). whileInView below only
+  // deferred the section's own fade-in animation, not the cost of actually
+  // creating all those card instances in the first place.
+  //
+  // This observer instead delays mounting a rail's real card track until
+  // the rail is actually within ~800px of the viewport. Off-screen rails
+  // render a cheap skeleton (same markup already used for the loading
+  // state) instead, so the DOM/JS cost only pays for rails the user is
+  // about to see, not all of them at once. Once a rail has mounted its
+  // real content it stays mounted — the observer disconnects after firing
+  // once, so scrolling back up never re-triggers a lazy-remount.
+  const [isNearViewport, setIsNearViewport] = useState(false);
+
+  useEffect(() => {
+    if (isNearViewport) return;
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "800px 0px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isNearViewport]);
+
+
 
   const updateScrollState = () => {
     const el = trackRef.current;
@@ -72,10 +108,12 @@ function MovieRailComponent({
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
   };
 
-  // Restore scroll position once the rail actually has content to scroll to
-  // (restoring against an empty/skeleton track would just no-op at 0).
+  // Restore scroll position once the rail actually has its REAL content
+  // mounted (restoring against the skeleton placeholder, which is always
+  // capped at 8 items, could clamp/lose a saved position from a longer
+  // real track).
   useEffect(() => {
-    if (isLoading || movies.length === 0) return;
+    if (isLoading || movies.length === 0 || !isNearViewport) return;
     const el = trackRef.current;
     if (!el) return;
     const saved = readRailScroll(id);
@@ -85,7 +123,7 @@ function MovieRailComponent({
       el.scrollLeft = saved;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, movies.length, id]);
+  }, [isLoading, movies.length, id, isNearViewport]);
 
   useEffect(() => {
     updateScrollState();
@@ -104,7 +142,7 @@ function MovieRailComponent({
       window.removeEventListener("resize", onScroll);
       clearTimeout(saveTimeout);
     };
-  }, [movies, isLoading, id]);
+  }, [movies, isLoading, id, isNearViewport]);
 
   const scrollBy = (dir: 1 | -1) => {
     const el = trackRef.current;
@@ -128,8 +166,11 @@ function MovieRailComponent({
   // Don't render an empty, finished section at all (clean discovery surface)
   if (!isLoading && movies.length === 0) return null;
 
+  const showSkeleton = isLoading || !isNearViewport;
+
   return (
     <motion.section
+      ref={sectionRef}
       id={id}
       aria-labelledby={`${id}-heading`}
       initial={{ opacity: 0, y: 24 }}
@@ -184,7 +225,7 @@ function MovieRailComponent({
         onKeyDown={handleTrackKeyDown}
         className="rail-track no-scrollbar flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scroll-smooth"
       >
-        {isLoading
+        {showSkeleton
           ? Array.from({ length: 8 }).map((_, i) => (
               <div key={`${id}-skel-${i}`} className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px] xl:w-[220px]">
                 <MovieCard isLoading />
