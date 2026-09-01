@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, X } from "lucide-react";
-import { ALL_GENRES } from "../movies-data";
+import { ALL_GENRES } from "../genres";
 import { useFocusTrap } from "../lib/useFocusTrap";
 
 interface GenreOnboardingModalProps {

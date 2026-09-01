@@ -1285,7 +1285,7 @@ export default function App() {
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={featuredMovie.id}
-                        src={featuredMovie.backdropPath}
+                        src={featuredMovie.backdropPath?.replace("/original/", "/w1280/")}
                         alt=""
                         role="presentation"
                         referrerPolicy="no-referrer"

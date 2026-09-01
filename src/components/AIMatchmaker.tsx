@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Movie } from "../types";
 import { Sparkles, Send, Film, HelpCircle, Loader2, ArrowRight, TrendingUp, Star } from "lucide-react";
-import { ALL_GENRES } from "../movies-data";
+import { ALL_GENRES } from "../genres";
 import MovieCard from "./MovieCard";
 import { buildUserPreferenceProfile, profileToRequestPayload } from "../services/recommendations";
 import type { UserPreferenceProfile } from "../services/recommendations";

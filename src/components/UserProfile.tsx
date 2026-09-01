@@ -16,7 +16,7 @@ import {
   checkIsFollowing, getPublicProfile, getReviewLikeCounts, computeBadges,
   type FollowWithProfile, type Badge,
 } from "../services/supabase/social";
-import { ALL_GENRES } from "../movies-data";
+import { ALL_GENRES } from "../genres";
 import { loadMovieCatalog, getCachedCatalog } from "../lib/movieCatalog";
 import { computeFavoriteDecadeAndDirector, computeTasteMatchPct } from "../lib/profileInsights";
 import { useFocusTrap } from "../lib/useFocusTrap";
