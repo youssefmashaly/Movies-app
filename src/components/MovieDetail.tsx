@@ -386,10 +386,12 @@ export default function MovieDetail({ movie, onBack, onOpenAuth, relatedPool, on
           </button>
         </div>
 
-        {/* Backdrop Image */}
+        {/* Backdrop Image — Phase 53: /w1280/ instead of /original/ saves
+            2–5 MB on mobile for what is a ~300 px tall container. Full
+            /original/ resolution was never perceptible at this display size. */}
         {!backdropError && movie.backdropPath ? (
           <img
-            src={movie.backdropPath}
+            src={movie.backdropPath?.replace("/original/", "/w1280/")}
             alt={movie.title}
             referrerPolicy="no-referrer"
             fetchPriority="high"

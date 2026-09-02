@@ -103,9 +103,6 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
     <motion.div
       id={`movie-card-${movie.id}`}
       whileHover={{ y: -10, scale: 1.03 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: Math.min(index, 10) * 0.04 }}
       onMouseEnter={() => prefetchMovieDetail(movie.id)}
       onMouseLeave={() => cancelPrefetch(movie.id)}
       onFocus={() => prefetchMovieDetail(movie.id)}

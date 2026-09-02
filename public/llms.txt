@@ -1,18 +1,31 @@
-# CineMatch — Movie Discovery App
-# https://your-domain.vercel.app
+# Movie Database
 
-CineMatch is a movie discovery and social platform built with React, TypeScript, Firebase Authentication, Supabase, and the TMDB API.
+> A full-stack movie discovery and social platform. Browse trending films, build a personal watchlist, read and write community reviews, and get AI-powered recommendations.
 
 ## Features
-- Browse trending, popular, and latest movie releases
-- Build and manage a personal watchlist
-- Write and read community movie reviews
-- AI-powered movie recommendations via Google Gemini
-- User profiles and social following
 
-## Tech
-- Frontend: React 19, TypeScript, Vite, Tailwind CSS
-- Backend: Node.js, Express
-- Auth: Firebase Authentication
-- Database: Supabase (PostgreSQL)
-- Movie Data: TMDB API
+- Browse trending, popular, and latest movie releases sourced from TMDB
+- Personal watchlist with add/remove and sorting
+- Community reviews with likes and helpful votes
+- AI-powered movie recommendations via Google Gemini
+- AI Matchmaker chatbot for personalised suggestions
+- User profiles with social following and follower counts
+- Notification centre for social activity
+- Where to Watch — streaming and rental provider availability by region
+- Shareable review and profile links
+- Genre preference onboarding for personalised rails
+- Light and dark theme
+
+## Tech Stack
+
+- Frontend: React 19, TypeScript, Vite, Tailwind CSS v4, motion/react
+- Backend: Node.js, Express (serverless via Vercel)
+- Authentication: Firebase Authentication
+- Database: Supabase (PostgreSQL with Row Level Security)
+- Movie data: TMDB API
+- AI: Google Gemini API
+
+## Notes
+
+This application is a portfolio project. It is not affiliated with Netflix, TMDB, or any movie studio.
+Movie metadata and images are provided by The Movie Database (TMDB) API.

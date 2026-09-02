@@ -86,6 +86,10 @@ function MovieRailComponent({
     if (isNearViewport) return;
     const el = sectionRef.current;
     if (!el) return;
+    // Phase 53: reduced rootMargin from 800px → 400px. 800px was preloading
+    // card content for rails 2–3 screens away, burning mobile CPU/memory
+    // for content the user may never reach. 400px is still generous enough
+    // to avoid visible skeleton flashes during normal scroll speed.
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -93,7 +97,7 @@ function MovieRailComponent({
           observer.disconnect();
         }
       },
-      { rootMargin: "800px 0px", threshold: 0 }
+      { rootMargin: "400px 0px", threshold: 0 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -226,7 +230,7 @@ function MovieRailComponent({
         className="rail-track no-scrollbar flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scroll-smooth"
       >
         {showSkeleton
-          ? Array.from({ length: 8 }).map((_, i) => (
+          ? Array.from({ length: 4 }).map((_, i) => (
               <div key={`${id}-skel-${i}`} className="rail-card shrink-0 w-[150px] sm:w-[180px] md:w-[200px] xl:w-[220px]">
                 <MovieCard isLoading />
               </div>

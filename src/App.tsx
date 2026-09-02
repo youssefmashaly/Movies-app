@@ -275,9 +275,11 @@ export default function App() {
           const trendData = await loadMovieCatalog();
           setTrendingMovies(trendData);
           setMovies(trendData); // Default
-          // First visible rail on load — preload its first few posters so
-          // they're warm by the time the fade-in animation reveals them.
-          trendData.slice(0, 4).forEach((m: Movie) => preloadImage(m.posterPath));
+          // Phase 53: reduced from 4 → 2 preloads. On slow-4G mobile, 4
+          // concurrent image fetches competed with the hero backdrop and
+          // deferred meaningful content. Two warms the first visible card
+          // without starving the LCP element.
+          trendData.slice(0, 2).forEach((m: Movie) => preloadImage(m.posterPath));
         } catch (err) {
           console.error("Failed loading movie catalog:", err);
         }
@@ -1091,10 +1093,14 @@ export default function App() {
 
   // Predictively preload the *next* hero slide's backdrop so the rotation
   // (auto or manual) never shows a blank frame while the image loads.
+  // Phase 53: use /w1280/ instead of /original/ — 1280 px is more than
+  // sufficient for the 420–520 px hero container and saves 2–5 MB per image
+  // on mobile (where /original/ serves a 3840×2160 JPEG nobody can see).
   useEffect(() => {
     if (heroSlides.length <= 1) return;
     const nextIndex = (heroIndex + 1) % heroSlides.length;
-    preloadImage(heroSlides[nextIndex]?.backdropPath);
+    const url = heroSlides[nextIndex]?.backdropPath?.replace("/original/", "/w1280/");
+    preloadImage(url);
   }, [heroIndex, heroSlides]);
   const safeHeroIndex = heroSlides.length > 0 ? heroIndex % heroSlides.length : 0;
   const featuredMovie = heroSlides[safeHeroIndex] ?? trendingMovies[0];
