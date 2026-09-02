@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;450;600;850&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Phase 54: Google Fonts @import removed from here.
+   The font stylesheet is now loaded non-blocking via <link media="print">
+   in index.html, which eliminates the render-blocking request that was
+   delaying FCP by ~300-500ms on slow mobile connections. */
 @import "tailwindcss";
 
 @theme {
@@ -314,4 +317,17 @@ body::before {
   .skeleton-shimmer::after {
     animation: none;
   }
+}
+
+/* Phase 54: Rail section fade-in — replaces motion.section whileInView.
+   Pure CSS animation: GPU-composited, zero JS overhead, fires once per rail
+   as it enters the viewport (animation-play-state is driven by the
+   IntersectionObserver in MovieRail which toggles a class). */
+@keyframes rail-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rail-fade-in {
+  animation: rail-enter 0.45s ease-out both;
 }

@@ -4,16 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movie Database</title>
-    <meta name="description" content="CineMatch helps you discover movies you'll love. Browse trending films, build your personal watchlist, read community reviews, and get AI-powered recommendations tailored to your taste." />
+    <meta name="description" content="Movie Database helps you discover films you'll love. Browse trending movies, build your watchlist, read community reviews, and get AI-powered recommendations." />
     <meta name="theme-color" content="#0a0a0a" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
+
+    <!-- Phase 54: preconnect to origins we'll need immediately so the
+         browser opens the TCP/TLS connections in parallel with HTML parsing.
+         image.tmdb.org — hero backdrop and poster images.
+         fonts.googleapis.com / fonts.gstatic.com — Google Fonts.
+         Firebase auth — reduces the auth iframe TTFB. -->
     <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
+
+    <!-- Phase 54: font loading moved from CSS @import (render-blocking) to
+         <link rel="stylesheet"> with media="print" trick for non-blocking load.
+         Fonts swap in immediately on load (display=swap) so text is always
+         visible. The @import in index.css has been removed. -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;450;600;850&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          media="print"
+          onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;450;600;850&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

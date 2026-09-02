@@ -1540,7 +1540,7 @@ export default function App() {
                     subtitle="What everyone's discovering this week"
                     icon={TrendingUp}
                     accent="red"
-                    movies={trendingMovies}
+                    movies={trendingMovies.slice(0, 20)}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
                     isSaved={isMovieSaved}
@@ -1552,7 +1552,7 @@ export default function App() {
                     subtitle="Highest-rated by the community"
                     icon={Flame}
                     accent="amber"
-                    movies={popularMovies}
+                    movies={popularMovies.slice(0, 20)}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
                     isSaved={isMovieSaved}
@@ -1564,7 +1564,7 @@ export default function App() {
                     subtitle="Newest titles, freshest first"
                     icon={CalendarClock}
                     accent="teal"
-                    movies={latestMovies}
+                    movies={latestMovies.slice(0, 20)}
                     isLoading={moviesLoading}
                     onMovieClick={handleSelectMovie}
                     isSaved={isMovieSaved}

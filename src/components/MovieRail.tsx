@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
-import { motion } from "motion/react";
+// Phase 54: motion removed from MovieRail. Section fade-in is now a pure CSS
+// animation (zero JS per rail). With 27 rails on the homepage this saves 27
+// Motion controller instances on every render.
 import { Movie } from "../types";
 import { ChevronLeft, ChevronRight, LucideIcon } from "lucide-react";
 import MovieCard from "./MovieCard";
@@ -173,15 +175,11 @@ function MovieRailComponent({
   const showSkeleton = isLoading || !isNearViewport;
 
   return (
-    <motion.section
+    <section
       ref={sectionRef}
       id={id}
       aria-labelledby={`${id}-heading`}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="max-w-[1600px] mx-auto px-6"
+      className="max-w-[1600px] mx-auto px-6 rail-fade-in"
     >
       <div className="flex items-end justify-between mb-4 gap-4">
         <div className="flex items-start gap-3">
@@ -251,7 +249,7 @@ function MovieRailComponent({
               </div>
             ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
 

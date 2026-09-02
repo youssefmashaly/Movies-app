@@ -114,6 +114,12 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
         <img
           id={`movie-poster-${movie.id}`}
           src={movie.posterPath}
+          srcSet={
+            movie.posterPath
+              ? `${movie.posterPath.replace("/w500/", "/w342/")} 342w, ${movie.posterPath} 500w`
+              : undefined
+          }
+          sizes="(max-width: 640px) 150px, (max-width: 768px) 180px, (max-width: 1024px) 200px, 220px"
           alt={movie.title}
           referrerPolicy="no-referrer"
           onError={() => setPosterError(true)}
