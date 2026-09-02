@@ -9,7 +9,7 @@ import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 // firebase/firestore: no active writes remain after preferences moved to Supabase
 import { Movie } from "./types";
-import { ALL_GENRES } from "./movies-data";
+import { ALL_GENRES } from "./genres";
 import {
   migrateRecentlyViewedEntries,
   addRecentlyViewedEntry,

@@ -299,13 +299,41 @@ export default function Navbar({
               setActiveTab("explore");
             }
           }}
-          className="flex items-center gap-2.5 cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
+          className="group flex items-center gap-3 cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
         >
-          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-tr from-red-650 to-red-600 bg-red-650 text-[#ffffff] shadow-md shadow-red-950/30">
-            <Film className="h-5 w-5" />
-          </div>
-          <span className="font-extrabold text-lg text-white tracking-tight hidden sm:inline-block">
-            Movie <span className="text-red-500">Database</span>
+          {/* Real app icon from /public/icon.svg */}
+          <motion.div
+            whileHover={{ scale: 1.08, rotate: -3 }}
+            whileTap={{ scale: 0.94 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 drop-shadow-[0_4px_12px_rgba(220,38,38,0.45)]"
+          >
+            <img
+              src="/icon.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-8 w-8 sm:h-10 sm:w-10"
+              draggable={false}
+            />
+          </motion.div>
+
+          {/* Animated two-color wordmark — always visible, inline on all screen sizes */}
+          <span className="flex items-baseline leading-none select-none whitespace-nowrap">
+            <span
+              className="font-black text-[1.15rem] sm:text-[1.35rem] tracking-[-0.03em] text-white
+                         transition-colors duration-300 group-hover:text-neutral-100"
+              style={{ fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', sans-serif" }}
+            >
+              Movie
+            </span>
+            <motion.span
+              className="font-black text-[1.15rem] sm:text-[1.35rem] tracking-[-0.03em] ml-[0.22em] text-red-500"
+              style={{ fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', sans-serif" }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            >
+              Database
+            </motion.span>
           </span>
         </div>
 
