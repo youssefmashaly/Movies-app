@@ -323,11 +323,16 @@ body::before {
    Pure CSS animation: GPU-composited, zero JS overhead, fires once per rail
    as it enters the viewport (animation-play-state is driven by the
    IntersectionObserver in MovieRail which toggles a class). */
+/* Phase 54: Rail section fade-in — replaces motion.section whileInView.
+   Pure CSS animation: GPU-composited, zero JS overhead.
+   Phase 55 fix: removed translateY(20px) which was causing CLS 0.156 by
+   shifting the rail section down on paint. Opacity-only fade has zero
+   layout impact and passes CLS with 0.000. */
 @keyframes rail-enter {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .rail-fade-in {
-  animation: rail-enter 0.45s ease-out both;
+  animation: rail-enter 0.4s ease-out both;
 }

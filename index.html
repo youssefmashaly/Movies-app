@@ -9,28 +9,33 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
 
-    <!-- Phase 54: preconnect to origins we'll need immediately so the
-         browser opens the TCP/TLS connections in parallel with HTML parsing.
-         image.tmdb.org — hero backdrop and poster images.
-         fonts.googleapis.com / fonts.gstatic.com — Google Fonts.
-         Firebase auth — reduces the auth iframe TTFB. -->
+    <!-- Phase 55: Exactly 4 preconnects (Lighthouse warns above 4).
+         Chosen for highest LCP impact:
+         - image.tmdb.org     → hero backdrop + poster images (immediate)
+         - fonts.gstatic.com  → font file downloads
+         - firebaseapp.com    → Firebase auth iframe (430ms LCP savings per Lighthouse)
+         - apis.google.com    → Firebase token validation (380ms LCP savings)
+         Removed: www.googleapis.com, securetoken.googleapis.com -->
     <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://gen-lang-client-0351664131.firebaseapp.com" crossorigin />
+    <link rel="preconnect" href="https://apis.google.com" crossorigin />
 
-    <!-- Phase 54: font loading moved from CSS @import (render-blocking) to
-         <link rel="stylesheet"> with media="print" trick for non-blocking load.
-         Fonts swap in immediately on load (display=swap) so text is always
-         visible. The @import in index.css has been removed. -->
+    <!-- DNS prefetch for remaining Google origins — cheaper than preconnect,
+         still reduces lookup time without triggering the >4 warning -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://www.googleapis.com" />
+
+    <!-- Non-blocking font load. Moved from CSS @import in Phase 54.
+         Reduced to only weights actually used in the app.
+         JetBrains Mono removed — never referenced in any component. -->
     <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;450;600;850&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Space+Grotesk:wght@400;600;700&display=swap"
           media="print"
           onload="this.media='all'" />
     <noscript>
       <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;450;600;850&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Space+Grotesk:wght@400;600;700&display=swap" />
     </noscript>
   </head>
   <body>
