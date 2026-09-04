@@ -24,8 +24,17 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
-            // Firebase Auth — ~155 KB raw, rarely changes
-            if (id.includes('node_modules/firebase')) {
+            // Firebase Auth — ~155 KB raw, rarely changes.
+            // Must match BOTH the thin `firebase` wrapper package AND the
+            // `@firebase/*` scoped packages it re-exports from (app, auth,
+            // component, util, etc.) — the actual SDK implementation lives
+            // under `node_modules/@firebase/...`, which the original
+            // `node_modules/firebase` substring check never matched (it
+            // requires "firebase" immediately after "node_modules/", not
+            // "@firebase"). That gap silently routed the entire Firebase
+            // Auth implementation into vendor-misc instead of its own
+            // cacheable chunk.
+            if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
               return 'vendor-firebase';
             }
             // Supabase client — ~200 KB raw, rarely changes

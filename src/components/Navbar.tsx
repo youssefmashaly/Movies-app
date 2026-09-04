@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { auth } from "../firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+// Phase 56 — Navbar no longer statically imports firebase.ts / firebase/auth.
+// It previously ran its OWN onAuthStateChanged listener, entirely redundant
+// with App.tsx's (both reacted to the exact same auth state, independently).
+// Since Navbar is always mounted on first paint (it isn't behind any Suspense
+// boundary), that static import was — on its own, regardless of what App.tsx
+// did — forcing vendor-firebase to load before Navbar could render at all.
+// `user` is now passed down as a prop from App.tsx's single subscription
+// instead; `signOut` is dynamically imported at click-time in handleLogout,
+// since it's only ever needed after a real user interaction.
+import type { User as FirebaseUser } from "firebase/auth";
 import {
   Film,
   Search,
@@ -115,6 +123,9 @@ interface NavbarProps {
   onViewNotifications?: () => void;
   /** Phase 46 — external unread count override after mark-all-read. */
   notificationUnreadCount?: number;
+  /** Phase 56 — sourced from App.tsx's single onAuthStateChanged subscription
+   *  instead of Navbar running its own redundant listener. */
+  user?: FirebaseUser | null;
 }
 
 export default function Navbar({
@@ -128,9 +139,9 @@ export default function Navbar({
   onSelectMovie,
   onOpenSettings,
   onViewNotifications,
-  notificationUnreadCount
+  notificationUnreadCount,
+  user
 }: NavbarProps) {
-  const [user, setUser] = useState(auth.currentUser);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -228,14 +239,6 @@ export default function Navbar({
     }
   };
 
-  // Monitor auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
-
   // Monitor scroll for glass effect change
   useEffect(() => {
     const handleScroll = () => {
@@ -251,6 +254,10 @@ export default function Navbar({
 
   const handleLogout = async () => {
     try {
+      const [{ auth }, { signOut }] = await Promise.all([
+        import("../firebase"),
+        import("firebase/auth")
+      ]);
       await signOut(auth);
     } catch (err) {
       console.error("Sign out failed:", err);

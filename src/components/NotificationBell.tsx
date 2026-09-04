@@ -13,11 +13,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Bell, UserPlus, Heart, ThumbsUp, ArrowRight, Inbox } from "lucide-react";
-import {
-  getUnreadCount,
-  listNotifications,
-  type AppNotification,
-  type NotificationType,
+import type {
+  AppNotification,
+  NotificationType,
 } from "../services/supabase/notifications";
 
 // Icon mapping for each notification type
@@ -75,6 +73,7 @@ export default function NotificationBell({ userId, onViewAll, externalUnreadCoun
   // ---------------------------------------------------------------------------
   const refreshCount = useCallback(async () => {
     if (!uid) return;
+    const { getUnreadCount } = await import("../services/supabase/notifications");
     const result = await getUnreadCount(uid);
     if (result.data !== null) setUnreadCount(result.data);
   }, [uid]);
@@ -91,7 +90,9 @@ export default function NotificationBell({ userId, onViewAll, externalUnreadCoun
   useEffect(() => {
     if (!open || !uid) return;
     setPreviewLoading(true);
-    listNotifications(uid, 0).then((result) => {
+    import("../services/supabase/notifications").then(({ listNotifications }) =>
+      listNotifications(uid, 0)
+    ).then((result) => {
       setPreviewLoading(false);
       if (result.data) setPreview(result.data.slice(0, PREVIEW_LIMIT));
     });

@@ -5,8 +5,15 @@
 
 import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { auth } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
+// Phase 56 — firebase.ts and firebase/auth are no longer statically imported
+// here. Both were previously part of App.tsx's synchronous module graph,
+// which meant ReactDOM couldn't call render(<App/>) — i.e. nothing, not even
+// the hero image markup, could paint — until vendor-firebase had fully
+// downloaded and executed. They're now dynamically imported inside the auth
+// effect below instead (see "1. Sync Authentication"). `User` is imported as
+// a type only, which TypeScript/Vite erase entirely at build time, so this
+// carries zero runtime cost.
+import type { User as FirebaseUser } from "firebase/auth";
 // firebase/firestore: no active writes remain after preferences moved to Supabase
 import { Movie } from "./types";
 import { ALL_GENRES } from "./genres";
@@ -21,13 +28,9 @@ import { loadMovieCatalog } from "./lib/movieCatalog";
 import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
 import { preloadImage } from "./lib/imagePreload";
 import { timeAsync, startTiming, endTiming } from "./lib/analytics";
-import { syncProfileFromFirebaseUser, saveFavoriteGenres, getProfileWithGenres } from "./services/supabase/profiles";
-import {
-  getOrCreateDefaultWatchlist,
-  listWatchlistMovies,
-  addMovieToWatchlist,
-  removeMovieFromWatchlist
-} from "./services/supabase/watchlists";
+// Phase 56 — services/supabase/profiles and services/supabase/watchlists are
+// no longer statically imported here; see the dynamic import() at each call
+// site below instead (same reasoning as the Firebase change above).
 
 // Components
 import Navbar from "./components/Navbar";
@@ -151,7 +154,7 @@ export default function App() {
   }, [authOpen]);
 
   // User state
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
 
   // Stable per-session shuffle seed — computed once on mount, unchanged across
   // re-renders (no flicker), differs between sessions (soft randomness).
@@ -246,17 +249,35 @@ export default function App() {
 
   // 1. Sync Authentication
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      // Ensure a Supabase profile row exists for this user. Fire-and-forget:
-      // failures are logged only and never affect the Firebase auth state above.
-      if (u) {
-        syncProfileFromFirebaseUser({ uid: u.uid, email: u.email, displayName: u.displayName, photoURL: u.photoURL }).then((result) => {
-          if (result.error) console.error("Supabase profile sync failed:", result.error);
-        });
-      }
-    });
-    return () => unsubscribe();
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    (async () => {
+      const [{ auth }, { onAuthStateChanged }] = await Promise.all([
+        import("./firebase"),
+        import("firebase/auth")
+      ]);
+      if (cancelled) return;
+      unsubscribe = onAuthStateChanged(auth, (u) => {
+        setUser(u);
+        // Ensure a Supabase profile row exists for this user. Fire-and-forget:
+        // failures are logged only and never affect the Firebase auth state above.
+        if (u) {
+          import("./services/supabase/profiles")
+            .then(({ syncProfileFromFirebaseUser }) =>
+              syncProfileFromFirebaseUser({ uid: u.uid, email: u.email, displayName: u.displayName, photoURL: u.photoURL })
+            )
+            .then((result) => {
+              if (result.error) console.error("Supabase profile sync failed:", result.error);
+            });
+        }
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   // 2. Fetch movies from fullstack backend APIs on mount
@@ -384,6 +405,7 @@ export default function App() {
     setWatchlistLoading(true);
 
     (async () => {
+      const { getOrCreateDefaultWatchlist, listWatchlistMovies } = await import("./services/supabase/watchlists");
       const watchlistResult = await getOrCreateDefaultWatchlist(user.uid);
       if (cancelled) return;
       if (watchlistResult.error || !watchlistResult.data) {
@@ -487,6 +509,7 @@ export default function App() {
     if (!user) return;
     (async () => {
       try {
+        const { getProfileWithGenres, saveFavoriteGenres } = await import("./services/supabase/profiles");
         const result = await getProfileWithGenres(user.uid);
         if (result.error) { console.error("Failed to sync genre preferences:", result.error); return; }
         const saved = result.data?.favorite_genres ?? [];
@@ -514,6 +537,8 @@ export default function App() {
       setAuthOpen(true);
       return;
     }
+
+    const { getOrCreateDefaultWatchlist, addMovieToWatchlist, removeMovieFromWatchlist } = await import("./services/supabase/watchlists");
 
     let watchlistId = defaultWatchlistId;
     if (!watchlistId) {
@@ -567,6 +592,7 @@ export default function App() {
     setFavoriteGenres(updated);
     if (user) {
       try {
+        const { saveFavoriteGenres } = await import("./services/supabase/profiles");
         const result = await saveFavoriteGenres(user.uid, updated);
         if (result.error) console.error("Failed to save genre preference:", result.error);
       } catch (err) {
@@ -1197,6 +1223,7 @@ export default function App() {
           setViewedProfileUserId(null);
         }}
         notificationUnreadCount={notificationUnreadCount}
+        user={user}
       />
 
       {/* Auth Modal Overlay Popup — Phase 22: only mounted after first open (see hasOpenedAuth above) */}
