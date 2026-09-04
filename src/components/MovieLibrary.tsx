@@ -236,7 +236,7 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
             id="library-genre-select"
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
-            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-3 px-4 text-sm text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,0.6)] focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+            className="rounded-2xl border border-white/[0.08] bg-neutral-900/60 py-3 px-4 text-sm text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,0.6)] focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
           >
             <option value="all">All Genres</option>
             {genres.map((g) => (
