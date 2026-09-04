@@ -5,6 +5,8 @@ import MovieCard from "./MovieCard";
 import { loadMovieCatalog, getCachedCatalog, isCatalogLoaded } from "../lib/movieCatalog";
 import { searchMovies } from "../lib/movieSearch";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { getRegion } from "../lib/regionPreference";
+import { listWatchProviders, getMoviesByProvider, type WatchProviderOption } from "../services/watchProviders";
 import type { Movie } from "../types";
 
 const WELCOME_SESSION_KEY = "movieapp:library-welcome-shown";
@@ -103,6 +105,49 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
   const [showWelcome, setShowWelcome] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  // Phase 58 — "Browse by streaming service".
+  const [providerOptions, setProviderOptions] = useState<WatchProviderOption[]>([]);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>("all");
+  const [providerMovieIds, setProviderMovieIds] = useState<Set<string> | null>(null);
+  const [providerFilterLoading, setProviderFilterLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    listWatchProviders(getRegion())
+      .then((providers) => {
+        if (!cancelled) setProviderOptions(providers);
+      })
+      .catch((err) => console.error("Failed to load streaming service list:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedProviderId === "all") {
+      setProviderMovieIds(null);
+      return;
+    }
+    let cancelled = false;
+    setProviderFilterLoading(true);
+    getMoviesByProvider(Number(selectedProviderId), getRegion())
+      .then((ids) => {
+        if (!cancelled) setProviderMovieIds(new Set(ids));
+      })
+      .catch((err) => {
+        console.error("Failed to load streaming-service catalog filter:", err);
+        if (!cancelled) setProviderMovieIds(new Set());
+      })
+      .finally(() => {
+        if (!cancelled) setProviderFilterLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProviderId]);
+
+  const selectedProvider = providerOptions.find((p) => String(p.id) === selectedProviderId) ?? null;
+
   useEffect(() => {
     let cancelled = false;
     if (!isCatalogLoaded()) {
@@ -151,6 +196,10 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
       pool = pool.filter((m) => (m.genres || []).includes(selectedGenre));
     }
 
+    if (providerMovieIds) {
+      pool = pool.filter((m) => providerMovieIds.has(m.id));
+    }
+
     // "relevance" keeps searchMovies' own ranked order (or catalog order
     // when there's no active search); every other option re-sorts pool.
     if (sortBy === "title-asc") {
@@ -164,14 +213,14 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
     }
 
     return pool;
-  }, [catalog, searchQuery, selectedGenre, sortBy]);
+  }, [catalog, searchQuery, selectedGenre, sortBy, providerMovieIds]);
 
   // Reset pagination whenever the active filter/search/sort actually changes
   // the underlying result set, so "Load more" always starts from the top of
   // the new list instead of showing a stale offset into it.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [searchQuery, selectedGenre, sortBy]);
+  }, [searchQuery, selectedGenre, sortBy, providerMovieIds]);
 
   const visibleMovies = filteredSorted.slice(0, visibleCount);
   const hasMore = visibleCount < filteredSorted.length;
@@ -246,6 +295,23 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
             ))}
           </select>
 
+          <label htmlFor="library-provider-select" className="sr-only">
+            Filter by streaming service
+          </label>
+          <select
+            id="library-provider-select"
+            value={selectedProviderId}
+            onChange={(e) => setSelectedProviderId(e.target.value)}
+            className="rounded-2xl border border-white/[0.08] bg-neutral-900/60 py-3 px-4 text-sm text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,0.6)] focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+          >
+            <option value="all">All Streaming Services</option>
+            {providerOptions.map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
           <label htmlFor="library-sort-select" className="sr-only">
             Sort results
           </label>
@@ -265,10 +331,10 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
       </div>
 
       <p className="sr-only" role="status" aria-live="polite">
-        {catalogLoading ? "Loading movies" : `${filteredSorted.length} movies found`}
+        {catalogLoading || providerFilterLoading ? "Loading movies" : `${filteredSorted.length} movies found`}
       </p>
 
-      {catalogLoading ? (
+      {catalogLoading || providerFilterLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <MovieCard key={`library-skeleton-${i}`} isLoading={true} />
@@ -278,13 +344,14 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] py-20 text-center">
           <Search className="h-8 w-8 text-neutral-700 mx-auto mb-3" aria-hidden="true" />
           <p className="text-sm font-semibold text-neutral-400">No movies match your search.</p>
-          <p className="text-xs text-neutral-500 mt-1 mb-4">Try a different title, genre, or clearing your filters.</p>
-          {(searchQuery || selectedGenre !== "all") && (
+          <p className="text-xs text-neutral-500 mt-1 mb-4">Try a different title, genre, streaming service, or clearing your filters.</p>
+          {(searchQuery || selectedGenre !== "all" || selectedProviderId !== "all") && (
             <button
               type="button"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedGenre("all");
+                setSelectedProviderId("all");
               }}
               className="rounded-lg bg-white/[0.05] px-4 py-2 text-xs font-semibold text-red-400 border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500"
             >
@@ -303,6 +370,7 @@ export default function MovieLibrary({ onSelectMovie, watchlistIds, onToggleSave
                 isSaved={watchlistIds.has(movie.id)}
                 onToggleSave={onToggleSave}
                 onClick={onSelectMovie}
+                providerBadge={selectedProvider}
               />
             ))}
           </div>

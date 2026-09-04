@@ -11,6 +11,14 @@ import { Movie } from "./src/types.js";
 // instead of O(catalog size) per lookup.
 const PRESET_MOVIES_BY_ID = new Map<string, Movie>(PRESET_MOVIES.map((m) => [m.id, m]));
 
+// Phase 58 — "Browse by streaming service". Reverse lookup so a TMDB numeric
+// id (returned by TMDB's /discover endpoint) can be mapped back to our own
+// local catalog entry. Only movies with a real tmdbId are ever includable —
+// same rule the per-movie /providers route already follows.
+const PRESET_MOVIES_BY_TMDB_ID = new Map<number, Movie>(
+  PRESET_MOVIES.filter((m) => typeof m.tmdbId === "number").map((m) => [m.tmdbId as number, m])
+);
+
 // Lazy-loaded Gemini client to prevent crash on boot
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
@@ -109,6 +117,16 @@ const aiMoviesCache = new TTLCache<string, Movie>();
 // AI_CACHE_TTL_MS.
 const PROVIDERS_CACHE_TTL_MS = Number(process.env.PROVIDERS_CACHE_TTL_MS) || 24 * 60 * 60 * 1000; // 24h default
 const providersCache = new TTLCache<string, WatchProviders>(PROVIDERS_CACHE_TTL_MS);
+
+// Phase 58 — "Browse by streaming service".
+// providerCatalogCache: `${providerId}:${region}` -> local movie ids matching
+// that provider, in TMDB's popularity order. watchProviderListCache: region
+// -> the curated list of well-known providers shown in the filter dropdown.
+// Same TTLCache class, same 24h-class TTL as the per-movie cache above —
+// provider availability just doesn't change often enough to justify a
+// shorter one.
+const providerCatalogCache = new TTLCache<string, string[]>(PROVIDERS_CACHE_TTL_MS);
+const watchProviderListCache = new TTLCache<string, WatchProviderEntry[]>(PROVIDERS_CACHE_TTL_MS);
 
 // Builds and returns a fully configured Express app WITHOUT starting a
 // listener — safe to import from serverless entry points (Vercel/Netlify)
@@ -378,6 +396,148 @@ Respond ONLY with a single JSON object. No markdown wrappers, no backticks, no m
       // than a 500 that could surface as a broken/alarming UI state.
       const region = typeof req.query.region === "string" ? req.query.region : "US";
       res.json(emptyProviders(region));
+    }
+  });
+
+  // Phase 58 — "Browse by streaming service": curated provider list.
+  // Proxies TMDB's real /watch/providers/movie list for a region (never a
+  // fabricated/hardcoded id or logo — those vary by region and TMDB is the
+  // only source of truth for them) and narrows it down to a short list of
+  // well-known services, since TMDB's raw list runs to 50-100+ regional/
+  // niche providers that would overwhelm a filter dropdown.
+  const WELL_KNOWN_PROVIDER_NAMES = [
+    "Netflix",
+    "Amazon Prime Video",
+    "Disney Plus",
+    "Max",
+    "Hulu",
+    "Apple TV",
+    "Apple TV+",
+    "Paramount Plus",
+    "Peacock",
+  ];
+
+  app.get("/api/watch-providers", async (req, res) => {
+    try {
+      const region = (typeof req.query.region === "string" && /^[A-Z]{2}$/.test(req.query.region))
+        ? req.query.region
+        : "US";
+
+      const cached = watchProviderListCache.get(region);
+      if (cached) {
+        res.json({ region, providers: cached });
+        return;
+      }
+
+      const tmdbKey = getTmdbKey();
+      if (!tmdbKey) {
+        res.json({ region, providers: [] });
+        return;
+      }
+
+      const tmdbRes = await fetch(
+        `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${region}`,
+        { headers: { Authorization: `Bearer ${tmdbKey}`, accept: "application/json" } }
+      );
+
+      if (!tmdbRes.ok) {
+        console.error(`TMDB watch/providers list request failed: ${tmdbRes.status}`);
+        res.json({ region, providers: [] });
+        return;
+      }
+
+      const tmdbData = await tmdbRes.json();
+      const results: any[] = Array.isArray(tmdbData?.results) ? tmdbData.results : [];
+
+      const providers: WatchProviderEntry[] = results
+        .filter((p) => WELL_KNOWN_PROVIDER_NAMES.includes(p.provider_name))
+        .sort((a, b) => (a.display_priority ?? 0) - (b.display_priority ?? 0))
+        .map((p) => ({
+          id: p.provider_id,
+          name: p.provider_name,
+          logoUrl: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null,
+        }));
+
+      watchProviderListCache.set(region, providers);
+      res.json({ region, providers });
+    } catch (err: any) {
+      console.error("Watch-provider list lookup failed:", err);
+      const region = typeof req.query.region === "string" ? req.query.region : "US";
+      res.json({ region, providers: [] });
+    }
+  });
+
+  // Phase 58 — "Browse by streaming service": which of OUR catalog movies
+  // are on a given provider.
+  //
+  // TMDB has no "discover from this specific list of ids" endpoint, so this
+  // uses TMDB's normal /discover/movie?with_watch_providers=... (which
+  // discovers from TMDB's whole catalog, sorted by popularity) and
+  // intersects the results against our own ~500-title catalog by tmdbId.
+  //
+  // Honest limitation: this only scans the first DISCOVER_PAGES pages of
+  // TMDB's popularity-sorted results per provider (a few hundred titles),
+  // not TMDB's entire catalog for that provider. Scanning our whole ~500
+  // movies individually (one request each) would be more exhaustive, but at
+  // that volume it risks running past a serverless function's timeout on a
+  // cold cache — this stays fast (a handful of parallel requests) at the
+  // cost of possibly missing a genuinely-available but low-popularity title.
+  // The 24h cache means this cost is paid rarely, not per request.
+  const DISCOVER_PAGES = 8; // ≈160 most popular titles per provider/region
+
+  app.get("/api/movies/by-provider", async (req, res) => {
+    try {
+      const providerId = typeof req.query.providerId === "string" ? req.query.providerId : "";
+      if (!/^\d+$/.test(providerId)) {
+        res.status(400).json({ error: "providerId must be a numeric TMDB provider id." });
+        return;
+      }
+      const region = (typeof req.query.region === "string" && /^[A-Z]{2}$/.test(req.query.region))
+        ? req.query.region
+        : "US";
+
+      const cacheKey = `${providerId}:${region}`;
+      const cached = providerCatalogCache.get(cacheKey);
+      if (cached) {
+        res.json({ providerId: Number(providerId), region, movieIds: cached });
+        return;
+      }
+
+      const tmdbKey = getTmdbKey();
+      if (!tmdbKey) {
+        res.json({ providerId: Number(providerId), region, movieIds: [] });
+        return;
+      }
+
+      const pages = await Promise.all(
+        Array.from({ length: DISCOVER_PAGES }, (_, i) =>
+          fetch(
+            `https://api.themoviedb.org/3/discover/movie?with_watch_providers=${providerId}&watch_region=${region}&sort_by=popularity.desc&page=${i + 1}`,
+            { headers: { Authorization: `Bearer ${tmdbKey}`, accept: "application/json" } }
+          )
+            .then((r) => (r.ok ? r.json() : { results: [] }))
+            .catch(() => ({ results: [] }))
+        )
+      );
+
+      const movieIds: string[] = [];
+      const seen = new Set<string>();
+      for (const page of pages) {
+        const results: any[] = Array.isArray(page?.results) ? page.results : [];
+        for (const r of results) {
+          const local = PRESET_MOVIES_BY_TMDB_ID.get(r.id);
+          if (local && !seen.has(local.id)) {
+            seen.add(local.id);
+            movieIds.push(local.id);
+          }
+        }
+      }
+
+      providerCatalogCache.set(cacheKey, movieIds);
+      res.json({ providerId: Number(providerId), region, movieIds });
+    } catch (err: any) {
+      console.error("By-provider catalog lookup failed:", err);
+      res.status(500).json({ error: "Could not resolve catalog availability for this provider." });
     }
   });
 

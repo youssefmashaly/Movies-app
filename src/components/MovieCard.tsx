@@ -18,6 +18,13 @@ interface MovieCardProps {
   // exactly the existing card appearance everywhere it's already used.
   favoriteGenres?: string[];
   onPlayTrailer?: (movie: Movie) => void;
+  // Phase 58 — "Browse by streaming service". Optional and purely
+  // presentational: the card never fetches this itself. Populated only by
+  // callers that already know the answer (MovieLibrary passes this in for
+  // every visible card while a streaming-service filter is active, since at
+  // that point every card is already known to match). Omitting it preserves
+  // the existing card appearance everywhere else.
+  providerBadge?: { name: string; logoUrl: string | null } | null;
 }
 
 function formatRuntimeShort(minutes?: number): string | null {
@@ -64,7 +71,7 @@ function RatingRing({ score }: { score: number }) {
   );
 }
 
-function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave, favoriteGenres, onPlayTrailer }: MovieCardProps) {
+function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSaved = false, onToggleSave, favoriteGenres, onPlayTrailer, providerBadge }: MovieCardProps) {
   const [posterError, setPosterError] = useState(false);
   const [posterLoaded, setPosterLoaded] = useState(false);
 
@@ -157,6 +164,28 @@ function MovieCardComponent({ movie, isLoading = false, onClick, index = 0, isSa
         aria-label={`View details for ${movie.title} (${releaseYear})`}
         className="absolute inset-0 z-0 cursor-pointer rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-inset"
       />
+
+      {/* Top-left: streaming-provider badge — Phase 58, opt-in via prop */}
+      {providerBadge && (
+        <div
+          className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-neutral-950/80 border border-white/[0.1] backdrop-blur-md pl-1 pr-2.5 py-1"
+          title={`Available on ${providerBadge.name}`}
+        >
+          {providerBadge.logoUrl ? (
+            <img
+              src={providerBadge.logoUrl}
+              alt=""
+              aria-hidden="true"
+              className="h-5 w-5 rounded-full object-cover flex-shrink-0"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <span className="h-5 w-5 rounded-full bg-neutral-800 flex-shrink-0" aria-hidden="true" />
+          )}
+          <span className="text-[10px] font-bold text-neutral-100 whitespace-nowrap">{providerBadge.name}</span>
+        </div>
+      )}
 
       {/* Top-right: rating ring + quick-action bookmark */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-2 z-10">
