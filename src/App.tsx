@@ -26,6 +26,7 @@ import { dedupedFetch } from "./lib/requestDedup";
 import { primeMovieCache, resolveMovies } from "./lib/movieResolver";
 import { loadMovieCatalog } from "./lib/movieCatalog";
 import { seededShuffle, stringToSeed } from "./lib/seededShuffle";
+import { extractAverageColor } from "./lib/extractAverageColor";
 import { preloadImage } from "./lib/imagePreload";
 import { timeAsync, startTiming, endTiming } from "./lib/analytics";
 // Phase 56 — services/supabase/profiles and services/supabase/watchlists are
@@ -1137,6 +1138,26 @@ export default function App() {
   const safeHeroIndex = heroSlides.length > 0 ? heroIndex % heroSlides.length : 0;
   const featuredMovie = heroSlides[safeHeroIndex] ?? trendingMovies[0];
 
+  // Phase 57 — ambient background color sampled from the current hero
+  // backdrop, used to tint the page's top glow so it reads as "belonging to"
+  // the featured movie instead of a fixed brand-red gradient. Falls back to
+  // the original brand red whenever extraction hasn't resolved yet or fails
+  // (see extractAverageColor.ts for why it can fail on some TMDB images).
+  const DEFAULT_AMBIENT_RGB: [number, number, number] = [220, 38, 38];
+  const [heroAmbientColor, setHeroAmbientColor] = useState<[number, number, number] | null>(null);
+  useEffect(() => {
+    if (!featuredMovie?.backdropPath) return;
+    let cancelled = false;
+    const sampleUrl = featuredMovie.backdropPath.replace("/original/", "/w780/");
+    extractAverageColor(sampleUrl).then((rgb) => {
+      if (!cancelled) setHeroAmbientColor(rgb);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [featuredMovie?.id, featuredMovie?.backdropPath]);
+  const ambientRGB = (heroAmbientColor ?? DEFAULT_AMBIENT_RGB).join(",");
+
   const goToHeroSlide = (index: number) => {
     if (heroSlides.length === 0) return;
     setHeroIndex(((index % heroSlides.length) + heroSlides.length) % heroSlides.length);
@@ -1195,8 +1216,14 @@ export default function App() {
       {/* Skip link: first focusable element for keyboard/screen-reader users */}
       <a href="#main-content" className="skip-link">Skip to content</a>
 
-      {/* Background radial highlight */}
-      <div className="pointer-events-none fixed top-0 left-0 right-0 h-[600px] bg-[radial-gradient(circle_at_top,_rgba(220,38,38,0.08)_0%,_transparent_60%)] z-0" />
+      {/* Background radial highlight — Phase 57: tinted from the current
+          Featured Today backdrop instead of a fixed brand-red gradient. */}
+      <div
+        className="pointer-events-none fixed top-0 left-0 right-0 h-[600px] z-0 transition-[background] duration-700 ease-out"
+        style={{
+          background: `radial-gradient(circle at top, rgba(${ambientRGB},0.08) 0%, transparent 60%)`,
+        }}
+      />
 
       {/* Global Header Navigation */}
       <Navbar
@@ -1311,15 +1338,25 @@ export default function App() {
                   onMouseLeave={() => setHeroPlaying(true)}
                 >
                   <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] bg-neutral-950 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.8)] h-[420px] sm:h-[460px] md:h-[520px] flex items-end">
-                    {/* Soft ambient glow behind the featured art, cross-fades with the slide */}
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 opacity-60 blur-3xl scale-110 transition-opacity duration-700"
-                      style={{
-                        background:
-                          "radial-gradient(circle at 30% 40%, rgba(220,38,38,0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(120,53,15,0.14), transparent 60%)",
-                      }}
-                    />
+                    {/* Soft ambient glow behind the featured art — Phase 57:
+                        color now sampled from the actual backdrop and
+                        crossfades in sync with the image swap below instead
+                        of a fixed red/brown gradient. */}
+                    <AnimatePresence>
+                      <motion.div
+                        key={`ambient-${featuredMovie.id}`}
+                        aria-hidden="true"
+                        className="absolute inset-0 blur-3xl scale-110"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.6 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.45, ease: "easeInOut" }}
+                        style={{
+                          background:
+                            `radial-gradient(circle at 30% 40%, rgba(${ambientRGB},0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(${ambientRGB},0.14), transparent 60%)`,
+                        }}
+                      />
+                    </AnimatePresence>
 
                     <AnimatePresence mode="wait">
                       <motion.img
