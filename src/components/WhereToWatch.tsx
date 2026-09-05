@@ -100,7 +100,7 @@ function ProviderBadge({ provider }: { provider: WatchProviderEntry }) {
 
   if (homepage) {
     return (
-      
+      <a
         href={homepage}
         target="_blank"
         rel="noopener noreferrer"
