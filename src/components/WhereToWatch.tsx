@@ -3,16 +3,24 @@
 // Phase 43 — "Where to Watch" real external availability. Fetches real TMDB
 // watch-provider data through our own server (never calls TMDB directly
 // from the client — see server.ts's /api/movies/:id/providers route and
-// getTmdbKey()). Purely informational: provider badges are not clickable
-// buttons, since TMDB does not supply a reliable per-provider deep link —
-// only a single aggregate attribution link to TMDB's own watch page, which
-// is what "View more options on TMDB" below points to when present. This
-// section never implies playback happens inside Movies App.
+// getTmdbKey()). This section never implies playback happens inside Movies
+// App.
 //
 // Phase 44 — added a user-selectable availability region. The region
 // selector is rendered inline in the section header. The preference is
 // persisted to localStorage via regionPreference.ts (same pattern as
 // ThemeContext) and works identically for authenticated and logged-out users.
+//
+// Phase 61 — provider badges are now clickable, opening that provider's own
+// website in a new tab. Honest limitation: TMDB does not supply a reliable
+// per-provider, per-movie deep link (only a single aggregate attribution
+// link to TMDB's own watch page, used below for "View more options on
+// TMDB") — so a badge links to the provider's general homepage, not
+// directly to this specific movie's page on that service. PROVIDER_HOMEPAGES
+// below is a small static allow-list of well-known, stable brand domains;
+// any provider not in it (regional/niche services TMDB returns) simply
+// renders as a plain, non-clickable badge exactly as before, rather than
+// guessing at a URL.
 import { useEffect, useRef, useState } from "react";
 import { Tv, ShoppingCart, Clapperboard, ExternalLink, Globe2, ChevronDown } from "lucide-react";
 import { dedupedFetch } from "../lib/requestDedup";
@@ -23,6 +31,28 @@ import {
   regionDisplayName,
   TMDB_REGIONS,
 } from "../lib/regionPreference";
+
+// Phase 61 — known-good homepages for well-known providers, keyed by the
+// exact `provider_name` string TMDB returns. Deliberately a static allow-list
+// rather than a guessed/derived URL — an unmapped provider just stays
+// non-clickable instead of risking a wrong link.
+const PROVIDER_HOMEPAGES: Record<string, string> = {
+  "Netflix": "https://www.netflix.com",
+  "Disney Plus": "https://www.disneyplus.com",
+  "Amazon Prime Video": "https://www.primevideo.com",
+  "Amazon Video": "https://www.primevideo.com",
+  "Apple TV": "https://tv.apple.com",
+  "Apple TV+": "https://tv.apple.com",
+  "Apple TV Store": "https://tv.apple.com",
+  "Max": "https://www.max.com",
+  "HBO Max": "https://www.max.com",
+  "Hulu": "https://www.hulu.com",
+  "Paramount Plus": "https://www.paramountplus.com",
+  "Peacock": "https://www.peacocktv.com",
+  "Google Play Movies": "https://play.google.com/store/movies",
+  "Rakuten TV": "https://www.rakuten.tv",
+  "YouTube": "https://www.youtube.com/movies",
+};
 
 interface WatchProviderEntry {
   id: number;
@@ -43,11 +73,10 @@ interface WhereToWatchProps {
 }
 
 function ProviderBadge({ provider }: { provider: WatchProviderEntry }) {
-  return (
-    <div
-      className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-2.5 py-2 pr-3"
-      title={provider.name}
-    >
+  const homepage = PROVIDER_HOMEPAGES[provider.name];
+
+  const content = (
+    <>
       {provider.logoUrl ? (
         <img
           src={provider.logoUrl}
@@ -66,6 +95,30 @@ function ProviderBadge({ provider }: { provider: WatchProviderEntry }) {
           alt attribute — logos alone shouldn't be the only way to identify
           a provider. */}
       <span className="text-xs font-semibold text-neutral-200 whitespace-nowrap">{provider.name}</span>
+    </>
+  );
+
+  if (homepage) {
+    return (
+      
+        href={homepage}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`Open ${provider.name} (opens in a new tab)`}
+        className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-2.5 py-2 pr-3 transition-colors hover:border-white/[0.16] hover:bg-white/[0.06] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      >
+        {content}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-2.5 py-2 pr-3"
+      title={provider.name}
+    >
+      {content}
     </div>
   );
 }

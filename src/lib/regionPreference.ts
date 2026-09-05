@@ -182,4 +182,12 @@ export const TMDB_REGIONS: RegionOption[] = [
   { code: "ZA", name: "South Africa" },
   { code: "ZM", name: "Zambia" },
   { code: "ZW", name: "Zimbabwe" },
-];
+]
+  // Phase 61 — the list above is written in ISO-code order (AE, AR, AT...),
+  // which is why it looked out of alphabetical order in the region dropdown:
+  // it was alphabetical by CODE, not by the display NAME users actually
+  // read. Sorting here (rather than re-typing every entry by hand) means
+  // the source list above stays exactly as authored — zero risk of
+  // transposing a code/name pair — while every consumer (WhereToWatch,
+  // SettingsPage) automatically gets name-alphabetical order.
+  .sort((a, b) => a.name.localeCompare(b.name));
