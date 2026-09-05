@@ -32,6 +32,60 @@ function getAI() {
   return aiClient;
 }
 
+// Phase 60 — AI Matchmaker degraded-mode fallback.
+//
+// Previously both "no GEMINI_API_KEY configured" and "the Gemini call threw"
+// fell back to the literal same `PRESET_MOVIES.slice(0, 3)` — Dune: Part
+// Two, Oppenheimer, Spider-Man: Across the Spider-Verse, in that order,
+// every single time, completely ignoring whatever mood/genre was typed in.
+// That's not a UI bug — the mood text was never being used because Gemini
+// was never actually being reached. This does simple keyword/genre matching
+// against the local catalog so degraded mode at least reflects the input,
+// and randomizes selection so repeat requests don't look identically frozen.
+// It is explicitly NOT a substitute for real AI matching — see the two
+// distinct aiFeedback messages below, which is the real fix: they tell you
+// exactly which of the two failure modes you're in instead of hiding it
+// behind identical generic copy.
+const MOOD_KEYWORD_GENRES: Record<string, string> = {
+  vampire: "Horror", vampires: "Horror", gothic: "Horror", horror: "Horror",
+  eerie: "Horror", zombie: "Horror", ghost: "Horror", haunted: "Horror", scary: "Horror",
+  "sci-fi": "Sci-Fi", scifi: "Sci-Fi", futuristic: "Sci-Fi", "time-travel": "Sci-Fi",
+  space: "Sci-Fi", alien: "Sci-Fi", robot: "Sci-Fi", dystopian: "Sci-Fi",
+  romance: "Romance", romantic: "Romance", love: "Romance",
+  comedy: "Comedy", funny: "Comedy", hilarious: "Comedy", laugh: "Comedy",
+  crime: "Crime", heist: "Crime", detective: "Crime", mobster: "Crime",
+  thriller: "Thriller", suspense: "Thriller", tense: "Thriller",
+  war: "History", history: "History", historical: "History",
+  family: "Family", kids: "Family", wholesome: "Family", cozy: "Family",
+  animation: "Animation", animated: "Animation", cartoon: "Animation",
+  fantasy: "Fantasy", magic: "Fantasy", wizard: "Fantasy", dragon: "Fantasy",
+  mystery: "Mystery",
+  action: "Action", explosion: "Action", combat: "Action", adrenaline: "Action",
+  adventure: "Adventure",
+  drama: "Drama", "tear-jerk": "Drama", tearjerker: "Drama", heartwarming: "Drama",
+  biography: "Biography", biopic: "Biography",
+};
+
+function buildFallbackRecommendations(mood: string, genreFilter: string): Movie[] {
+  const moodLower = (mood || "").toLowerCase();
+  const inferredGenres = new Set<string>();
+  if (genreFilter && genreFilter !== "All") inferredGenres.add(genreFilter);
+  for (const [keyword, genreName] of Object.entries(MOOD_KEYWORD_GENRES)) {
+    if (moodLower.includes(keyword)) inferredGenres.add(genreName);
+  }
+
+  let pool = PRESET_MOVIES;
+  if (inferredGenres.size > 0) {
+    const matched = PRESET_MOVIES.filter((m) => m.genres.some((g) => inferredGenres.has(g)));
+    if (matched.length >= 3) pool = matched;
+  }
+
+  // Plain randomization is intentional here (unlike the seeded shuffles used
+  // for the hero/Daily Picks elsewhere) — the entire point is that repeated
+  // requests should NOT keep returning the identical 3 titles.
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+}
+
 // Task 43 — "Where to Watch" real availability.
 // Deliberately reads TMDB_API_KEY (server-only, no VITE_ prefix), matching
 // the same convention already used by the offline artwork/id-repair scripts
@@ -619,17 +673,19 @@ Respond ONLY with a single JSON array object [ ... ]. Do not wrap it in markdown
   // AI-Powered Movie Recommendation & Chat
   // Allows users with accounts to ask for a custom watchlist or curated recommendations based on mood!
   app.post("/api/movies/ai-recommend", async (req, res) => {
+    const { mood, genreFilter, userWatchlistTitles, favoriteGenres, recentlyViewedTitles, highlyRatedTitles, primaryReason, confidence } = req.body;
     try {
-      const { mood, genreFilter, userWatchlistTitles, favoriteGenres, recentlyViewedTitles, highlyRatedTitles, primaryReason, confidence } = req.body;
       const ai = getAI();
-      
+
       if (!ai) {
-        // Fallback recommendations if no AI key
-        const subset = PRESET_MOVIES.slice(0, 3);
+        // Phase 60 — this branch means GEMINI_API_KEY is missing/placeholder
+        // on the server. Logged clearly so it's unambiguous in server logs
+        // which of the two fallback paths is firing.
+        console.warn("AI Matchmaker: GEMINI_API_KEY not configured — serving degraded fallback picks.");
         return res.json({
-          recommendations: subset,
-          aiFeedback: "Here are some awesome cinematic blockbusters tailored for you. (Configure a Gemini API Key to unlock bespoke mood-based AI recommendations!)",
-          recommendationReason: "From our curated collection",
+          recommendations: buildFallbackRecommendations(mood, genreFilter),
+          aiFeedback: "The AI oracle isn't configured on this server yet (no GEMINI_API_KEY), so these are hand-picked highlights matched loosely to your mood by genre keywords — not true AI matchmaking. Set GEMINI_API_KEY to unlock real mood-based recommendations.",
+          recommendationReason: "No AI key configured — curated picks",
           confidence: "low"
         });
       }
@@ -710,12 +766,16 @@ Provide ONLY the raw JSON structure, with no markdown tick marks or wrapping.`;
 
       res.json(parsed);
     } catch (err: any) {
-      console.error("AI recommendation failed:", err);
-      // Fallback
+      // Phase 60 — this branch means GEMINI_API_KEY IS configured but the
+      // actual call (or its JSON parsing) failed — a different problem from
+      // the no-key case above, and previously indistinguishable from it in
+      // the UI. Logged loudly since this is the one that most needs a human
+      // to look at server logs (bad model name, quota, malformed response).
+      console.error("AI Matchmaker: Gemini call failed even though a key is configured:", err);
       res.json({
-        recommendations: PRESET_MOVIES.slice(0, 3),
-        aiFeedback: "Here's a hand-picked, premium recommendation list from our master archives to match your mood!",
-        recommendationReason: "From our curated collection",
+        recommendations: buildFallbackRecommendations(mood, genreFilter),
+        aiFeedback: "The AI oracle hit a snag processing that specific request — here are some hand-picked highlights matched loosely to your mood in the meantime. Try again shortly, or rephrase your mood.",
+        recommendationReason: "AI request failed — curated picks",
         confidence: "low"
       });
     }
