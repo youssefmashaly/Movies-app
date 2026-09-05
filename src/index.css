@@ -302,6 +302,39 @@ body::before {
   top: 1rem;
 }
 
+/* Phase 59 — skip-link destination confirmation flash. Purely decorative
+   (see the aria-hidden div in App.tsx): a brief glowing bar across the top
+   of #main-content so a sighted mouse user who clicks "Skip to content"
+   sees something happen, instead of the page appearing to do nothing when
+   they were already scrolled to the top. */
+.skip-flash-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ef4444, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.skip-flash-bar.is-active {
+  animation: skip-flash-pulse 900ms ease-out;
+}
+@keyframes skip-flash-pulse {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+  30% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
 /* ---------------------------------------------------------- */
 /* Respect reduced-motion preference                           */
 /* ---------------------------------------------------------- */

@@ -150,6 +150,13 @@ export default function App() {
   // clicks "Sign in", while keeping every subsequent open/close animation
   // identical to before once it's mounted.
   const [hasOpenedAuth, setHasOpenedAuth] = useState(false);
+
+  // Phase 59 — purely decorative confirmation flash for the "Skip to
+  // content" link. Keyboard/screen-reader users already get the real
+  // signal (focus moves past the nav); a sighted mouse user clicking it
+  // otherwise sees no visible change when they're already scrolled to the
+  // top, which reads as a dead button. This just gives them something to see.
+  const [skipFlashActive, setSkipFlashActive] = useState(false);
   useEffect(() => {
     if (authOpen) setHasOpenedAuth(true);
   }, [authOpen]);
@@ -1214,7 +1221,7 @@ export default function App() {
     <MovieCardPreferencesProvider favoriteGenres={favoriteGenres} openTrailer={openTrailer}>
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased select-none pb-12">
       {/* Skip link: first focusable element for keyboard/screen-reader users */}
-      <a href="#main-content" className="skip-link">Skip to content</a>
+      <a href="#main-content" className="skip-link" onClick={() => setSkipFlashActive(true)}>Skip to content</a>
 
       {/* Background radial highlight — Phase 57: tinted from the current
           Featured Today backdrop instead of a fixed brand-red gradient. */}
@@ -1288,6 +1295,14 @@ export default function App() {
           activeTab === "explore" || activeTab === "library" ? "md:pt-48" : "md:pt-28"
         }`}
       >
+        {/* Phase 59 — decorative skip-link confirmation flash. aria-hidden:
+            it carries no information a screen reader needs; the real a11y
+            signal is the focus movement the browser already performs. */}
+        <div
+          aria-hidden="true"
+          className={`skip-flash-bar ${skipFlashActive ? "is-active" : ""}`}
+          onAnimationEnd={() => setSkipFlashActive(false)}
+        />
         <AnimatePresence mode="wait">
 
 
